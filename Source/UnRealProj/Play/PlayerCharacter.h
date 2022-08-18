@@ -16,8 +16,20 @@ public:
 	APlayerCharacter();
 
 
-	UFUNCTION(BlueprintCallable, Category = UR, meta = (DisplayName = "PlayerMove"))
-	void PlayerMove();
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void PlayerPickingMove();
+	
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void PlayerLeftMove(float Value);
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void PlayerRightMove(float Value);
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void PlayerForwardMove(float Value);
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void PlayerBackwardMove(float Value);
 
 protected:
 	// Called when the game starts or when spawned

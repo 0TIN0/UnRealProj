@@ -11,8 +11,53 @@ APlayerCharacter::APlayerCharacter()
 
 }
 
-void APlayerCharacter::PlayerMove()
+void APlayerCharacter::PlayerPickingMove()
 {
+}
+
+void APlayerCharacter::PlayerLeftMove(float Value)
+{
+	if (Value == 0.f)
+	{
+		return;
+	}
+
+	// AddMovementInput
+	// 블루프린트 플레이어에 들어가보면 무브먼트라고 동작에 관련된 물리등 다양한 것들이 종합되어 있는데
+	// 해당 함수는 그것들을 이용해서 동작되게 만드는 함수이다.
+	AddMovementInput(-GetActorRightVector(), Value);
+}
+
+void APlayerCharacter::PlayerRightMove(float Value)
+{
+	if (Value == 0.f)
+	{
+		return;
+	}
+
+	AddMovementInput(GetActorRightVector(), Value);
+}
+
+void APlayerCharacter::PlayerForwardMove(float Value)
+{
+	if (Value == 0.f)
+	{
+		return;
+	}
+
+	AddMovementInput(GetActorForwardVector(), Value);
+}
+
+void APlayerCharacter::PlayerBackwardMove(float Value)
+{
+	if (Value == 0.f)
+	{
+		return;
+	}
+
+
+
+	AddMovementInput(-GetActorForwardVector(), Value);
 }
 
 // Called when the game starts or when spawned
@@ -34,5 +79,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	PlayerInputComponent->BindAxis(TEXT("LeftMove"), this, &APlayerCharacter::PlayerLeftMove);
+	PlayerInputComponent->BindAxis(TEXT("RightMove"), this, &APlayerCharacter::PlayerRightMove);
+	PlayerInputComponent->BindAxis(TEXT("ForwardMove"), this, &APlayerCharacter::PlayerForwardMove);
+	PlayerInputComponent->BindAxis(TEXT("BackwardMove"), this, &APlayerCharacter::PlayerBackwardMove);
 }
 
