@@ -40,8 +40,19 @@ void APlayerCharacter::PlayerRightMove(float Value)
 {
 	if (Value == 0.f)
 	{
+		if (DirBit & static_cast<uint8>(PlayerAnimation::Right))
+		{
+			DirBit ^= static_cast<uint8>(PlayerAnimation::Right);
+
+			AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
+		}
+
 		return;
 	}
+
+	DirBit |= static_cast<uint8>(PlayerAnimation::Right);
+
+	AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
 
 	AddMovementInput(GetActorRightVector(), Value);
 }
@@ -50,8 +61,18 @@ void APlayerCharacter::PlayerForwardMove(float Value)
 {
 	if (Value == 0.f)
 	{
+		if (DirBit & static_cast<uint8>(PlayerAnimation::Forward))
+		{
+			DirBit ^= static_cast<uint8>(PlayerAnimation::Forward);
+
+			AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
+		}
 		return;
 	}
+
+	DirBit |= static_cast<uint8>(PlayerAnimation::Forward);
+
+	AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
 
 	AddMovementInput(GetActorForwardVector(), Value);
 }
@@ -60,10 +81,20 @@ void APlayerCharacter::PlayerBackwardMove(float Value)
 {
 	if (Value == 0.f)
 	{
+		if (DirBit & static_cast<uint8>(PlayerAnimation::Backward))
+		{
+			DirBit ^= static_cast<uint8>(PlayerAnimation::Backward);
+
+			AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
+		}
+
 		return;
 	}
 
 
+	DirBit |= static_cast<uint8>(PlayerAnimation::Backward);
+
+	AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
 
 	AddMovementInput(-GetActorForwardVector(), Value);
 }

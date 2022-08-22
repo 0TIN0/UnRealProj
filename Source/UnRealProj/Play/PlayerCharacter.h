@@ -13,10 +13,12 @@ enum class PlayerAnimation : uint8
 	Idle UMETA(DisplayName = "서있는 모션"),
 	Left UMETA(DisplayName = "왼쪽"),
 	Right UMETA(DisplayName = "오른쪽"),
+	Temp3 = 3 UMETA(DisplayName = "Temp3"),
 	Forward = 4 UMETA(DisplayName = "앞"),
-	Backward = 8 UMETA(DisplayName = "뒤"),
 	LeftForward = 5 UMETA(DisplayName = "왼쪽앞"),
 	RightForward = 6 UMETA(DisplayName = "오른쪽앞"),
+	Temp7 = 7 UMETA(DisplayName = "Temp7"),
+	Backward = 8 UMETA(DisplayName = "뒤"),
 	LeftBackward = 9 UMETA(DisplayName = "왼쪽뒤"),
 	RightBackward = 10 UMETA(DisplayName = "오른쪽뒤")
 };
