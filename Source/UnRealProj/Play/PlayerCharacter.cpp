@@ -2,6 +2,7 @@
 
 
 #include "PlayerCharacter.h"
+#include "PlayerAnimInstance.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -19,9 +20,16 @@ void APlayerCharacter::PlayerLeftMove(float Value)
 {
 	if (Value == 0.f)
 	{
+		if (DirBit & static_cast<uint8>(PlayerAnimation::Left))
+		{
+			DirBit ^= static_cast<uint8>(PlayerAnimation::Left);
+			AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
+		}
 		return;
 	}
 
+	DirBit |= static_cast<uint8>(PlayerAnimation::Left);
+	AnimationInst->AnimationState = static_cast<PlayerAnimation>(DirBit);
 	// AddMovementInput
 	// 블루프린트 플레이어에 들어가보면 무브먼트라고 동작에 관련된 물리등 다양한 것들이 종합되어 있는데
 	// 해당 함수는 그것들을 이용해서 동작되게 만드는 함수이다.
@@ -64,6 +72,15 @@ void APlayerCharacter::PlayerBackwardMove(float Value)
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AnimationInst = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (nullptr == AnimationInst &&
+		AnimationInst->IsValidLowLevel())
+	{
+		// 없다면 에러 로그를 띄운다
+		UE_LOG(LogTemp, Error, TEXT("Animation Instance Error!"));
+	}
 	
 }
 
@@ -71,7 +88,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
