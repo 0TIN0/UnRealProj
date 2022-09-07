@@ -17,6 +17,9 @@ class UNREALPROJ_API UURStructs : public UObject
 	
 };
 
+
+// 데이터를 직렬화 해서 메모리를 아끼라는 건데
+// 데이터를 수천수만개 써야할때 속력을 빠르게 해줍니다.
 USTRUCT(Atomic, BlueprintType)
 struct FURMonsterDataInfo : public FTableRowBase
 {

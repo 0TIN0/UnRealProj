@@ -8,7 +8,7 @@
 UURGameInstance::UURGameInstance()
 {
     {
-        FString DataPath = TEXT("DataTable'/Game/Resource/Global/MonsterData.MonsterData'");
+        FString DataPath = TEXT("DataTable'/Game/Resource/Global/NewDataTable.NewDataTable'");
 
         // 리소스를 로드하는 용도
         ConstructorHelpers::FObjectFinder<UDataTable> DataTable(*DataPath);
