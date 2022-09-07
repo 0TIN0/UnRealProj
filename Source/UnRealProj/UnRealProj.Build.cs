@@ -7,7 +7,10 @@ public class UnRealProj : ModuleRules
 	public UnRealProj(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
+		PublicIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, ""));
+		PrivateIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, ""));
+
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
