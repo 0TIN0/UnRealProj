@@ -22,6 +22,9 @@ protected:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable, Category = "UR")
+	void DebugDraw();
+
 private:
 	// 어떤 액터를 생성할거냐?
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))

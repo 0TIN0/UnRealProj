@@ -2,6 +2,7 @@
 
 
 #include "Play/Component/URSpawnComponent.h"
+#include "Global/URBlueprintFunctionLibrary.h"
 
 // Sets default values for this component's properties
 UURSpawnComponent::UURSpawnComponent()	:
@@ -20,7 +21,7 @@ void UURSpawnComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Tick함수가 호출되는 시간이 대입된 값으로 바뀜
-	// 즉 SpawnTime으로 바꿔주어 Tick에서 스폰되는 시간을 조절해주는것임.
+	// 즉 SpawnTime으로 바꿔주어 Tick에서 스폰되는 시간을 조절해주는것.
 	// m_SpawnTime은 에디터 블루프린트에서 설정할 수 있다.
 	PrimaryComponentTick.TickInterval = m_SpawnTime;
 	// ...
@@ -32,7 +33,10 @@ void UURSpawnComponent::BeginPlay()
 void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
+#if WITH_EDITOR
+	DebugDraw();
+#endif
 	// 예외처리
 	if (0 == m_MaxCount)
 	{
@@ -81,6 +85,14 @@ void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		{
 			return;
 		}
+	}
+}
+
+void UURSpawnComponent::DebugDraw()
+{
+	if (UURBlueprintFunctionLibrary::IsDebug())
+	{
+		DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), m_SpawnRange, 50, FColor::Red, false, m_SpawnTime);
 	}
 }
 

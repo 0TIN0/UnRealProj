@@ -63,3 +63,34 @@ UURGameInstance* UURBlueprintFunctionLibrary::GetURInst()
 
 	return Inst;
 }
+
+void UURBlueprintFunctionLibrary::DebugSwitch()
+{
+	// 플레이중인 월드가 없다면 리턴
+	if (nullptr == GetCurrentPlayWorld())
+	{
+		return;
+	}
+	UURGameInstance* Inst = GetCurrentPlayWorld()->GetGameInstance<UURGameInstance>();
+
+	if (!Inst)
+	{
+		UE_LOG(LogTemp, Error, TEXT("URGameInst Null!"));
+		return;
+	}
+
+	Inst->DebugSwitch();
+}
+
+bool UURBlueprintFunctionLibrary::IsDebug()
+{
+	UURGameInstance* Inst = GetCurrentPlayWorld()->GetGameInstance<UURGameInstance>();
+
+	if (!Inst)
+	{
+		UE_LOG(LogTemp, Error, TEXT("URGameInst Null!"));
+		return false;
+	}
+
+	return Inst->IsDebug();
+}

@@ -16,7 +16,7 @@ UURGameInstance::UURGameInstance()
         // 찾는것을 성공했다면 데이터테이블을 얻어온 녀석으로 바꿔준다.
         if (DataTable.Succeeded())
         {
-            MonsterDataTable = DataTable.Object;
+            m_MonsterDataTable = DataTable.Object;
         }
         else
         {
@@ -27,7 +27,7 @@ UURGameInstance::UURGameInstance()
 
 const FURMonsterDataInfo* UURGameInstance::GetMonsterData(FName Name) const
 {
-    FURMonsterDataInfo* DataInfo = MonsterDataTable->FindRow<FURMonsterDataInfo>(Name, Name.ToString());
+    FURMonsterDataInfo* DataInfo = m_MonsterDataTable->FindRow<FURMonsterDataInfo>(Name, Name.ToString());
 
     if (!DataInfo)
     {
@@ -35,4 +35,9 @@ const FURMonsterDataInfo* UURGameInstance::GetMonsterData(FName Name) const
     }
 
     return DataInfo;
+}
+
+void UURGameInstance::DebugSwitch()
+{
+    m_DebugCheck = !m_DebugCheck;
 }

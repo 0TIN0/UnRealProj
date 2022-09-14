@@ -36,4 +36,6 @@ struct FURMonsterDataInfo : public FTableRowBase
 	double MaxAttack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double Speed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double FindRange;
 };

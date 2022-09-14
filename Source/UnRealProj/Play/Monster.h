@@ -3,16 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "URCharacter.h"
+#include "URAICharacter.h"
 #include "Monster.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API AMonster : public AURCharacter
+class UNREALPROJ_API AMonster : public AURAICharacter
 {
 	GENERATED_BODY()
+
+public:
+	AMonster();
+
+	FORCEINLINE const struct FURMonsterDataInfo* GetMonsterData()
+	{
+		return m_MonsterData;
+	}
+
+	const struct FURMonsterDataInfo* MonsterDataInit();
+
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))

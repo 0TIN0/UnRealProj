@@ -19,6 +19,15 @@ public:
 
 	const struct FURMonsterDataInfo* GetMonsterData(FName Name) const;
 
+	void DebugSwitch();
+
+	FORCEINLINE bool IsDebug()	const
+	{
+		return m_DebugCheck;
+	}
+
 private:
-	TSoftObjectPtr<class UDataTable> MonsterDataTable;
+	TSoftObjectPtr<class UDataTable> m_MonsterDataTable;
+
+	bool m_DebugCheck;
 };

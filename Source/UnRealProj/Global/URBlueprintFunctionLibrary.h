@@ -22,4 +22,8 @@ public:
 	static UWorld* GetCurrentPlayWorld();
 
 	static UURGameInstance* GetURInst();
+
+	UFUNCTION(BlueprintCallable, Category = "UR|Global")
+	static void DebugSwitch();
+	static bool IsDebug();
 };
