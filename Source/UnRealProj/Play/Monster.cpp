@@ -8,6 +8,8 @@
 AMonster::AMonster()
 {
 	AIControllerClass = AURMonsterController::StaticClass();
+
+	Tags.Add(FName("Monster"));
 }
 
 const FURMonsterDataInfo* AMonster::MonsterDataInit()

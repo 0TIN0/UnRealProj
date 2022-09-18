@@ -14,10 +14,6 @@ class UNREALPROJ_API APlayCharacter : public AURCharacter
 {
 	GENERATED_BODY()
 
-private:
-	uint32	m_DirBit;
-
-
 public:
 	APlayCharacter();
 
@@ -36,15 +32,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = UR)
 	void PlayerBackwardMove(float Value);
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void MoveKeyEnd();
+
 
 protected:
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
-	virtual void Tick(float DeltaTime)	override;
+	void Tick(float DeltaTime)	override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
-	
 };

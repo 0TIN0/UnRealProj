@@ -2,6 +2,7 @@
 
 
 #include "URCharacter.h"
+#include "Kismet/GamePlayStatics.h"
 
 // Sets default values
 AURCharacter::AURCharacter()
@@ -9,6 +10,74 @@ AURCharacter::AURCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Tags.Add(FName("URCharacter"));
+
+}
+
+AActor* AURCharacter::TargetSearch(FName _Name, float _Range)
+{
+	TArray<AActor*> Actors;
+
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), _Name, Actors);
+
+	if (Actors.IsEmpty())
+	{
+		return nullptr;
+	}
+
+	if (0.f >= _Range)
+	{
+		return Actors[0];
+	}
+
+	FVector Location = GetActorLocation();
+
+	size_t Size = Actors.Num();
+
+	for (size_t i = 0; i < Size; ++i)
+	{
+		// 플레이어와 엑터들간의 위치값을 이용해서 거리를 구한다.
+		float Length = (Location - Actors[i]->GetActorLocation()).Size();
+
+		if (_Range > Length)
+		{
+			return Actors[i];
+		}
+	}
+
+	return nullptr;
+}
+
+TArray<AActor*> AURCharacter::TargetsSearch(FName _Name, float _Range)
+{
+	TArray<AActor*> Actors;
+	TArray<AActor*> SelectActors;
+
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), _Name, Actors);
+
+	if (Actors.IsEmpty())
+	{
+		return Actors;
+	}
+
+	if (0 >= _Range)
+	{
+		return Actors;
+	}
+
+	FVector Location = GetActorLocation();
+
+	for (size_t i = 0; i < Actors.Num(); i++)
+	{
+		float Len = (Location - Actors[i]->GetActorLocation()).Size();
+
+		if (_Range > Len)
+		{
+			SelectActors.Add(Actors[i]);
+		}
+	}
+
+	return SelectActors;
 }
 
 // Called when the game starts or when spawned

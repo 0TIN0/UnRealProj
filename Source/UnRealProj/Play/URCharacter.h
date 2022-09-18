@@ -49,6 +49,16 @@ public:
 		m_IsAttack = false;
 	}
 
+	template<typename T>
+	AActor* TargetSearch(FName _Name, float _Range = -1.f)
+	{
+		return Cast<T>(_Name, _Range);
+	}
+
+	AActor* TargetSearch(FName _Name, float _Range = -1.f);
+
+	TArray<AActor*> TargetsSearch(FName _Name, float _Range = -1.f);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

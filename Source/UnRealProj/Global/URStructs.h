@@ -38,4 +38,6 @@ struct FURMonsterDataInfo : public FTableRowBase
 	double Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double FindRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double AttRange;
 };
