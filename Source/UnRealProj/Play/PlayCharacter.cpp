@@ -2,12 +2,20 @@
 
 
 #include "PlayCharacter.h"
+#include "Components/CapsuleComponent.h"
 
 APlayCharacter::APlayCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.Add("Player");
+
+	UCapsuleComponent* Component = FindComponentByClass<UCapsuleComponent>();
+
+	if (Component)
+	{
+		Component->SetCollisionProfileName(FName(TEXT("Player")));
+	}
 }
 
 void APlayCharacter::PlayerPickingMove()
@@ -86,4 +94,16 @@ void APlayCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(FName(TEXT("RightMove")), EInputEvent::IE_Released, this, &APlayCharacter::MoveKeyEnd);
 	PlayerInputComponent->BindAction(FName(TEXT("ForwardMove")), EInputEvent::IE_Released, this, &APlayCharacter::MoveKeyEnd);
 	PlayerInputComponent->BindAction(FName(TEXT("BackwardMove")), EInputEvent::IE_Released, this, &APlayCharacter::MoveKeyEnd);
+}
+
+void APlayCharacter::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+}
+
+void APlayCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+}
+
+void APlayCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+{
 }

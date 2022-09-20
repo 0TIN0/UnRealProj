@@ -7,6 +7,12 @@
 #include "Play/Monster.h"
 #include "Play/URAIController.h"
 
+UUR_IdleTaskNode::UUR_IdleTaskNode()
+{
+	// TickTask함수를 동작시킬지 결정해주 변수
+	bNotifyTick = true;
+}
+
 EBTNodeResult::Type UUR_IdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
@@ -22,5 +28,10 @@ EBTNodeResult::Type UUR_IdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 
-	return EBTNodeResult::Succeeded;
+	return EBTNodeResult::InProgress;
+}
+
+void UUR_IdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }

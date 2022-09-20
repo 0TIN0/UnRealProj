@@ -4,22 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "UR_MoveTaskNode.generated.h"
+#include "UR_AttackTaskNode.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class UNREALPROJ_API UUR_MoveTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_AttackTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_MoveTaskNode();
+	UUR_AttackTaskNode();
 
+private:
+	float m_WaitTime;
+	
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-	
 };

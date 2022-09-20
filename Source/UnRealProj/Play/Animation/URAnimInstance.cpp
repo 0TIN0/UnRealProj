@@ -19,20 +19,49 @@ void UURAnimInstance::AddAnimMontage(int Key, UAnimMontage* Montage)
 	m_Animations.Add(Key, Montage);
 }
 
-void UURAnimInstance::ChangeAnimMontage(int Key)
+void UURAnimInstance::ChangeAnimMontage(int Key, float _MinAnimationPercent, bool Force)
 {
-	m_ChangeAnimationKey = Key;
+	UAnimMontage* FindMontage = GetAnimation(Key);
 
-	UAnimMontage** Anim = m_Animations.Find(m_ChangeAnimationKey);
-
-	if (!Anim)
+	if (Force)
 	{
-		UE_LOG(LogTemp, Error, TEXT("animation Montage Null!"));
+		m_MinAnimationPercent = _MinAnimationPercent;
+		m_AnimationLen = FindMontage->GetPlayLength();
+		m_AnimationTime = 0.0f;
+		m_AnimationPercent = 0.0f;
+		Montage_Play(FindMontage/*, 1.0f*/);
+		m_ChangeAnimationKey = Key;
 		return;
 	}
 
-	if (!Montage_IsPlaying(*Anim))
-		Montage_Play(*Anim);
+	if (m_AnimationPercent < m_MinAnimationPercent)
+	{
+		return;
+	}
+
+	// idle로 돌아오라고 해서 돌아오자마자 다시 어택 end가 다시 실행되서 다시 end
+	if (false == Montage_IsPlaying(FindMontage))
+	{
+		m_MinAnimationPercent = _MinAnimationPercent;
+		m_AnimationLen = FindMontage->GetPlayLength();
+		m_AnimationTime = 0.0f;
+		m_AnimationPercent = 0.0f;
+		Montage_Play(FindMontage/*, 1.0f*/);
+		m_ChangeAnimationKey = Key;
+	}
+}
+
+UAnimMontage* UURAnimInstance::GetAnimation(int _Key)
+{
+	UAnimMontage** FindMontage = m_Animations.Find(_Key);
+
+	if (nullptr == FindMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("animation Montage Null!"));
+		return nullptr;
+	}
+
+	return *FindMontage;
 }
 
 void UURAnimInstance::NativeBeginPlay()
@@ -43,4 +72,9 @@ void UURAnimInstance::NativeBeginPlay()
 void UURAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+	m_AnimationTime += DeltaSeconds;
+	if (0.0f < m_AnimationLen)
+	{
+		m_AnimationPercent = m_AnimationTime / m_AnimationLen;
+	}
 }

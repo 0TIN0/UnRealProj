@@ -49,8 +49,23 @@ public:
 		m_IsAttack = false;
 	}
 
+	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
+	bool GetIsRangeInTarget(AActor* _Target, float _Length);
+
+	// 타겟의 방향을 얻어옴
+	FVector GetTargetDir(AActor* _Target);
+
+	// 타겟의 방향값을 정규화한 값
+	FVector GetTargetDirNormalize(AActor* _Target);
+
+	// 타겟의 방향으로 이동
+	void SetTargetMovementInput(AActor* _Target, float Value = 1.f);
+
+	// 타겟을 바라보도록 설정
+	void SetTargetLook(AActor* _Target);
+	
 	template<typename T>
-	AActor* TargetSearch(FName _Name, float _Range = -1.f)
+	T* TargetSearch(FName _Name, float _Range = -1.f)
 	{
 		return Cast<T>(_Name, _Range);
 	}

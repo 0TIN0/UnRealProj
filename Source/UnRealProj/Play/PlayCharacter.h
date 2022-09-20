@@ -44,4 +44,10 @@ protected:
 	// Called to bind functionality to input
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+
+	void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	void NotifyActorEndOverlap(AActor* OtherActor) override;
+
 };

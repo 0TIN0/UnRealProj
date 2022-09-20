@@ -9,6 +9,11 @@
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
 
+UUR_MoveTaskNode::UUR_MoveTaskNode()
+{
+	bNotifyTick = true;
+}
+
 EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
@@ -19,33 +24,29 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	if (!Target)
 	{
-		return EBTNodeResult::Failed;
+		return EBTNodeResult::Succeeded;
 	}
 
 	AActor* TargetActor = Cast<AActor>(Target);
 
 	FVector Dir = TargetActor->GetActorLocation() - Monster->GetActorLocation();
 
-	if (Dir.Size() < MonsterInfo->AttRange)
+	if (Monster->GetTargetDir(TargetActor).Size() < MonsterInfo->AttRange)
 	{
-		Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+		//Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
 		return EBTNodeResult::Failed;
 	}
 
-	Dir.Z = 0.0f;
-	float DeltaTime = TargetActor->GetWorld()->GetDeltaSeconds();
 
-
-	Dir.Normalize();
-
-	Monster->SetActorRotation(Dir.Rotation());
-	Monster->AddMovementInput(Dir, 1000.0f);
-
-	//UPawnMovementComponent* MovementComponent = Monster->GetMovementComponent();
-	//MovementComponent->AddInputVector(WorldDirection * ScaleValue, bForce);
-	// Monster->AddActorWorldOffset(Dir * MonsterInfo->Speed * DeltaTime);
+	Monster->SetTargetLook(TargetActor);
+	Monster->SetTargetMovementInput(TargetActor);
 	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
 
 
-	return EBTNodeResult::Type::Succeeded;
+	return EBTNodeResult::Type::InProgress;
+}
+
+void UUR_MoveTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }

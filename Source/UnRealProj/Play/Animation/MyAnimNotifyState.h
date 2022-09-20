@@ -16,6 +16,8 @@ class UNREALPROJ_API UMyAnimNotifyState : public UAnimNotifyState
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+	float m_MinAnimationPercent; // ÆÛ¼¾Æ®
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	int DamageRatio;
 
 protected:

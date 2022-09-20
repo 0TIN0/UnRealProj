@@ -48,6 +48,31 @@ AActor* AURCharacter::TargetSearch(FName _Name, float _Range)
 	return nullptr;
 }
 
+bool AURCharacter::GetIsRangeInTarget(AActor* _Target, float _Length)
+{
+	return GetTargetDir(_Target).Size() <= _Length;
+}
+
+FVector AURCharacter::GetTargetDir(AActor* _Target)
+{
+	return _Target->GetActorLocation() - GetActorLocation();
+}
+
+FVector AURCharacter::GetTargetDirNormalize(AActor* _Target) 
+{
+	return GetTargetDir(_Target).GetSafeNormal();
+}
+
+void AURCharacter::SetTargetMovementInput(AActor* _Target, float Value)
+{
+	AddMovementInput(GetTargetDirNormalize(_Target), 1.0f);
+}
+
+void AURCharacter::SetTargetLook(AActor* _Target)
+{
+	SetActorRotation(GetTargetDirNormalize(_Target).Rotation());
+}
+
 TArray<AActor*> AURCharacter::TargetsSearch(FName _Name, float _Range)
 {
 	TArray<AActor*> Actors;
