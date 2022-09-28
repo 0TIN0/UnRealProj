@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
+#include "../Play/URCharacter.h"
 #include "URStructs.generated.h"
 
 /**
@@ -40,4 +41,6 @@ struct FURMonsterDataInfo : public FTableRowBase
 	double FindRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double AttRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<DefaultAnimation, class UAnimMontage*> Animations;
 };

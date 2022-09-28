@@ -6,13 +6,24 @@
 #include "URCharacter.h"
 #include "PlayCharacter.generated.h"
 
-/**
- * 
- */
+UENUM(BlueprintType)
+enum class PlayerAnimationEx : uint8
+{
+	// 1100 
+	Min UMETA(DisplayName = "Don't touch"),
+	Skill1 = static_cast<int>(DefaultAnimation::Max) UMETA(DisplayName = "Skill1"),
+	Skill2 UMETA(DisplayName = "Skill2"),
+	Skill3 UMETA(DisplayName = "Skill3"),
+};
+
 UCLASS()
 class UNREALPROJ_API APlayCharacter : public AURCharacter
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<PlayerAnimationEx, UAnimMontage*> m_PlayerAnimations;
 
 public:
 	APlayCharacter();
@@ -33,7 +44,15 @@ public:
 	void PlayerBackwardMove(float Value);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
+	void LeftAttack();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void SkillQ();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
 	void MoveKeyEnd();
+
+	void DamageOn() override;
 
 
 protected:

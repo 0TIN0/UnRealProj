@@ -24,12 +24,18 @@ public:
 
 	const struct FURMonsterDataInfo* MonsterDataInit();
 
+	void DamageOn() override;
+	void DamageOff() override;
+	void CallDamage(double _Damage) override;
+
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
-	FName m_MonsterStatusKey;
+	class USphereComponent* m_DamageCollision;
 
 	const struct FURMonsterDataInfo* m_MonsterData;
+
+	bool m_IsDamageCheck;
 
 protected:
 	void BeginPlay() override;

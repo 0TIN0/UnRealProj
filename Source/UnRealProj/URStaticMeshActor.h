@@ -13,5 +13,11 @@ UCLASS()
 class UNREALPROJ_API AURStaticMeshActor : public AStaticMeshActor
 {
 	GENERATED_BODY()
+
+public:
+	AURStaticMeshActor();
+
+protected:
+	virtual void BeginPlay() override;
 	
 };

@@ -2,6 +2,7 @@
 
 
 #include "URCharacter.h"
+#include "Components/SphereComponent.h"
 #include "Kismet/GamePlayStatics.h"
 
 // Sets default values
@@ -11,6 +12,9 @@ AURCharacter::AURCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.Add(FName("URCharacter"));
+
+
+	GetMesh()->bHiddenInSceneCapture = true;
 
 }
 
@@ -103,6 +107,27 @@ TArray<AActor*> AURCharacter::TargetsSearch(FName _Name, float _Range)
 	}
 
 	return SelectActors;
+}
+
+void AURCharacter::CallDamage(double _Damage)
+{
+	m_HP -= _Damage;
+}
+
+TArray<FHitResult> AURCharacter::CollisionCheck(const FVector& Start, const FVector& End, const FQuat& Rot, FName ProfileName, const FCollisionShape& CollisionShape)
+{
+	FCollisionQueryParams CollisionCheck(FName(TEXT("Collision Check")), false, this);
+
+	TArray<FHitResult> Result = TArray<FHitResult>();
+
+	GetWorld()->SweepMultiByProfile(Result, Start, End, Rot, ProfileName, CollisionShape, CollisionCheck);
+
+	return Result;
+}
+
+TArray<UActorComponent*> AURCharacter::GetDamageCollision()
+{
+	return GetComponentsByTag(USphereComponent::StaticClass(), FName(TEXT("Damage")));
 }
 
 // Called when the game starts or when spawned

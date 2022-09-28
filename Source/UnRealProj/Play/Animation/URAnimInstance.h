@@ -37,6 +37,13 @@ public:
 	{
 		return m_ChangeAnimationKey == _Key;
 	}
+
+
+	FORCEINLINE void SetMinAnimationPercent(float _MinPercent = 0.0f)
+	{
+		m_MinAnimationPercent = _MinPercent;
+	}
+
 	template<typename EnumType>
 	UAnimMontage* GetAnimation(EnumType _Key)
 	{

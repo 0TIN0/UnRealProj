@@ -18,6 +18,7 @@ enum class DefaultAnimation : uint8
 	Forward UMETA(DisplayName = "앞"), // 0100
 	BackWard UMETA(DisplayName = "뒤"),  // 1000
 	Attack UMETA(DisplayName = "공격모션"),  // 1000
+	Max UMETA(DisplayName = "최대치"),  // 1000
 };
 
 UCLASS()
@@ -49,6 +50,17 @@ public:
 		m_IsAttack = false;
 	}
 
+	FORCEINLINE double GetHP()
+	{
+		return m_HP;
+	}
+
+
+	FORCEINLINE bool IsDeath()
+	{
+		return m_HP <= 0;
+	}
+
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
 
@@ -74,6 +86,34 @@ public:
 
 	TArray<AActor*> TargetsSearch(FName _Name, float _Range = -1.f);
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+	virtual void CallDamage(double _Damage);
+
+	FORCEINLINE void SetHP(double _HP)
+	{
+		m_HP = _HP;
+	}
+
+	FORCEINLINE	void SetAnimations(const TMap<DefaultAnimation, UAnimMontage*> _Animations)
+	{
+		m_Animations.Empty();
+		m_Animations = _Animations;
+	}
+
+	virtual void DamageOn() {};
+	virtual void DamageOff() {};
+
+
+	TArray<FHitResult> CollisionCheck(const FVector& Pos, FName ProfileName, const struct FCollisionShape& CollisionShape)
+	{
+		return CollisionCheck(Pos, Pos, FQuat::Identity, ProfileName, CollisionShape);
+	}
+
+	TArray<FHitResult> CollisionCheck(const FVector& Start, const FVector& End, const FQuat& Rot, FName ProfileName, const struct FCollisionShape& CollisionShape);
+
+	TArray<UActorComponent*> GetDamageCollision();
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -84,14 +124,16 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationData", meta = (AllowPrivateAccess = "true"))
+	TMap<DefaultAnimation, UAnimMontage*>	m_Animations;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	DefaultAnimation AnimationState;
 
-	bool m_IsAttack;
-
 	class UURAnimInstance* m_AnimationInstance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationData", meta = (AllowPrivateAccess = "true"))
-	TMap<DefaultAnimation, UAnimMontage*>	m_Animations;
+	bool m_IsAttack;
+	double m_HP;
 };
