@@ -31,7 +31,13 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
-	class USphereComponent* m_DamageCollision;
+	TObjectPtr<class USphereComponent> m_DamageCollision;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
+	TObjectPtr<class USpringArmComponent> m_IconArm;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> m_PlaneComponent;
 
 	const struct FURMonsterDataInfo* m_MonsterData;
 

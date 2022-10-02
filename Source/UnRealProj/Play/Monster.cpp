@@ -6,7 +6,10 @@
 #include "URMonsterController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Global/URStructs.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AMonster::AMonster()	:
 	m_IsDamageCheck(false)
@@ -22,6 +25,8 @@ AMonster::AMonster()	:
 		{
 			Component->SetCollisionProfileName(FName(TEXT("Monster")));
 		}
+
+		RootComponent = Component;
 	}
 
 	{
@@ -34,6 +39,38 @@ AMonster::AMonster()	:
 		m_DamageCollision->SetCollisionProfileName(FName(TEXT("MonsterAttack")));
 		// 부모를 설정하고 어떤 소켓에 지정을 할지 넣어주어야함.
 		m_DamageCollision->SetupAttachment(GetMesh(), FName(TEXT("AttackSocket")));
+	}
+
+	{
+		m_IconArm = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("IconArm")));
+		m_IconArm->SetRelativeRotation(FRotator(-90, 0, 0));
+		// 자식으로 달아준다.
+		m_IconArm->SetupAttachment(RootComponent);
+		m_IconArm->TargetArmLength = 300.f;
+
+		//Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'
+		ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
+		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'"));
+
+		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("IconPlane"));
+		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
+		m_PlaneComponent->SetupAttachment(m_IconArm);
+		m_PlaneComponent->SetHiddenInSceneCapture(true);
+		m_PlaneComponent->SetHiddenInGame(false);
+		m_PlaneComponent->SetCastHiddenShadow(true);
+
+		if (nullptr != MeshPath.Object
+			&& MeshPath.Object->IsValidLowLevel())
+		{
+			m_PlaneComponent->SetStaticMesh(MeshPath.Object);
+		}
+
+		if (nullptr != MatPath.Object
+			&& MatPath.Object->IsValidLowLevel())
+		{
+			m_PlaneComponent->SetMaterial(0, MatPath.Object);
+		}
+
 	}
 }
 
