@@ -4,10 +4,14 @@
 #include "PlayCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 APlayCharacter::APlayCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	Tags.Add("Player");
 
@@ -17,6 +21,30 @@ APlayCharacter::APlayCharacter()
 	{
 		Component->SetCollisionProfileName(FName(TEXT("Player")));
 	}
+
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+
+	GetCharacterMovement()->bOrientRotationToMovement = true; 
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 640.0f, 0.0f); 
+	GetCharacterMovement()->bConstrainToPlane = true;
+	GetCharacterMovement()->bSnapToPlaneAtStart = true;
+
+	m_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
+	m_CameraSpringArmComponent->SetupAttachment(RootComponent);
+	m_CameraSpringArmComponent->SetUsingAbsoluteRotation(true);
+	m_CameraSpringArmComponent->TargetArmLength = 1000.0f;
+	m_CameraSpringArmComponent->SetRelativeRotation(FRotator(-60.0f, 45.0f, 0.0f));
+	m_CameraSpringArmComponent->bDoCollisionTest = false;
+
+	m_CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent, USpringArmComponent::SocketName);
+	m_CameraComponent->bUsePawnControlRotation = false;
+
+
+
 }
 
 void APlayCharacter::PlayerPickingMove()
@@ -148,6 +176,7 @@ void APlayCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if(GetMovementComponent())
 }
 
 void APlayCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

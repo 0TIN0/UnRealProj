@@ -24,6 +24,10 @@ class UNREALPROJ_API APlayCharacter : public AURCharacter
 private:
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<PlayerAnimationEx, UAnimMontage*> m_PlayerAnimations;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* m_CameraComponent;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* m_CameraSpringArmComponent;
 
 public:
 	APlayCharacter();
