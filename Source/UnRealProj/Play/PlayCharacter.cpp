@@ -176,7 +176,7 @@ void APlayCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(GetMovementComponent())
+	/*if(GetMovementComponent())*/
 }
 
 void APlayCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

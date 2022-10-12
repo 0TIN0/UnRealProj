@@ -3,6 +3,8 @@
 
 #include "URCharacter.h"
 #include "Components/SphereComponent.h"
+#include "Global/URGameInstance.h"
+#include "URItemActor.h"
 #include "Kismet/GamePlayStatics.h"
 
 // Sets default values
@@ -128,6 +130,25 @@ TArray<FHitResult> AURCharacter::CollisionCheck(const FVector& Start, const FVec
 TArray<UActorComponent*> AURCharacter::GetDamageCollision()
 {
 	return GetComponentsByTag(USphereComponent::StaticClass(), FName(TEXT("Damage")));
+}
+
+void AURCharacter::ItemDrop(const TArray<const struct FURItemData*>& _Array)
+{
+	UURGameInstance* Instance = GetWorld()->GetGameInstance<UURGameInstance>();
+
+	if (!Instance)
+	{
+		return;
+	}
+
+	TSubclassOf<AActor> Object = Instance->GetGetObjectData(FName(TEXT("Item")));
+
+	for (size_t i = 0; i < _Array.Num(); ++i)
+	{
+		FTransform SpawnTransform(GetActorLocation());
+		AURItemActor* NewActor = GetWorld()->SpawnActor<AURItemActor>(Object, SpawnTransform);
+		NewActor->SetItem(_Array[i]);
+	}
 }
 
 // Called when the game starts or when spawned

@@ -107,6 +107,18 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 	DamageOff();
+
+	UURGameInstance* Instance = GetWorld()->GetGameInstance<UURGameInstance>();
+
+	if (!Instance ||
+		!Instance->IsValidLowLevel())
+	{
+		return;
+	}
+
+	int32 Data = Instance->GetRandomStream().RandRange(0, 2);
+
+	m_DropTable = Instance->GetRandomDropData(Data);
 }
 
 void AMonster::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -164,6 +176,8 @@ void AMonster::CallDamage(double _Damage)
 
 	if (IsDeath())
 	{
+		ItemDrop(m_DropTable);
+
 		Destroy();
 	}
 }

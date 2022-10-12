@@ -5,21 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Animation/URAnimInstance.h"
+#include "Global/UREnum.h"
 #include "URCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class DefaultAnimation : uint8
-{
-	// 1100 
-	Default UMETA(DisplayName = "애니메이션 지정안됨"),
-	Idle UMETA(DisplayName = "서있는 모션"),
-	Left UMETA(DisplayName = "왼쪽"),      // 0001
-	Right  UMETA(DisplayName = "오른쪽"),  // 0010
-	Forward UMETA(DisplayName = "앞"), // 0100
-	BackWard UMETA(DisplayName = "뒤"),  // 1000
-	Attack UMETA(DisplayName = "공격모션"),  // 1000
-	Max UMETA(DisplayName = "최대치"),  // 1000
-};
 
 UCLASS()
 class UNREALPROJ_API AURCharacter : public ACharacter
@@ -113,6 +101,8 @@ public:
 
 	TArray<UActorComponent*> GetDamageCollision();
 
+	void ItemDrop(const TArray<const struct FURItemData*>& _Array);
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -136,4 +126,6 @@ private:
 
 	bool m_IsAttack;
 	double m_HP;
+
+
 };

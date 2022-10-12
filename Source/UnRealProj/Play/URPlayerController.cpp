@@ -4,6 +4,7 @@
 #include "Play/URPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "PlayCharacter.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 AURPlayerController::AURPlayerController()	:
 	m_PlayerToDestDist(120.f)
@@ -16,11 +17,7 @@ void AURPlayerController::InputClickPressed()
 {
 	m_ClickMouse = true;
 
-	APawn* MyPawn = GetPawn();
-
-	APlayCharacter* PlayCharacter = Cast<APlayCharacter>(MyPawn);
-
-	PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
+	//m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
 }
 
 void AURPlayerController::InputClickReleased()
@@ -30,17 +27,17 @@ void AURPlayerController::InputClickReleased()
 
 void AURPlayerController::SetNewDestination(const FVector& DestLocation)
 {
-	APawn* MyPawn = GetPawn();
-
-	if (MyPawn)
+	if (m_PlayCharacter)
 	{
-		float Dist = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
+		float Dist = FVector::Dist(DestLocation, m_PlayCharacter->GetActorLocation());
 
 		if (Dist > m_PlayerToDestDist)
 		{
 			// 이 함수에서는 우선 컨트롤러가 소유하고 있는 폰을 가져와서 폰과 목적지 사이의 거리를 측정해서,
 			// 그 거리가 120 언리얼 유닛보다 크면 폰을 목적지로 이동시킨다.
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
+
+			m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
 		}
 	}
 }
@@ -72,8 +69,27 @@ void AURPlayerController::SetupInputComponent()
 void AURPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-	if (m_ClickMouse)
+
+	if (m_ClickMouse && !m_PlayCharacter->IsAttack())
 	{
 		MoveToMouseCursor();
 	}
+
+	FVector Pos = m_PlayCharacter->GetActorLocation();
+	float X = abs(Pos.X - m_HitPos.X);
+	float Y = abs(Pos.Y - m_HitPos.Y);
+	float Z = abs(Pos.Z - m_HitPos.Z);
+
+	if (X + Y + Z <= 150.f)
+	{
+		m_HitPos = FVector(0.f, 0.f, 0.f);
+		m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+	}
+}
+
+void AURPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	m_PlayCharacter = Cast<APlayCharacter>(GetPawn());
 }

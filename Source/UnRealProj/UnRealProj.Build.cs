@@ -12,8 +12,8 @@ public class UnRealProj : ModuleRules
 		PrivateIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, ""));
 
 		PublicDependencyModuleNames.AddRange(new string[] { 
-			"Core", "CoreUObject", "Engine", "InputCore",
-			"AIModule", "GameplayTasks", "NavigationSystem"
+			"Core", "CoreUObject", "Engine", "InputCore",		// Base
+			"AIModule", "GameplayTasks", "NavigationSystem"		// AI
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

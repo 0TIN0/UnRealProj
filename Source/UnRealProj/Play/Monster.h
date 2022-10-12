@@ -41,6 +41,8 @@ private:
 
 	const struct FURMonsterDataInfo* m_MonsterData;
 
+	TArray<const struct FURItemData*> m_DropTable;
+
 	bool m_IsDamageCheck;
 
 protected:

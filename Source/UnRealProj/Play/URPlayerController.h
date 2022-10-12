@@ -21,6 +21,7 @@ private:
 	bool	m_ClickMouse;
 	float	m_PlayerToDestDist;
 	FVector m_HitPos;
+	class APlayCharacter* m_PlayCharacter;
 
 public:
 	FVector GetHitPos()	const
@@ -33,10 +34,11 @@ public:
 	void InputClickReleased();
 	void SetNewDestination(const FVector& DestLocation);
 	void MoveToMouseCursor();
-	void PlayertoMouseRotation(const FVector& DestLocation);
 
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void PlayerTick(float DeltaTime) override;
+
+	virtual void BeginPlay() override;
 	
 };
