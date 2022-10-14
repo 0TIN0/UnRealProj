@@ -2,7 +2,7 @@
 
 
 #include "Play/AI/UR_TargetSearchService.h"
-#include "Play/URAIController.h"
+#include "../Controller/URAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Play/Monster.h"
@@ -22,7 +22,7 @@ void UUR_TargetSearchService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
-	AMonster* Monster = Controller->GetPawn<AMonster>();
+	AURCharacter* Character = Controller->GetPawn<AURCharacter>();
 
 	float FindRange = OwnerComp.GetBlackboardComponent()->GetValueAsFloat("FindRange");
 
@@ -30,7 +30,7 @@ void UUR_TargetSearchService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	if (nullptr == Target)
 	{
-		Target = Monster->TargetSearch(FName(TEXT("Player")), FindRange);
+		Target = Character->TargetSearch(FName(TEXT("Player")), FindRange);
 
 		if (UURBlueprintFunctionLibrary::IsDebug())
 		{
@@ -43,7 +43,7 @@ void UUR_TargetSearchService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	{
 		AActor* TargetActor = Cast<AActor>(Target);
 
-		if (FindRange < (TargetActor->GetActorLocation() - Monster->GetActorLocation()).Size())
+		if (FindRange < (TargetActor->GetActorLocation() - Character->GetActorLocation()).Size())
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), nullptr);
 		}

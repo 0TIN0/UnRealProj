@@ -18,6 +18,7 @@ public:
 	// Sets default values for this character's properties
 	AURCharacter();
 
+	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE UURAnimInstance* GetAnimationInstance()	const
 	{
 		return m_AnimationInstance;
@@ -125,7 +126,7 @@ private:
 	class UURAnimInstance* m_AnimationInstance;
 
 	bool m_IsAttack;
-	double m_HP;
 
+	double m_HP;
 
 };

@@ -30,6 +30,9 @@ void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,
 
 	AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
 
+	if (!Projectile)
+		return;
+
 	// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
 	Projectile->SetInfo(m_CollisionProfileName, m_Speed, m_LifeTime);
 }

@@ -43,6 +43,8 @@ struct FURMonsterDataInfo : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double AttRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double SkillRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<DefaultAnimation, class UAnimMontage*> Animations;
 };
 
@@ -54,6 +56,12 @@ struct FURPlayerDataInfo : public FTableRowBase
 	// double는 경단위로 표현가능하기때문에 요즘은 int를 사용 안 하고 double자료형을 사용한다.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double HP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double MaxHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double MP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double MaxMP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double Def;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -73,7 +81,7 @@ struct FURObjectTable : public FTableRowBase
 
 		// double는 경단위로 표현가능하기때문에 요즘은 int를 사용 안 하고 double자료형을 사용한다.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UObject> ObjectSubClass;
+	TSubclassOf<AActor> ObjectSubClass;
 };
 
 USTRUCT(Atomic, BlueprintType)
@@ -89,7 +97,7 @@ struct FURItemData : public FTableRowBase
 
 	// 인벤토리 아이콘에 사용될 텍스처
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture* IconTexture;
+	UTexture2D* IconTexture;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* DropMesh;

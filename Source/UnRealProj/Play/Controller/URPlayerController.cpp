@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/URPlayerController.h"
+#include "URPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "PlayCharacter.h"
+#include "../PlayCharacter.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 AURPlayerController::AURPlayerController()	:

@@ -1,25 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/AI/UR_IdleTaskNode.h"
+#include "Play/AI/UR_BossIdleTaskNode.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Play/Monster.h"
 #include "../Controller/URAIController.h"
+#include "../UR_BossMonster.h"
 
-UUR_IdleTaskNode::UUR_IdleTaskNode()
+UUR_BossIdleTaskNode::UUR_BossIdleTaskNode()
 {
 	// TickTask함수를 동작시킬지 결정해주 변수
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UUR_IdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UUR_BossIdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	AMonster* Monster = Controller->GetPawn<AMonster>();
+	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
 
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 
@@ -28,12 +28,12 @@ EBTNodeResult::Type UUR_IdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		return EBTNodeResult::Failed;
 	}
 
-	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+	Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 
 	return EBTNodeResult::InProgress;
 }
 
-void UUR_IdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UUR_BossIdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }

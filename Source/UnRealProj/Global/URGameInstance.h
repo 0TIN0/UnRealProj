@@ -19,14 +19,26 @@ public:
 
 	const struct FURMonsterDataInfo* GetMonsterData(FName Name) const;
 
+	struct FURPlayerDataInfo* GetPlayerData(FName Name) const;
+
 	const struct FURItemData* GetItemData(FName Name)	const;
 
-	const TSubclassOf<UObject> GetGetObjectData(FName Name)	const;
+	const TSubclassOf<AActor> GetGetObjectData(FName Name)	const;
 
 	// 랜덤한 아이템을 드롭하기위한 함수
 	TArray<const struct FURItemData*> GetRandomDropData(int _Count);
 
 	FORCEINLINE FRandomStream& GetRandomStream() { return m_Stream; }
+
+	FORCEINLINE class UUR_InventoryUI* GetInven()
+	{
+		return m_Inven;
+	}
+
+	FORCEINLINE void SetInven(class UUR_InventoryUI* _Inven)
+	{
+		m_Inven = _Inven;
+	}
 
 	void DebugSwitch();
 
@@ -49,6 +61,8 @@ private:
 	TArray<FURItemData*> m_ItemDataRandomTable;
 
 	FRandomStream m_Stream;
+
+	class UUR_InventoryUI* m_Inven;
 
 	bool m_DebugCheck;
 };

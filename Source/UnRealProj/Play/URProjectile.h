@@ -22,6 +22,9 @@ private:
 	UPROPERTY(Category = "Component", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* m_ProjectileMovementComponent;
 
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* DefaultSceneRoot;
+
 	FName m_CollisionProfileName;
 	float m_LifeTime;
 	float m_Speed;

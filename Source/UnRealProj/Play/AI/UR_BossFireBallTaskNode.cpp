@@ -1,25 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/AI/UR_AttackTaskNode.h"
-#include "Play/Monster.h"
+#include "Play/AI/UR_BossFireBallTaskNode.h"
+#include "../Play/UR_BossMonster.h"
 #include "Play/Controller/URAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackBoardComponent.h"
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
 
-UUR_AttackTaskNode::UUR_AttackTaskNode()
+UUR_BossFireBallTaskNode::UUR_BossFireBallTaskNode()
 {
 	// TickTask함수를 동작시킬지 결정해주 변수
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UUR_BossFireBallTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
-	AMonster* Monster = Controller->GetPawn<AMonster>();
-	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
+	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
+	const FURMonsterDataInfo* MonsterInfo = Boss->GetMonsterData();
 
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
 
@@ -31,27 +33,31 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 	AActor* TargetActor = Cast<AActor>(Target);
 
 	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-	if (!Monster->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange))
+	if (!Boss->GetIsRangeInTarget(TargetActor, MonsterInfo->SkillRange))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	UAnimMontage* Montage = Monster->GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack);
+	UAnimMontage* Montage = Boss->GetAnimationInstance()->GetCurrentMontage();
 
-	if (!Montage)
+	/*if (Montage->GetName() == FString(TEXT("UR_Lich_Attack_Right_Montage")))
 	{
-		Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		return EBTNodeResult::Failed;
+	}*/
+
+	if (!Boss->GetIsRangeInTarget(TargetActor, MonsterInfo->SkillRange))
+	{
 		return EBTNodeResult::Failed;
 	}
 
 	m_WaitTime = Montage->GetPlayLength();
 
-	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+	Boss->GetAnimationInstance()->ChangeAnimMontage(BossAnimation::Skill1);
 
-	return EBTNodeResult::Type();
+	return EBTNodeResult::InProgress;
 }
 
-void UUR_AttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UUR_BossFireBallTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	// Waittime에는 이 몽타주의 길이가 들어가있고
 	m_WaitTime -= DeltaSeconds;

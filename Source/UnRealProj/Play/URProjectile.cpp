@@ -3,6 +3,7 @@
 
 #include "URProjectile.h"
 #include "Components/SphereComponent.h"
+#include "Components/SceneComponent.h"
 #include "URCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -11,6 +12,8 @@ AURProjectile::AURProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(FName(TEXT("DefaultSceneRoot")));
 
 	m_SphereComponent = CreateDefaultSubobject<USphereComponent>(FName(TEXT("DamageCollision")));
 
@@ -68,7 +71,5 @@ void AURProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestAc
 	}
 
 	Chracter->CallDamage(m_Damage);
-
-	Destroy();
 }
 

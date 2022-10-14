@@ -141,7 +141,7 @@ void AURCharacter::ItemDrop(const TArray<const struct FURItemData*>& _Array)
 		return;
 	}
 
-	TSubclassOf<AActor> Object = Instance->GetGetObjectData(FName(TEXT("Item")));
+	TSubclassOf<UObject> Object = Instance->GetGetObjectData(FName("Item"));
 
 	for (size_t i = 0; i < _Array.Num(); ++i)
 	{

@@ -24,39 +24,98 @@ class UNREALPROJ_API APlayCharacter : public AURCharacter
 private:
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<PlayerAnimationEx, UAnimMontage*> m_PlayerAnimations;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* m_CameraComponent;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* m_CameraSpringArmComponent;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* m_ElevatorCamera;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* m_ElevatorArmComponent;
+
+	struct FURPlayerDataInfo* m_PlayerInfo;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = User, meta = (AllowPrivateAccess = "true"))
+	double m_HPPercent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = User, meta = (AllowPrivateAccess = "true"))
+	double m_MPPercent;
+
+	double m_MP;
+
+	bool m_IsSkillW;
+
+
+	// Skill
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<class AActor>	m_SpawnActorClass;
 
 public:
 	APlayCharacter();
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void PlayerPickingMove();
-	
-	UFUNCTION(BlueprintCallable, Category = UR)
-	void PlayerLeftMove(float Value);
+		void PlayerPickingMove();
+
+	/*UFUNCTION(BlueprintCallable, Category = UR)
+		void PlayerLeftMove(float Value);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void PlayerRightMove(float Value);
+		void PlayerRightMove(float Value);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void PlayerForwardMove(float Value);
+		void PlayerForwardMove(float Value);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void PlayerBackwardMove(float Value);
+		void PlayerBackwardMove(float Value);*/
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void LeftAttack();
+		void LeftAttack();
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void SkillQ();
+		void SkillQ();
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void MoveKeyEnd();
+		void SkillW();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void MoveKeyEnd();
 
 	void DamageOn() override;
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	FORCEINLINE void SetHPPercent(double _Perc)
+	{
+		m_HPPercent = _Perc;
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+	FORCEINLINE double GetHPPercent()
+	{
+		return m_HPPercent;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE void SetMPPercent(double _Perc)
+	{
+		m_MPPercent = _Perc;
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE double GetMPPercent()
+	{
+		return m_MPPercent;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE void SetSkillWEnable(bool _WSkillEnable)
+	{
+		m_IsSkillW = _WSkillEnable;
+	}
 
 
 protected:
@@ -72,5 +131,9 @@ protected:
 	void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	void NotifyActorEndOverlap(AActor* OtherActor) override;
+
+protected:
+
+	void CallDamage(double _Damage) override;
 
 };

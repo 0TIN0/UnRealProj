@@ -19,8 +19,14 @@ public:
 	void InventroyInit(class UTileView* _TileView, int32 _Count);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddInvenItemEvent(UObject* _StartData, UUserWidget* _Slot);
+	int AddInvenItemEvent(UObject* _StartData, UUserWidget* _Slot);
+
+	bool IsFull(const struct FURItemData* _ItemData);
+
+	void AddItem(const struct FURItemData* _ItemData);
 
 private:
 	TArray<class UUR_ItemSlot*> m_ItemSlot;
+
+	int m_InitItemCount;
 };

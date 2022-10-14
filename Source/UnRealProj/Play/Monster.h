@@ -24,6 +24,7 @@ public:
 
 	const struct FURMonsterDataInfo* MonsterDataInit();
 
+protected:
 	void DamageOn() override;
 	void DamageOff() override;
 	void CallDamage(double _Damage) override;

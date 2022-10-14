@@ -2,6 +2,7 @@
 
 
 #include "UR_AttackAnimNotifyState.h"
+#include "../PlayCharacter.h"
 
 void UUR_AttackAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -17,7 +18,7 @@ void UUR_AttackAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 	Character->GetAnimationInstance()->SetMinAnimationPercent(m_MinAnimationPercent);
 	Character->AttackOn();
 
-	UE_LOG(LogTemp, Error, TEXT("Attack Start!"));
+	//UE_LOG(LogTemp, Error, TEXT("Attack Start!"));
 }
 
 void UUR_AttackAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -42,6 +43,12 @@ void UUR_AttackAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAni
 	{
 		return;
 	}
+
+	if (m_IsSkillW)
+	{
+		Cast<APlayCharacter>(Character)->SetSkillWEnable(!m_IsSkillW);
+	}
+
 
 	Character->GetAnimationInstance()->ChangeAnimMontage(m_EndChangeAnimation);
 }

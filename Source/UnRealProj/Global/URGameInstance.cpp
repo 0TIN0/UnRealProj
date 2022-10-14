@@ -26,7 +26,7 @@ UURGameInstance::UURGameInstance()
     }
 
     {
-        FString DataPath = TEXT("DataTable'/Game/Resource/Global/NewDataTable.NewDataTable'");
+        FString DataPath = TEXT("DataTable'/Game/Resource/Global/PlayerDataTable.PlayerDataTable'");
 
         // 리소스를 로드하는 용도
         ConstructorHelpers::FObjectFinder<UDataTable> DataTable(*DataPath);
@@ -41,6 +41,7 @@ UURGameInstance::UURGameInstance()
             UE_LOG(LogTemp, Error, TEXT("MonsterDatas Null!"));
         }
     }
+
     {
         FString DataPath = TEXT("DataTable'/Game/Resource/Global/ItemDataTable.ItemDataTable'");
 
@@ -69,7 +70,7 @@ UURGameInstance::UURGameInstance()
 
 
     {
-        FString DataPath = TEXT("DataTable'/Game/Resource/Global/ObjectTable.ObjectTable'");
+        FString DataPath = TEXT("DataTable'/Game/Resource/Global/ObjectDataTable.ObjectDataTable'");
 
         // 리소스를 로드하는 용도
         ConstructorHelpers::FObjectFinder<UDataTable> DataTable(*DataPath);
@@ -84,6 +85,7 @@ UURGameInstance::UURGameInstance()
             UE_LOG(LogTemp, Error, TEXT("MonsterDatas Null!"));
         }
     }
+    
 }
 
 const FURMonsterDataInfo* UURGameInstance::GetMonsterData(FName Name) const
@@ -98,9 +100,9 @@ const FURMonsterDataInfo* UURGameInstance::GetMonsterData(FName Name) const
     return DataInfo;
 }
 
-const FURItemData* UURGameInstance::GetItemData(FName Name) const
+FURPlayerDataInfo* UURGameInstance::GetPlayerData(FName Name) const
 {
-    FURItemData* DataInfo = m_MonsterDataTable->FindRow<FURItemData>(Name, Name.ToString());
+    FURPlayerDataInfo* DataInfo = m_PlayerDataTable->FindRow<FURPlayerDataInfo>(Name, Name.ToString());
 
     if (!DataInfo)
     {
@@ -110,7 +112,19 @@ const FURItemData* UURGameInstance::GetItemData(FName Name) const
     return DataInfo;
 }
 
-const TSubclassOf<UObject> UURGameInstance::GetGetObjectData(FName Name) const
+const FURItemData* UURGameInstance::GetItemData(FName Name) const
+{
+    FURItemData* DataInfo = m_ItemDataTable->FindRow<FURItemData>(Name, Name.ToString());
+
+    if (!DataInfo)
+    {
+        return nullptr;
+    }
+
+    return DataInfo;
+}
+
+const TSubclassOf<AActor> UURGameInstance::GetGetObjectData(FName Name) const
 {
     FURObjectTable* FindTable = m_ObjectDataTable->FindRow<FURObjectTable>(Name, Name.ToString());
 

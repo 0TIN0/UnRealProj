@@ -20,6 +20,9 @@ private:
 	float m_MinAnimationPercent; // ÆÛ¼¾Æ®
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+	bool m_IsSkillW;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	DefaultAnimation m_EndChangeAnimation;
 
 protected:

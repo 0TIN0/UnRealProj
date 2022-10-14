@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/URAIController.h"
+#include "Play/Controller/URAIController.h"
 #include "UnRealProj/Play/URAICharacter.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BehaviorTree.h"

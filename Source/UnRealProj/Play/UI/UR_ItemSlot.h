@@ -13,6 +13,10 @@ class UNREALPROJ_API UUR_ItemSlot : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	// 유저위젯의경우 생성자대신 이것을 이용한다.
+	void NativeConstruct() override;
+
 private:
 	const FURItemData* m_Data;
 
@@ -21,6 +25,10 @@ private:
 	class UTextBlock* m_ItemCountText;
 
 	FString m_BlockText;
+	
+	// 에디터에서 바인딩을 통해 c++이건 에디터건 값을 지정해줄 수 있음.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FString m_ItemCountString;
 
 
 public:
@@ -31,14 +39,7 @@ public:
 		return m_Data;
 	}
 
-	FORCEINLINE void SetItemData(const FURItemData* _Data)
-	{ 
-		m_Data = _Data;
-	}
-
-protected:
-	// 유저위젯의경우 생성자대신 이것을 이용한다.
-	void NativeConstruct() override;
+	void SetItemData(const FURItemData* _Data);
 
 private:
 	UFUNCTION(BlueprintCallable, Category = "Contents", meta = (AllowPrivateAccess = "true"))

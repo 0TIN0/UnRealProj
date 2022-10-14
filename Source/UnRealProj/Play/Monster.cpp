@@ -3,7 +3,7 @@
 
 #include "Monster.h"
 #include "Global/URBlueprintFunctionLibrary.h"
-#include "URMonsterController.h"
+#include "Controller/URMonsterController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -116,7 +116,7 @@ void AMonster::BeginPlay()
 		return;
 	}
 
-	int32 Data = Instance->GetRandomStream().RandRange(0, 2);
+	int32 Data = Instance->GetRandomStream().RandRange(1, 2);
 
 	m_DropTable = Instance->GetRandomDropData(Data);
 }
@@ -150,7 +150,7 @@ void AMonster::DamageOn()
 		if (Character)
 		{
 			Check = true;
-			Character->CallDamage(1.0);
+			Character->CallDamage(3.0);
 		}
 	}
 

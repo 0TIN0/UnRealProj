@@ -19,12 +19,14 @@ public:
 
 	void AddAnimMontage(int _Key, UAnimMontage* _Montage);
 
+
 	template<typename EnumType>
 	void ChangeAnimMontage(EnumType _Key, float _MinAnimationPercent = 0.f, bool Force = false)
 	{
 		ChangeAnimMontage(static_cast<int>(_Key), _MinAnimationPercent, Force);
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
 	void ChangeAnimMontage(int _Key, float _MinAnimationPercent = 0.f, bool Force = false);
 
 	template<typename EnumType>
