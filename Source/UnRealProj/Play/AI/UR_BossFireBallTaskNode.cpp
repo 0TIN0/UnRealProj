@@ -23,6 +23,12 @@ EBTNodeResult::Type UUR_BossFireBallTaskNode::ExecuteTask(UBehaviorTreeComponent
 	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
 	const FURMonsterDataInfo* MonsterInfo = Boss->GetMonsterData();
 
+	UAnimMontage* FindMontage = Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
+	if (Boss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
 
 	if (nullptr == Target)
@@ -34,6 +40,12 @@ EBTNodeResult::Type UUR_BossFireBallTaskNode::ExecuteTask(UBehaviorTreeComponent
 
 	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
 	if (!Boss->GetIsRangeInTarget(TargetActor, MonsterInfo->SkillRange))
+	{
+		return EBTNodeResult::Failed;
+	}
+
+	// 해당 스킬은 0번이여야지만 사용할 수 있음.
+	if (Boss->GetRandNumb() == 0)
 	{
 		return EBTNodeResult::Failed;
 	}

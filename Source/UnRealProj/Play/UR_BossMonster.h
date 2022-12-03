@@ -13,7 +13,7 @@ enum class BossAnimation : uint8
 	Min UMETA(DisplayName = "Don't touch"),
 	Skill1 = static_cast<int>(DefaultAnimation::Max) UMETA(DisplayName = "Skill1"),
 	Skill2 UMETA(DisplayName = "Skill2"),
-	Skill3 UMETA(DisplayName = "Skill3"),
+	Spawn UMETA(DisPlayName = "Spawn")
 };
 
 UCLASS()
@@ -33,6 +33,11 @@ public:
 
 		return false;
 	};
+
+	TSubclassOf<class AActor> GetSpawnActorClass()	const
+	{
+		return m_SpawnActorClass;
+	}
 	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
@@ -44,7 +49,12 @@ private:
 	UPROPERTY(Category = "BossAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<BossAnimation, UAnimMontage*> m_BossAnimations;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AActor>	m_SpawnActorClass;
+
 	const struct FURMonsterDataInfo* m_BossData;
+
+	int m_RandNumb;
 
 public:
 	const struct FURMonsterDataInfo* BossDataInit();
@@ -54,12 +64,17 @@ public:
 		return m_BossData;
 	}
 
+	FORCEINLINE int GetRandNumb()	const
+	{
+		return m_RandNumb;
+	}
+
 protected:
 	void BeginPlay() override;
 
 	void Tick(float DeltaTime)	override;
 	void DamageOn() override;
 	void DamageOff() override;
-	void CallDamage(double _Damage) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
 	
 };

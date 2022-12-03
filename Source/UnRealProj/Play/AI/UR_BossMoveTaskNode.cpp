@@ -22,6 +22,12 @@ EBTNodeResult::Type UUR_BossMoveTaskNode::ExecuteTask(UBehaviorTreeComponent& Ow
 	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
 	const FURMonsterDataInfo* MonsterInfo = Boss->GetMonsterData();
 
+	UAnimMontage* FindMontage = Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
+	if (Boss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 
 	if (!Target)

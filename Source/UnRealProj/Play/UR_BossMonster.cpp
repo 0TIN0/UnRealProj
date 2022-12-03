@@ -95,11 +95,37 @@ void AUR_BossMonster::BeginPlay()
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 
+	GetAnimationInstance()->ChangeAnimMontage(BossAnimation::Spawn);
+	SetTargetLook(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
 }
 
 void AUR_BossMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	m_RandNumb = GetGameInstance<UURGameInstance>()->GetRandomStream().FRandRange(0, 20);
+
+	if (m_RandNumb == 0)
+	{
+		FVector Pos = GetActorLocation();
+
+		int RandPosX = GetGameInstance<UURGameInstance>()->GetRandomStream().FRandRange(-1000, 1000);
+		int RandPosY = GetGameInstance<UURGameInstance>()->GetRandomStream().FRandRange(-1000, 1000);
+
+		Pos.X += RandPosX;
+		Pos.Y += RandPosY;
+		Pos.Z = GetActorLocation().Z - 200.0;
+
+		FTransform SpawnTransform = FTransform(Pos);
+
+		TSubclassOf<AActor> SpawnActorClass = GetSpawnActorClass();
+
+		// 새로운 엑터를 만들어준다.
+		AActor* NewActor = GetWorld()->SpawnActor<AActor>(SpawnActorClass, SpawnTransform);
+
+		//GetAnimationInstance()->ChangeAnimMontage(BossAnimation::Skill2);
+	}
 }
 
 void AUR_BossMonster::DamageOn()
@@ -112,7 +138,12 @@ void AUR_BossMonster::DamageOff()
 	Super::DamageOff();
 }
 
-void AUR_BossMonster::CallDamage(double _Damage)
+void AUR_BossMonster::CallDamage(double _Damage, AActor* _Actor)
 {
 	Super::CallDamage(_Damage);
+
+	if (IsDeath())
+	{
+		Destroy();
+	}
 }

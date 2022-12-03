@@ -18,8 +18,6 @@ void UUR_PlayerStepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenc
 {
 	Super::Notify(MeshComp, Animation);
 
-
-
 }
 
 void UUR_PlayerStepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, 

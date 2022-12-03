@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Animation/URAnimInstance.h"
 #include "Global/UREnum.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "URCharacter.generated.h"
 
 
@@ -39,6 +41,7 @@ public:
 		m_IsAttack = false;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE double GetHP()
 	{
 		return m_HP;
@@ -56,14 +59,24 @@ public:
 	// 타겟의 방향을 얻어옴
 	FVector GetTargetDir(AActor* _Target);
 
+	FVector GetTargetDir(const FVector& _TargetPos);
+
 	// 타겟의 방향값을 정규화한 값
 	FVector GetTargetDirNormalize(AActor* _Target);
+
+	FVector GetTargetDirNormalize(const FVector& _TargetPos);
 
 	// 타겟의 방향으로 이동
 	void SetTargetMovementInput(AActor* _Target, float Value = 1.f);
 
+	// 인자로 들어온 방향으로 이동
+	void SetDirMovementInput(const FVector& _Dir, float Value = 1.f);
+
 	// 타겟을 바라보도록 설정
 	void SetTargetLook(AActor* _Target);
+
+	// 인자로 들어온 방향을 바라보도록 설정
+	void SetDirLook(const FVector& _Dir);
 	
 	template<typename T>
 	T* TargetSearch(FName _Name, float _Range = -1.f)
@@ -76,8 +89,9 @@ public:
 	TArray<AActor*> TargetsSearch(FName _Name, float _Range = -1.f);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	virtual void CallDamage(double _Damage);
+	virtual void CallDamage(double _Damage, AActor* _Actor = nullptr);
 
+	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE void SetHP(double _HP)
 	{
 		m_HP = _HP;
@@ -104,6 +118,23 @@ public:
 
 	void ItemDrop(const TArray<const struct FURItemData*>& _Array);
 
+	float GetLastPathPointToTargetDis(const FVector& _TargetPos);
+
+	UNavigationPath* PathFind(AActor* _Actor);
+
+	UNavigationPath* PathFind(const FVector& _TargetPosition);
+
+	bool PathMove();
+
+	void SetPath(UNavigationPath* _Path, bool _Debug/* = false*/);
+
+	void ResetPath();
+
+	FORCEINLINE class UNavigationPath* GetPath()
+	{
+		return m_Path;
+	}
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -128,5 +159,8 @@ private:
 	bool m_IsAttack;
 
 	double m_HP;
+
+	// 네비게이션 경로 정보를 저장하는 변수
+	UNavigationPath* m_Path;
 
 };

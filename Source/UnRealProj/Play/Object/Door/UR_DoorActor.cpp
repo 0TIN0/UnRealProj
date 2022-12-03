@@ -7,7 +7,7 @@
 
 // Sets default values
 AUR_DoorActor::AUR_DoorActor()	:
-	m_MoveTime(5.f)
+	m_MoveTime(3.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -59,7 +59,7 @@ void AUR_DoorActor::Tick(float DeltaTime)
 
 		if (m_MoveTime >= 0.f)
 		{
-			SetActorLocation(GetActorLocation() + FVector(0.0, -3.0, 0.0));
+			SetActorLocation(GetActorLocation() + FVector(0.0, -5.0, 0.0));
 		}
 		else
 			m_Enable = false;

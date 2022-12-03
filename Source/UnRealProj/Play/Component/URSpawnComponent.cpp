@@ -79,6 +79,13 @@ void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorsClass[RandomSelect], SpawnTransform);
 		NewActor->FinishSpawning(SpawnTransform);
 
+		UURGameInstance* Inst = GetWorld()->GetGameInstance<UURGameInstance>();
+
+		FQuat Quat = FQuat();
+
+		//Quat.Z = static_cast<double>(Inst->GetRandomStream().FRandRange(0, 360));
+		NewActor->SetActorRotation(Quat);
+
 		m_SpawnActors.Add(NewActor);
 
 		if (m_SpawnActors.Num() >= m_MaxCount)

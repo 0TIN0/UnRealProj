@@ -6,6 +6,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "../Controller/URAIController.h"
 #include "../UR_BossMonster.h"
+#include "Global/URStructs.h"
 
 UUR_BossIdleTaskNode::UUR_BossIdleTaskNode()
 {
@@ -20,6 +21,13 @@ EBTNodeResult::Type UUR_BossIdleTaskNode::ExecuteTask(UBehaviorTreeComponent& Ow
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
 	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
+	const FURMonsterDataInfo* MonsterInfo = Boss->GetMonsterData();
+
+	UAnimMontage* FindMontage = Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
+	if (Boss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 

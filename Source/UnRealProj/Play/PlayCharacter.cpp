@@ -11,6 +11,8 @@
 #include "Global/URStructs.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Skill/UR_LightningActor.h"
+#include "Skill/Boss/UR_CircleActor.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -61,6 +63,9 @@ APlayCharacter::APlayCharacter()	:
 	m_ElevatorCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ElevatorCamera"));
 	m_ElevatorCamera->SetupAttachment(m_ElevatorArmComponent);
 	m_ElevatorCamera->bUsePawnControlRotation = false;
+
+	m_SkillQConsumedMP = 10.0;
+	m_SkillWConsumedMP = 20.0;
 }
 
 void APlayCharacter::PlayerPickingMove()
@@ -113,21 +118,14 @@ void APlayCharacter::PlayerPickingMove()
 
 void APlayCharacter::LeftAttack()
 {
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-
-	if (!PlayerController || !PlayerController->IsValidLowLevel())
+	if (true == IsAttack() && !m_IsSkillW)
 	{
 		return;
 	}
 
 	FHitResult HitResult;
-	PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);
+	m_PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);
 	FVector PlayerLocation = GetActorLocation();
-
-	if (true == IsAttack() && !m_IsSkillW)
-	{
-		return;
-	}
 
 	if (!m_IsSkillW)
 	{
@@ -146,6 +144,8 @@ void APlayCharacter::LeftAttack()
 
 		//AUR_LightningActor* Lightning = Cast<AUR_LightningActor>(NewActor);
 	}
+
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(m_PlayerController, GetActorLocation());
 }
 
 void APlayCharacter::SkillQ()
@@ -155,15 +155,24 @@ void APlayCharacter::SkillQ()
 		return;
 	}
 
-	if (m_MP < 10)
+	if (m_MP < m_SkillQConsumedMP)
 	{
 		return;
 	}
+	FHitResult HitResult;
+	m_PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(m_PlayerController, GetActorLocation());
+	FVector PlayerLocation = GetActorLocation();
 
+	// 마웃 커서의 위치가 땅 바닥이여서 플레이어 배꼽위치로 맞춰줌
+	HitResult.ImpactPoint.Z = PlayerLocation.Z;
+	// 플레이어 위치랑 마우스 위치를 넣어주어서 타겟 로테이터를 얻어서 플레이어 로테이션을 바꿈
+	FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, HitResult.ImpactPoint);
+	SetActorRotation(TargetRotator);
 	AttackOn();
 	GetAnimationInstance()->ChangeAnimMontage(PlayerAnimationEx::Skill1);
 
-	m_MP -= 10;
+	m_MP -= m_SkillQConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
 }
@@ -175,7 +184,7 @@ void APlayCharacter::SkillW()
 		return;
 	}
 
-	if (m_MP < 20)
+	if (m_MP < m_SkillWConsumedMP)
 	{
 		return;
 	}
@@ -184,7 +193,7 @@ void APlayCharacter::SkillW()
 	GetAnimationInstance()->ChangeAnimMontage(PlayerAnimationEx::Skill2);
 
 	m_IsSkillW = true;
-	m_MP -= 20;
+	m_MP -= m_SkillWConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
 }
@@ -233,10 +242,26 @@ void APlayCharacter::DamageOn()
 	}
 }
 
+void APlayCharacter::ReSetHPPercent()
+{
+	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
+}
+
+double APlayCharacter::GetMaxHP()
+{
+	return m_PlayerInfo->MaxHP;
+}
+
 void APlayCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	m_PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+	if (!m_PlayerController || !m_PlayerController->IsValidLowLevel())
+	{
+		return;
+	}
 
 	for (auto& Anim : m_PlayerAnimations)
 	{
@@ -285,17 +310,39 @@ void APlayCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void APlayCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
-	APlayerController* OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	/*APlayerController* OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
 
 	if (OurPlayerController)
 	{
 		OurPlayerController->Possess(Cast<APawn>(m_CameraComponent));
-	}
+	}*/
 }
 
-void APlayCharacter::CallDamage(double _Damage)
+void APlayCharacter::CallDamage(double _Damage, AActor* _Actor)
 {
 	Super::CallDamage(_Damage);
 
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
+
+	AUR_CircleActor* BossCIrcle = nullptr;
+
+	if (_Actor != nullptr)
+	{
+		if (m_IsMoveing)
+		{
+
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
+		}
+	}
+	else
+	{
+		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
+
+		FHitResult HitResult;
+		m_PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(m_PlayerController, GetActorLocation());
+	}
 }

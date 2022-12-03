@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/AI/UR_BossAttackTaskNode.h"
+#include "Play/AI/UR_BossCircleTaskNode.h"
 #include "../Play/UR_BossMonster.h"
 #include "Play/Controller/URAIController.h"
 #include "../PlayCharacter.h"
@@ -11,20 +11,19 @@
 #include "Global/URBlueprintFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
-UUR_BossAttackTaskNode::UUR_BossAttackTaskNode()
+UUR_BossCircleTaskNode::UUR_BossCircleTaskNode()
 {
-	// TickTask함수를 동작시킬지 결정해주 변수
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UUR_BossAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UUR_BossCircleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	if (!m_Controller)
 		m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if(!m_Boss)
+	if (!m_Boss)
 		m_Boss = m_Controller->GetPawn<AUR_BossMonster>();
 
 	UAnimMontage* FindMontage = m_Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
@@ -33,7 +32,7 @@ EBTNodeResult::Type UUR_BossAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& 
 		return EBTNodeResult::Failed;
 	}
 
-	const FURMonsterDataInfo* MonsterInfo = m_Boss->GetMonsterData();
+	const FURMonsterDataInfo* BossInfo = m_Boss->GetMonsterData();
 
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
 
@@ -45,27 +44,39 @@ EBTNodeResult::Type UUR_BossAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& 
 	AActor* TargetActor = Cast<AActor>(Target);
 
 	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-	if (!m_Boss->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange))
+	if (!m_Boss->GetIsRangeInTarget(TargetActor, BossInfo->FindRange))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	UAnimMontage* Montage = m_Boss->GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack);
-
-	if (!Montage)
+	if (m_SkillCount >= 10)
 	{
-		m_Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 		return EBTNodeResult::Failed;
 	}
 
-	m_WaitTime = Montage->GetPlayLength();
+	// 해당 스킬은 0번이여야지만 사용할 수 있음.
+	/*if (m_Boss->GetRandNumb() != 0)
+	{
+		return EBTNodeResult::Failed;
+	}*/
 
-	m_Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+	FVector Pos = m_Boss->GetActorLocation();
 
-	return EBTNodeResult::Type();
+	FTransform SpawnTransform = FTransform(Pos);
+
+	TSubclassOf<AActor> SpawnActorClass = m_Boss->GetSpawnActorClass();
+
+	// 새로운 엑터를 만들어준다.
+	AActor* NewActor = GetWorld()->SpawnActor<AActor>(SpawnActorClass, SpawnTransform);
+
+	m_Boss->GetAnimationInstance()->ChangeAnimMontage(BossAnimation::Skill2);
+
+	++m_SkillCount;
+
+	return EBTNodeResult::Succeeded;
 }
 
-void UUR_BossAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UUR_BossCircleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
@@ -74,20 +85,4 @@ void UUR_BossAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
 
 	if (!m_Boss)
 		m_Boss = m_Controller->GetPawn<AUR_BossMonster>();
-
-	APlayCharacter* Player = Cast<APlayCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	// Waittime에는 이 몽타주의 길이가 들어가있고
-	m_WaitTime -= DeltaSeconds;
-
-	if (0.0f < m_WaitTime)
-	{
-		return;
-	}
-
-	// 그만큼 기다렸다는 이야기가 됩니다.
-	m_WaitTime = 0.0f;
-
-
-	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }

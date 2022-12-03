@@ -19,15 +19,23 @@ public:
 
 	void AddAnimMontage(int _Key, UAnimMontage* _Montage);
 
+	template<typename EnumType>
+	void SetDefaultMontage(EnumType _Key)
+	{
+		SetDefaultMontage(static_cast<int>(_Key));
+	}
+
+	void SetDefaultMontage(int _Key);
+
 
 	template<typename EnumType>
-	void ChangeAnimMontage(EnumType _Key, float _MinAnimationPercent = 0.f, bool Force = false)
+	void ChangeAnimMontage(EnumType _Key, bool Force = false)
 	{
-		ChangeAnimMontage(static_cast<int>(_Key), _MinAnimationPercent, Force);
+		ChangeAnimMontage(static_cast<int>(_Key), Force);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	void ChangeAnimMontage(int _Key, float _MinAnimationPercent = 0.f, bool Force = false);
+	void ChangeAnimMontage(int _Key, bool Force = false);
 
 	template<typename EnumType>
 	FORCEINLINE bool IsAnimMontage(EnumType _Key)	const
@@ -37,13 +45,7 @@ public:
 
 	FORCEINLINE bool IsAnimMontage(int _Key) const
 	{
-		return m_ChangeAnimationKey == _Key;
-	}
-
-
-	FORCEINLINE void SetMinAnimationPercent(float _MinPercent = 0.0f)
-	{
-		m_MinAnimationPercent = _MinPercent;
+		return m_CurrentAnimationKey == _Key;
 	}
 
 	template<typename EnumType>
@@ -56,7 +58,7 @@ public:
 
 	UAnimMontage* GetCurrentMontage()
 	{
-		UAnimMontage** Anim = m_Animations.Find(m_ChangeAnimationKey);
+		UAnimMontage** Anim = m_Animations.Find(m_CurrentAnimationKey);
 
 		if (nullptr == Anim)
 		{
@@ -73,12 +75,10 @@ private:
 	UPROPERTY(Category = "AnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<int, UAnimMontage*> m_Animations;
 
-	int m_ChangeAnimationKey;
+	int m_CurrentAnimationKey;
 
-	float m_AnimationTime;
-	float m_AnimationLen;
-	float m_AnimationPercent;
-	float m_MinAnimationPercent;
+	int	m_DefaultKey;
+	float m_Time;
 
 protected:
 	// 이녀석이 만들어질때 이니셜라이즈 할 문제가 있다면 이녀석으로

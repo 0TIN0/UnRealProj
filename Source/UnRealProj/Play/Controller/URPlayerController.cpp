@@ -16,6 +16,7 @@ AURPlayerController::AURPlayerController()	:
 void AURPlayerController::InputClickPressed()
 {
 	m_ClickMouse = true;
+	m_PlayCharacter->SetIsMoving(true);
 
 	//m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
 }
@@ -23,6 +24,7 @@ void AURPlayerController::InputClickPressed()
 void AURPlayerController::InputClickReleased()
 {
 	m_ClickMouse = false;
+	m_PlayCharacter->SetIsMoving(false);
 }
 
 void AURPlayerController::SetNewDestination(const FVector& DestLocation)

@@ -20,6 +20,7 @@ protected:
 private:
 	const FURItemData* m_Data;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UImage* m_Image;
 
 	class UTextBlock* m_ItemCountText;
@@ -40,6 +41,25 @@ public:
 	}
 
 	void SetItemData(const FURItemData* _Data);
+
+	UFUNCTION(BlueprintCallable, Category = "Contents", meta = (AllowPrivateAccess = "true"))
+	class UImage* GetItemSlotImage()	const
+	{
+		return m_Image;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Contents", meta = (AllowPrivateAccess = "true"))
+	FName GetIconDisPlayName()	const
+	{
+		return m_Data->DisplayName;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Contents", meta = (AllowPrivateAccess = "true"))
+	void SetItemIconImage(UImage* _Image)
+	{
+		m_Image = _Image;
+	}
+
 
 private:
 	UFUNCTION(BlueprintCallable, Category = "Contents", meta = (AllowPrivateAccess = "true"))

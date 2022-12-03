@@ -10,10 +10,18 @@ UENUM(BlueprintType)
 enum class PlayerAnimationEx : uint8
 {
 	// 1100 
-	Min UMETA(DisplayName = "Don't touch"),
-	Skill1 = static_cast<int>(DefaultAnimation::Max) UMETA(DisplayName = "Skill1"),
-	Skill2 UMETA(DisplayName = "Skill2"),
-	Skill3 UMETA(DisplayName = "Skill3"),
+	Default UMETA(DisplayName = "애니메이션 지정안됨"),
+	Idle UMETA(DisplayName = "서있는 모션"),
+	Left UMETA(DisplayName = "왼쪽"),
+	Right  UMETA(DisplayName = "오른쪽"),
+	Forward UMETA(DisplayName = "앞"),
+	BackWard UMETA(DisplayName = "뒤"),
+	Attack UMETA(DisplayName = "공격모션"),
+	Hit UMETA(DisplayName = "히트모션"),
+	Max UMETA(DisplayName = "최대치"),
+	Skill1 UMETA(DisplayName = "SkillQ"),
+	Skill2 UMETA(DisplayName = "SkillW"),
+	Skill3 UMETA(DisplayName = "SkillE")
 };
 
 UCLASS()
@@ -46,12 +54,19 @@ private:
 
 	double m_MP;
 
+	bool m_IsMoveing;
+
 	bool m_IsSkillW;
+
+	double m_SkillQConsumedMP;
+	double m_SkillWConsumedMP;
 
 
 	// Skill
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<class AActor>	m_SpawnActorClass;
+
+	class APlayerController* m_PlayerController;
 
 public:
 	APlayCharacter();
@@ -91,6 +106,9 @@ public:
 		m_HPPercent = _Perc;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void ReSetHPPercent();
+
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE double GetHPPercent()
@@ -117,6 +135,13 @@ public:
 		m_IsSkillW = _WSkillEnable;
 	}
 
+	void SetIsMoving(bool _Enable)
+	{
+		m_IsMoveing = _Enable;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		double GetMaxHP();
 
 protected:
 	void BeginPlay() override;
@@ -134,6 +159,6 @@ protected:
 
 protected:
 
-	void CallDamage(double _Damage) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
 
 };

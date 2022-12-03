@@ -27,7 +27,7 @@ public:
 protected:
 	void DamageOn() override;
 	void DamageOff() override;
-	void CallDamage(double _Damage) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
 
 
 private:

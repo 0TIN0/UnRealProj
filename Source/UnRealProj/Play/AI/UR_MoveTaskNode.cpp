@@ -35,10 +35,33 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	if (Monster->GetTargetDir(TargetActor).Size() < MonsterInfo->AttRange)
 	{
-		//Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+		Monster->ResetPath();
 		return EBTNodeResult::Failed;
 	}
+	if (nullptr != Monster->GetPath())
+	{
+		if (false == Monster->PathMove())
+		{
+			Monster->ResetPath();
+			return EBTNodeResult::InProgress;
+		}
 
+		if (100.0f <= Monster->GetLastPathPointToTargetDis(TargetActor->GetActorLocation()))
+		{
+			Monster->ResetPath();
+			return EBTNodeResult::InProgress;
+		}
+	}
+
+	UNavigationPath* FindPath = Monster->PathFind(TargetActor);
+
+
+	if (nullptr != FindPath && false == FindPath->PathPoints.IsEmpty())
+	{
+		Monster->SetPath(FindPath, false);
+		Monster->PathMove();
+		return EBTNodeResult::InProgress;
+	}
 
 	Monster->SetTargetLook(TargetActor);
 	Monster->SetTargetMovementInput(TargetActor);

@@ -22,12 +22,13 @@ enum class DefaultAnimation : uint8
 	// 1100 
 	Default UMETA(DisplayName = "애니메이션 지정안됨"),
 	Idle UMETA(DisplayName = "서있는 모션"),
-	Left UMETA(DisplayName = "왼쪽"),      // 0001
-	Right  UMETA(DisplayName = "오른쪽"),  // 0010
-	Forward UMETA(DisplayName = "앞"), // 0100
-	BackWard UMETA(DisplayName = "뒤"),  // 1000
-	Attack UMETA(DisplayName = "공격모션"),  // 1000
-	Max UMETA(DisplayName = "최대치"),  // 1000
+	Left UMETA(DisplayName = "왼쪽"),
+	Right  UMETA(DisplayName = "오른쪽"),
+	Forward UMETA(DisplayName = "앞"),
+	BackWard UMETA(DisplayName = "뒤"),
+	Attack UMETA(DisplayName = "공격모션"),
+	Hit UMETA(DisplayName = "히트모션"),
+	Max UMETA(DisplayName = "최대치"),
 };
 
 UENUM(BlueprintType)

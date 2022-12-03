@@ -15,7 +15,6 @@ void UUR_AttackAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 		return;
 	}
 
-	Character->GetAnimationInstance()->SetMinAnimationPercent(m_MinAnimationPercent);
 	Character->AttackOn();
 
 	//UE_LOG(LogTemp, Error, TEXT("Attack Start!"));
