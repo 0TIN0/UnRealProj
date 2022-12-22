@@ -4,23 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "UR_BossTurnTaskNode.generated.h"
+#include "UR_KrakenAttackTaskNode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_BossTurnTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_KrakenAttackTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_BossTurnTaskNode();
+	UUR_KrakenAttackTaskNode();
 
 private:
+	float m_WaitTime;
 	class AURAIController* m_Controller;
-	class AUR_BossMonster* m_LichBoss;
-	class AUR_KrakenBoss* m_KrakenBoss;
+	class AUR_KrakenBoss* m_Boss;
+	FRandomStream m_Stream; // 난수 생성기.
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

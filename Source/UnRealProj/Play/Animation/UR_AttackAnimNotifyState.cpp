@@ -43,11 +43,10 @@ void UUR_AttackAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAni
 		return;
 	}
 
-	if (m_IsSkillW)
+	/*if (m_IsSkillW)
 	{
-		Cast<APlayCharacter>(Character)->SetSkillWEnable(!m_IsSkillW);
-	}
-
+		Cast<APlayCharacter>(Character)->SetESkillEnable(!m_IsSkillW);
+	}*/
 
 	Character->GetAnimationInstance()->ChangeAnimMontage(m_EndChangeAnimation);
 }

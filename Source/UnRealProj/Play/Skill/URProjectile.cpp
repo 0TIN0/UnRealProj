@@ -4,8 +4,12 @@
 #include "URProjectile.h"
 #include "Components/SphereComponent.h"
 #include "Components/SceneComponent.h"
-#include "URCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "../URCharacter.h"
+#include "../PlayCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AURProjectile::AURProjectile()
@@ -27,6 +31,7 @@ AURProjectile::AURProjectile()
 
 	// 이래야 중력을 받고 떨어지지 않는다. 미사일의 경우는 1자로 앞으로 나아가기 때문
 	m_ProjectileMovementComponent->ProjectileGravityScale = 0.f;
+	m_ProjectileMovementComponent->bRotationFollowsVelocity = true;
 
 	m_Damage = 5.f;
 }
@@ -35,7 +40,7 @@ AURProjectile::AURProjectile()
 void AURProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -43,7 +48,7 @@ void AURProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	m_ProjectileMovementComponent->Velocity = GetActorForwardVector() * m_Speed;
+	m_ProjectileMovementComponent->Velocity = m_SkillDir * m_Speed;
 
 	if (0.0f >= (m_LifeTime -= DeltaTime))
 	{

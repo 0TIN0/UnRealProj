@@ -3,7 +3,11 @@
 
 #include "Play/Animation/UR_CreateObjAnimNotifyState.h"
 #include "Global/URBlueprintFunctionLibrary.h"
-#include "../URProjectile.h"
+#include "../Skill/URProjectile.h"
+#include "../Monster.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -18,21 +22,62 @@ void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,
 		return;
 	}
 
-	// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
-	FVector Pos = MeshComp->GetSocketLocation(m_SocketName);
+	switch (m_ActorType)
+	{
+	case ActorType::Normal:
+	{
+		TArray<AMonster*> ArrayActors;
+		AURCharacter* Player = MeshComp->GetOwner<AURCharacter>();
+		
+		UWorld* World = Player->GetWorld();
+		TActorIterator<AMonster> iter(World);
 
-	FTransform SpawnTransform = FTransform(Pos);
+		for (; iter; ++iter)
+		{
+			AActor* Actor = *iter;
+			double Dist = Player->GetTargetDir(Actor).Size();
 
-	SpawnTransform.SetRotation(MeshComp->GetOwner()->GetTransform().GetRotation());
+			if (Dist < 1000.0)
+			{
+				ArrayActors.Push((AMonster*)Actor);
+			}
+		}
 
-	// 새로운 엑터를 만들어준다.
-	AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
+		for (auto iter1 : ArrayActors)
+		{
+			FVector Pos = iter1->GetActorLocation();
 
-	AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
+			FTransform SpawnTransform = FTransform(Pos);
 
-	if (!Projectile)
-		return;
+			// 새로운 엑터를 만들어준다.
+			AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
+		}
 
-	// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
-	Projectile->SetInfo(m_CollisionProfileName, m_Speed, m_LifeTime);
+
+	}
+		break;
+	case ActorType::Projectile:
+	{
+		// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
+		FVector Pos = MeshComp->GetSocketLocation(m_SocketName);
+		Pos.Z += m_AddLocationZ;
+
+		FTransform SpawnTransform = FTransform(Pos);
+
+		SpawnTransform.SetRotation(MeshComp->GetOwner()->GetTransform().GetRotation());
+
+		// 새로운 엑터를 만들어준다.
+		AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
+
+		AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
+
+		if (!Projectile)
+			return;
+
+		// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
+		Projectile->SetInfo(m_CollisionProfileName, m_Speed, m_LifeTime);
+	}
+		break;
+	}
+	
 }

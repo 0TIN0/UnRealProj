@@ -2,18 +2,23 @@
 
 
 #include "Monster.h"
+#include "PlayCharacter.h"
 #include "Global/URBlueprintFunctionLibrary.h"
 #include "Controller/URMonsterController.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Global/URStructs.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 AMonster::AMonster()	:
-	m_IsDamageCheck(false)
+	m_IsDamageCheck(false),
+	m_IsUltimateHit(false),
+	m_PushTime(1.f)
 {
+	PrimaryActorTick.bCanEverTick = true;
 	AIControllerClass = AURMonsterController::StaticClass();
 
 	Tags.Add(FName("Monster"));
@@ -119,6 +124,33 @@ void AMonster::BeginPlay()
 	int32 Data = Instance->GetRandomStream().RandRange(1, 2);
 
 	m_DropTable = Instance->GetRandomDropData(Data);
+
+	if (GetWorld() != nullptr)
+	{
+		m_Player = UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetPawn<APlayCharacter>();
+	}
+}
+
+void AMonster::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (m_IsUltimateHit)
+	{
+		m_PushTime -= DeltaTime;
+
+		if (m_PushTime < 0.f)
+		{
+			m_PushTime = 1.f;
+			m_IsUltimateHit = false;
+			GetCharacterMovement()->MaxAcceleration = 300.f;	// 300
+			GetCharacterMovement()->MaxWalkSpeed = 400.f;	//400
+		}
+
+		SetDirMovementInput(m_UltimateHitDir);
+
+
+	}
 }
 
 void AMonster::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -177,6 +209,8 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor)
 	if (IsDeath())
 	{
 		ItemDrop(m_DropTable);
+
+		m_Player->AddMonsterCount();
 
 		Destroy();
 	}

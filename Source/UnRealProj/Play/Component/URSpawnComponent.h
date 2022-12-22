@@ -1,10 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "URSpawnComponent.generated.h"
+
+UENUM(BlueprintType)
+enum class SPAWN_TYPE : uint8
+{
+	Monster UMETA(DisplayName = "ëª¬ìŠ¤í„°"),
+	Kraken UMETA(DisplayName = "í¬ë¼ì¼„"),
+	Lich UMETA(DisplayName = "ë¦¬ì¹˜")
+};
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -26,28 +34,34 @@ protected:
 	void DebugDraw();
 
 private:
-	// ¾î¶² ¾×ÅÍ¸¦ »ı¼ºÇÒ°Å³Ä?
+	// ì–´ë–¤ëª¹ì„ ì†Œí™˜í• ê±´ì§€ì˜ íƒ€ì…
+	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		SPAWN_TYPE m_SpawnType; 
+
+	// ì–´ë–¤ ì•¡í„°ë¥¼ ìƒì„±í• ê±°ëƒ?
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<class AActor>> m_SpawnActorsClass;
 
-	// ¾ó¸¶¸¸¿¡ »ı¼ºÇÒ°Å³Ä?
+	// ì–¼ë§ˆë§Œì— ìƒì„±í• ê±°ëƒ?
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float m_SpawnTime;
 
-	// ÇÑ¹ø¿¡ ¾ó¸¶³ª ¸¸µé°Å³Ä.
+	// í•œë²ˆì— ì–¼ë§ˆë‚˜ ë§Œë“¤ê±°ëƒ.
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	int m_SpawnCount;
 
-	// ÃÖ´ë ¸î¸¶¸® ±îÁö ÇÒ°Å³Ä?
+	// ìµœëŒ€ ëª‡ë§ˆë¦¬ ê¹Œì§€ í• ê±°ëƒ?
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	int m_MaxCount; // -1 ÀÌ¶ó¸é Á¦ÇÑ ¾øÀ½ °è¼Ó»ı¼º
+	int m_MaxCount; // -1 ì´ë¼ë©´ ì œí•œ ì—†ìŒ ê³„ì†ìƒì„±
 
-	// ¿øÇüÀ¸·Î »ı°¢(¿øÇüÀÇ ¹üÀ§)
+	// ì›í˜•ìœ¼ë¡œ ìƒê°(ì›í˜•ì˜ ë²”ìœ„)
 	UPROPERTY(Category = "Spawner Setting", EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	float m_SpawnRange; // 0 ÀÌ¸é ±×³É ±× À§Ä¡¿¡ »ı¼ºµÇ´Â°Å
+	float m_SpawnRange; // 0 ì´ë©´ ê·¸ëƒ¥ ê·¸ ìœ„ì¹˜ì— ìƒì„±ë˜ëŠ”ê±°
 
 	TArray<TObjectPtr<AActor>> m_SpawnActors;
 
-		// ´ç¿¬È÷ 
-	FRandomStream m_Stream; // ³­¼ö »ı¼º±â.
+		// ë‹¹ì—°íˆ 
+	FRandomStream m_Stream; // ë‚œìˆ˜ ìƒì„±ê¸°.
+
+
 };

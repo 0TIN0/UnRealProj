@@ -10,21 +10,21 @@ AURPlayerController::AURPlayerController()	:
 	m_PlayerToDestDist(120.f)
 {
 	// 게임내에서 마우스 커서가 보이도록 해줌.
-	bShowMouseCursor = true;
+	//bShowMouseCursor = true;
 }
 
 void AURPlayerController::InputClickPressed()
 {
-	m_ClickMouse = true;
-	m_PlayCharacter->SetIsMoving(true);
+	//m_ClickMouse = true;
+	//m_PlayCharacter->SetIsMoving(true);
 
 	//m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
 }
 
 void AURPlayerController::InputClickReleased()
 {
-	m_ClickMouse = false;
-	m_PlayCharacter->SetIsMoving(false);
+	//m_ClickMouse = false;
+	//m_PlayCharacter->SetIsMoving(false);
 }
 
 void AURPlayerController::SetNewDestination(const FVector& DestLocation)
@@ -63,8 +63,8 @@ void AURPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction(FName(TEXT("MoveClick")), EInputEvent::IE_Pressed, this, &AURPlayerController::InputClickPressed);
-	InputComponent->BindAction(FName(TEXT("MoveClick")), EInputEvent::IE_Released, this, &AURPlayerController::InputClickReleased);
+	//InputComponent->BindAction(FName(TEXT("MoveClick")), EInputEvent::IE_Pressed, this, &AURPlayerController::InputClickPressed);
+	//InputComponent->BindAction(FName(TEXT("MoveClick")), EInputEvent::IE_Released, this, &AURPlayerController::InputClickReleased);
 
 }
 
@@ -72,7 +72,7 @@ void AURPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	if (m_ClickMouse && !m_PlayCharacter->IsAttack())
+	/*if (m_ClickMouse && !m_PlayCharacter->IsAttack())
 	{
 		MoveToMouseCursor();
 	}
@@ -86,12 +86,12 @@ void AURPlayerController::PlayerTick(float DeltaTime)
 	{
 		m_HitPos = FVector(0.f, 0.f, 0.f);
 		m_PlayCharacter->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
-	}
+	}*/
 }
 
 void AURPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	m_PlayCharacter = Cast<APlayCharacter>(GetPawn());
+	//m_PlayCharacter = Cast<APlayCharacter>(GetPawn());
 }

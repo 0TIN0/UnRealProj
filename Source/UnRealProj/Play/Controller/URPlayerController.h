@@ -29,6 +29,7 @@ public:
 		return m_HitPos;
 	}
 
+
 public:
 	void InputClickPressed();
 	void InputClickReleased();

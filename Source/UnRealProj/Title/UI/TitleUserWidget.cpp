@@ -7,5 +7,5 @@
 void UTitleUserWidget::TitleStartEvent()
 {
 	UE_LOG(LogTemp, Error, TEXT("버튼클릭!"));
-	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("PlayLevel")));
+	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("GothicTemple")));
 }

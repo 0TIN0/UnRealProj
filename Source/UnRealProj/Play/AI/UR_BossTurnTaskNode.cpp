@@ -4,10 +4,12 @@
 #include "Play/AI/UR_BossTurnTaskNode.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "../UR_BossMonster.h"
+#include "../Boss/UR_BossMonster.h"
+#include "../Boss/UR_KrakenBoss.h"
 #include "Play/Controller/URAIController.h"
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UUR_BossTurnTaskNode::UUR_BossTurnTaskNode()
 {
@@ -21,67 +23,130 @@ EBTNodeResult::Type UUR_BossTurnTaskNode::ExecuteTask(UBehaviorTreeComponent& Ow
 	if (!m_Controller)
 		m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if (!m_Boss)
-		m_Boss = m_Controller->GetPawn<AUR_BossMonster>();
+	if (!m_LichBoss)
+		m_LichBoss = m_Controller->GetPawn<AUR_BossMonster>();
 
-	UAnimMontage* FindMontage = m_Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
-	if (m_Boss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+	if (m_LichBoss)
 	{
-		return EBTNodeResult::Failed;
+		UAnimMontage* FindMontage = m_LichBoss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
+		if (m_LichBoss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+		{
+			return EBTNodeResult::Failed;
+		}
+
+		const FURMonsterDataInfo* MonsterInfo = m_LichBoss->GetMonsterData();
+
+		UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
+
+		if (!Target)
+		{
+			return EBTNodeResult::Succeeded;
+		}
+
+		const BossAnimation Anim = BossAnimation::Skill1;
+
+		if (!m_LichBoss->FindBossAnimMontage(Anim))
+		{
+			return EBTNodeResult::Succeeded;
+		}
+
+		AActor* TargetActor = Cast<AActor>(Target);
+
+		m_LichBoss->SetTargetLook(TargetActor);
+		m_LichBoss->SetTargetMovementInput(TargetActor);
+
+		auto forwardVect = m_LichBoss->GetActorForwardVector();    // forward 벡터
+		FVector A = (TargetActor->GetActorLocation() - m_LichBoss->GetActorLocation());                   // A 벡터
+		A.Normalize();
+
+		float dot = FVector::DotProduct(forwardVect, A);
+		float angle = FMath::RadiansToDegrees(FMath::Acos(dot));
+
+		if (angle > -5 || angle < 5)
+		{
+			return EBTNodeResult::Succeeded;
+		}
 	}
-
-	const FURMonsterDataInfo* MonsterInfo = m_Boss->GetMonsterData();
-
-	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
-
-	if (!Target)
+	else
 	{
-		return EBTNodeResult::Succeeded;
+		m_KrakenBoss = m_Controller->GetPawn<AUR_KrakenBoss>();
+
+		const FURMonsterDataInfo* MonsterInfo = m_KrakenBoss->GetKrakenData();
+
+		UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
+
+		if (!Target)
+		{
+			return EBTNodeResult::Succeeded;
+		}
+
+		UAnimMontage* Montage = m_KrakenBoss->GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack);
+
+		if (!m_KrakenBoss->GetAnimationInstance()->Montage_IsPlaying(Montage))
+		{
+		}
+
+		AActor* TargetActor = Cast<AActor>(Target);
+
+		if (m_KrakenBoss->GetTargetDir(TargetActor).Size() < MonsterInfo->AttRange)
+		{
+			//Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+			return EBTNodeResult::Succeeded;
+		}
+
+		//m_KrakenBoss->SetTargetLook(TargetActor);
+		//m_KrakenBoss->SetTargetMovementInput(TargetActor);
+
+		FVector ForwardDir = m_KrakenBoss->GetActorForwardVector();    // forward 벡터
+		FVector TargetDir = (TargetActor->GetActorLocation() - m_KrakenBoss->GetActorLocation());                   // Target 벡터
+		TargetDir = TargetDir.GetSafeNormal();
+		FVector UpDir = ForwardDir.Cross(m_KrakenBoss->GetActorRightVector());	// Up 벡터
+		// 보스의 정면, 타겟, 업벡터를 이용해서 Target이 왼쪽에 있는지 오른쪽에 있는지 판단
+		//float Value = GetBasisDeterminantSign(ForwardDir, TargetDir, UpDir);
+
+		//double Value = FVector::DotProduct(UpDir,ForwardDir.Cross(TargetDir));
+
+		//// 오른쪽
+		//if (Value > 0.f)
+		//{
+		//	FRotator Rot = FRotator(0.f, 0.5f, 0.f);
+		//	m_KrakenBoss->AddActorWorldRotation(Rot);
+		//}
+		//// 왼쪽
+		//else if (Value < 0.f)
+		//{
+		//	FRotator Rot = FRotator(0.f, -0.5f, 0.f);
+		//	m_KrakenBoss->AddActorWorldRotation(Rot);
+		//}
+		//else
+		//{
+		//	EBTNodeResult::Type::Succeeded;
+		//}
+
+		float Dot = FVector::DotProduct(ForwardDir, TargetDir);
+		float Angle = FMath::RadiansToDegrees(FMath::Acos(Dot));
+		FVector CrossPrdt = FVector::CrossProduct(ForwardDir, TargetDir);
+
+		float Delta = GetWorld()->DeltaTimeSeconds;
+		float YawDelta = 0;
+		if (CrossPrdt.Z < -0.05f)
+		{
+			YawDelta = Angle * Delta * -1;
+		}
+		else if(CrossPrdt.Z > 0.05f)
+		{
+			YawDelta = Angle * Delta;
+		}
+		else
+		{
+			return EBTNodeResult::Type::Succeeded;
+		}
+		YawDelta *= 2.f;
+		FRotator DeltaRotation = FRotator(0, YawDelta, 0);   //Yaw
+
+		// 각도가 클 수록 빠르게 회전을 하게된다.
+		m_KrakenBoss->AddActorWorldRotation(DeltaRotation);
 	}
-
-	const BossAnimation Anim = BossAnimation::Skill1;
-
-	if (!m_Boss->FindBossAnimMontage(Anim))
-	{
-		return EBTNodeResult::Succeeded;
-	}
-
-
-	AActor* TargetActor = Cast<AActor>(Target);
-
-	//FVector Dir = TargetActor->GetActorLocation() - m_Boss->GetActorLocation();
-
-	//if (m_Boss->GetTargetDir(TargetActor).Size() < MonsterInfo->SkillRange)
-	//{
-	//	//Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
-	//	return EBTNodeResult::Failed;
-	//}
-
-
-	m_Boss->SetTargetLook(TargetActor);
-	m_Boss->SetTargetMovementInput(TargetActor);
-	//m_Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
-
-	//FVector Dir = TargetActor->GetActorLocation() - m_Boss->GetActorLocation();
-
-	//if (m_Boss->GetTargetDir(TargetActor).Size() < MonsterInfo->SkillRange)
-	//{
-	//	//Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
-	//	return EBTNodeResult::Failed;
-	//}
-	auto forwardVect = m_Boss->GetActorForwardVector();    // forward 벡터
-	FVector A = (TargetActor->GetActorLocation() - m_Boss->GetActorLocation());                   // A 벡터
-	A.Normalize();
-
-	float dot = FVector::DotProduct(forwardVect, A);
-	float angle = FMath::RadiansToDegrees(FMath::Acos(dot));
-
-	if (angle > -5 || angle < 5)
-	{
-		return EBTNodeResult::Succeeded;
-	}
-	//m_Boss->SetTargetLook(TargetActor);
-	//m_Boss->SetTargetMovementInput(TargetActor);
 
 
 	return EBTNodeResult::Type::InProgress;

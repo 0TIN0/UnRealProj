@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/UR_BossMonster.h"
-#include "Controller/URMonsterController.h"
+#include "Play/Boss/UR_BossMonster.h"
+#include "../Controller/URMonsterController.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"

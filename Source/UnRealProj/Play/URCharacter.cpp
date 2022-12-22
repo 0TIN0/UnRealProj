@@ -4,11 +4,13 @@
 #include "URCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Global/URGameInstance.h"
+#include "Global/URStructs.h"
 #include "URItemActor.h"
 #include "Kismet/GamePlayStatics.h"
 
 // Sets default values
-AURCharacter::AURCharacter()
+AURCharacter::AURCharacter()	:
+	m_IsAttack(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -52,6 +54,26 @@ AActor* AURCharacter::TargetSearch(FName _Name, float _Range)
 	}
 
 	return nullptr;
+}
+
+void AURCharacter::ReSetHPPercent()
+{
+	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
+}
+
+double AURCharacter::GetMaxHP()
+{
+	return m_PlayerInfo->MaxHP;
+}
+
+double AURCharacter::GetStamina()
+{
+	return m_Stamina;
+}
+
+double AURCharacter::GetMaxStamina()
+{
+	return m_PlayerInfo->MaxStamina;
 }
 
 bool AURCharacter::GetIsRangeInTarget(AActor* _Target, float _Length)

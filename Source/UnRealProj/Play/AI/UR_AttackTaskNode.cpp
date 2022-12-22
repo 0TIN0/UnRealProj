@@ -21,6 +21,11 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
 
+	if (Monster->GetUltimateHitEnable())
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
 
 	if (nullptr == Target)

@@ -47,11 +47,92 @@ public:
 		return m_HP;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE double GetCharacterMaxHP()
+	{
+		return m_MaxHP;
+	}
+
 
 	FORCEINLINE bool IsDeath()
 	{
 		return m_HP <= 0;
 	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE void SetHPPercent(double _Perc)
+	{
+		m_HPPercent = _Perc;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void ReSetHPPercent();
+
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE double GetHPPercent()
+	{
+		return m_HPPercent;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE void SetMPPercent(double _Perc)
+	{
+		m_MPPercent = _Perc;
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		double GetMaxHP();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		FORCEINLINE double GetMPPercent()
+	{
+		return m_MPPercent;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		double GetStamina();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		double GetMaxStamina();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetQSkillCoolTime()
+	{
+		return m_QSkillCurCollTime;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetESkillCoolTime()
+	{
+		return m_ESkillCurCollTime;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetRSkillCoolTime()
+	{
+		return m_RSkillCurCollTime;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetQSkillMaxCoolTime()
+	{
+		return m_QSkillMaxCollTime;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetESkillMaxCoolTime()
+	{
+		return m_ESkillMaxCollTime;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		float GetRSkillMaxCoolTime()
+	{
+		return m_RSkillMaxCollTime;
+	}
+
 
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
@@ -156,11 +237,34 @@ private:
 
 	class UURAnimInstance* m_AnimationInstance;
 
+	// 네비게이션 경로 정보를 저장하는 변수
+	UNavigationPath* m_Path;
+
+protected:
+	struct FURPlayerDataInfo* m_PlayerInfo;
+
 	bool m_IsAttack;
 
 	double m_HP;
+	double m_MaxHP;
 
-	// 네비게이션 경로 정보를 저장하는 변수
-	UNavigationPath* m_Path;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = User, meta = (AllowPrivateAccess = "true"))
+		float m_HPPercent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = User, meta = (AllowPrivateAccess = "true"))
+		float m_MPPercent;
+
+	double m_MP;
+
+	float m_Stamina;
+
+	// Skill coll
+	float m_QSkillCurCollTime;
+	float m_ESkillCurCollTime;
+	float m_RSkillCurCollTime;
+
+	int m_QSkillMaxCollTime;
+	int m_ESkillMaxCollTime;
+	int m_RSkillMaxCollTime;
 
 };

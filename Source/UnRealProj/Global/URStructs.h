@@ -63,13 +63,23 @@ struct FURPlayerDataInfo : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double MaxMP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double Def;
+	float Stamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Def;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double MinAttack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double MaxAttack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double Speed;
+	float QSkillCollTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ESkillCollTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RSkillCollTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<DefaultAnimation, class UAnimMontage*> Animations;
 };

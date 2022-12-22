@@ -41,3 +41,13 @@ enum class ContentsItemType : uint8
 	// 겹칠 수 있는 아이템
 	Consumable UMETA(DisPlayName = "소비")
 };
+
+UENUM(BlueprintType)
+enum class QuestProgress : uint8
+{
+	Default UMETA(DisplayName = "디폴트"),
+	FirstStageMonster UMETA(DisplayName = "1Stage 몬스터"),
+	FirstStageBoss UMETA(DisplayName = "1Stage 보스"),
+	SecondStageMonster UMETA(DisplayName = "2Stage 몬스터"),
+	SecondStageBoss UMETA(DisplayName = "2Stage 보스"),
+};

@@ -46,8 +46,34 @@ private:
 
 	bool m_IsDamageCheck;
 
+	bool m_IsUltimateHit;
+
+	float m_PushTime;
+
+	FVector m_UltimateHitDir;
+
+	class APlayCharacter* m_Player;
+
+public:
+	void SetUltimateHitDir(const FVector& Dir)
+	{
+		m_UltimateHitDir = Dir;
+	}
+
+	void SetUltimateHitEnable(bool Enable)
+	{
+		m_IsUltimateHit = Enable;
+	}
+
+	bool GetUltimateHitEnable()	 const
+	{
+		return m_IsUltimateHit;
+	}
+
 protected:
 	void BeginPlay() override;
+
+	void Tick(float DeltaTime) override;
 
 	void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 

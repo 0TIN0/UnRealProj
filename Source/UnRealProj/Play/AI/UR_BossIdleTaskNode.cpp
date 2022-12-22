@@ -5,7 +5,8 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "../Controller/URAIController.h"
-#include "../UR_BossMonster.h"
+#include "../Boss/UR_BossMonster.h"
+#include "../Boss/UR_KrakenBoss.h"
 #include "Global/URStructs.h"
 
 UUR_BossIdleTaskNode::UUR_BossIdleTaskNode()
@@ -20,25 +21,48 @@ EBTNodeResult::Type UUR_BossIdleTaskNode::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	AUR_BossMonster* Boss = Controller->GetPawn<AUR_BossMonster>();
-	const FURMonsterDataInfo* MonsterInfo = Boss->GetMonsterData();
-
-	UAnimMontage* FindMontage = Boss->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
-	if (Boss->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+	AUR_BossMonster* Lich = Controller->GetPawn<AUR_BossMonster>();
+	if (Lich)
 	{
-		return EBTNodeResult::Failed;
+		const FURMonsterDataInfo* MonsterInfo = Lich->GetMonsterData();
+
+		UAnimMontage* FindMontage = Lich->GetAnimationInstance()->GetAnimation(BossAnimation::Spawn);
+		if (Lich->GetAnimationInstance()->Montage_IsPlaying(FindMontage))
+		{
+			return EBTNodeResult::Failed;
+		}
+
+		UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
+
+		if (Target)
+		{
+			return EBTNodeResult::Failed;
+		}
+
+		Lich->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+
+		return EBTNodeResult::InProgress;
+	}
+	else
+	{
+		AUR_KrakenBoss* Kraken = Controller->GetPawn<AUR_KrakenBoss>();
+
+		if (Kraken)
+		{
+			UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
+
+			if (Target)
+			{
+				return EBTNodeResult::Failed;
+			}
+
+			Kraken->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+
+			return EBTNodeResult::InProgress;
+		}
 	}
 
-	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
-
-	if (Target)
-	{
-		return EBTNodeResult::Failed;
-	}
-
-	Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
-
-	return EBTNodeResult::InProgress;
+	return EBTNodeResult::Failed;
 }
 
 void UUR_BossIdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

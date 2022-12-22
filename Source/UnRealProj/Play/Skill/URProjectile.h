@@ -25,10 +25,16 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* DefaultSceneRoot;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+	FVector m_MuzzleOffset;
+
 	FName m_CollisionProfileName;
 	float m_LifeTime;
 	float m_Speed;
 	float m_Damage;
+
+protected:
+	FVector m_SkillDir;
 
 protected:
 	// Called when the game starts or when spawned

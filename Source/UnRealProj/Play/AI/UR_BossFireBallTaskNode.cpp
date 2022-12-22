@@ -2,7 +2,7 @@
 
 
 #include "Play/AI/UR_BossFireBallTaskNode.h"
-#include "../Play/UR_BossMonster.h"
+#include "../Play/Boss/UR_BossMonster.h"
 #include "Play/Controller/URAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackBoardComponent.h"

@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/Controller/UR_BossController.h"
-#include "../Boss/UR_BossMonster.h"
+#include "Play/Controller/UR_KrakenBossController.h"
+#include "../Boss/UR_KrakenBoss.h"
 #include "Global/URStructs.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-void AUR_BossController::OnPossess(APawn* _Pawn)
+void AUR_KrakenBossController::OnPossess(APawn* _Pawn)
 {
 	Super::OnPossess(_Pawn);
 
-	AUR_BossMonster* Boss = Cast< AUR_BossMonster>(_Pawn);
+	AUR_KrakenBoss* Boss = Cast< AUR_KrakenBoss>(_Pawn);
 
 	if (!Boss)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Boss Cast Error"));
+		UE_LOG(LogTemp, Error, TEXT("KrakenBoss Cast Error"));
 		return;
 	}
 
@@ -24,3 +24,4 @@ void AUR_BossController::OnPossess(APawn* _Pawn)
 
 	double Value = Blackboard->GetValueAsFloat("FindRange");
 }
+

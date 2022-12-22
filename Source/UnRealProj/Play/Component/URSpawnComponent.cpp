@@ -25,6 +25,19 @@ void UURSpawnComponent::BeginPlay()
 	// m_SpawnTime은 에디터 블루프린트에서 설정할 수 있다.
 	PrimaryComponentTick.TickInterval = m_SpawnTime;
 	// ...
+
+	switch (m_SpawnType)
+	{
+	case SPAWN_TYPE::Kraken:
+	case SPAWN_TYPE::Lich:
+	{
+		FVector vecSpawnPos = GetOwner()->GetActorLocation();
+		FTransform SpawnTransform = FTransform(vecSpawnPos);
+
+		AActor* NewActor = GetWorld()->SpawnActor(m_SpawnActorsClass[0], &SpawnTransform);
+	}
+		break;
+	}
 	
 }
 
@@ -37,62 +50,73 @@ void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 #if WITH_EDITOR
 	DebugDraw();
 #endif
-	// 예외처리
-	if (0 == m_MaxCount)
+	switch (m_SpawnType)
 	{
-		return;
-	}
-
-	if (m_SpawnActorsClass.IsEmpty())
+	case SPAWN_TYPE::Monster:
 	{
-		return;
-	}
+		// 예외처리
+		if (0 == m_MaxCount)
+		{
+			return;
+		}
 
-	if (m_SpawnActors.Num() >= m_MaxCount)
-	{
-		return;
-	}
-
-	for (size_t i = 0; i < m_SpawnCount; ++i)
-	{
-		FVector vecSpawnPos;
-
-		// 범위값을 기반으로 랜덤한 float타입 값을 얻어온다.
-		// 하지만 이런식으로 구성을 하면 사각형의 모양이 만들어지게 된다.
-		vecSpawnPos.X = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
-		vecSpawnPos.Y = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
-
-		vecSpawnPos.Normalize();
-
-		vecSpawnPos *= m_Stream.FRandRange(0.f, m_SpawnRange);
-
-		// 기본적으로 0을 중심으로 하고있기 때문에 스폰엑터의 위치 중심으로 바꿔줌
-		vecSpawnPos += GetOwner()->GetActorLocation();
-
-		// 스폰할 수 있는 클래스를 넣어주는데 0 ~ 클래스 개수 - 1을 넣어주어야함
-		// 클래스란 Dragon1, Dragon2등등같은것
-		int RandomSelect = m_Stream.RandRange(0, m_SpawnActorsClass.Num() - 1);
-
-		FTransform SpawnTransform = FTransform(vecSpawnPos);
-
-		// 엑터타입으로 위에서 설정한 랜덤값을 스폰클래스 인덱스값으로 설정하여 해당 녀석을 스폰한다고 얻어옴
-		AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorsClass[RandomSelect], SpawnTransform);
-		NewActor->FinishSpawning(SpawnTransform);
-
-		UURGameInstance* Inst = GetWorld()->GetGameInstance<UURGameInstance>();
-
-		FQuat Quat = FQuat();
-
-		//Quat.Z = static_cast<double>(Inst->GetRandomStream().FRandRange(0, 360));
-		NewActor->SetActorRotation(Quat);
-
-		m_SpawnActors.Add(NewActor);
+		if (m_SpawnActorsClass.IsEmpty())
+		{
+			return;
+		}
 
 		if (m_SpawnActors.Num() >= m_MaxCount)
 		{
 			return;
 		}
+
+		for (size_t i = 0; i < m_SpawnCount; ++i)
+		{
+			UURGameInstance* Inst = GetWorld()->GetGameInstance<UURGameInstance>();
+			FVector vecSpawnPos;
+
+			// 범위값을 기반으로 랜덤한 float타입 값을 얻어온다.
+			// 하지만 이런식으로 구성을 하면 사각형의 모양이 만들어지게 된다.
+			vecSpawnPos.X = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
+			vecSpawnPos.Y = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
+
+			vecSpawnPos.Normalize();
+
+			vecSpawnPos *= m_Stream.FRandRange(0.f, m_SpawnRange);
+
+			// 기본적으로 0을 중심으로 하고있기 때문에 스폰엑터의 위치 중심으로 바꿔줌
+			vecSpawnPos += GetOwner()->GetActorLocation();
+
+			// 스폰할 수 있는 클래스를 넣어주는데 0 ~ 클래스 개수 - 1을 넣어주어야함
+			// 클래스란 Dragon1, Dragon2등등같은것
+			int RandomSelect = m_Stream.RandRange(0, m_SpawnActorsClass.Num() - 1);
+
+			FRotator Rot = FRotator();
+
+			Rot.Yaw += m_Stream.FRandRange(0.0, 360.0);
+
+			FTransform SpawnTransform = FTransform(Rot, vecSpawnPos);
+
+			// 엑터타입으로 위에서 설정한 랜덤값을 스폰클래스 인덱스값으로 설정하여 해당 녀석을 스폰한다고 얻어옴
+			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorsClass[RandomSelect], SpawnTransform);
+
+			//NewActor->SetActorRotation(Quat);
+			NewActor->FinishSpawning(SpawnTransform);
+
+			m_SpawnActors.Add(NewActor);
+
+			if (m_SpawnActors.Num() >= m_MaxCount)
+			{
+				return;
+			}
+		}
 	}
+		break;
+	case SPAWN_TYPE::Kraken:
+	case SPAWN_TYPE::Lich:
+		break;
+	}
+	
 }
 
 void UURSpawnComponent::DebugDraw()

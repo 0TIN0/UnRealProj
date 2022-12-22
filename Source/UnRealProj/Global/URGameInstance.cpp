@@ -38,7 +38,7 @@ UURGameInstance::UURGameInstance()
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("MonsterDatas Null!"));
+            UE_LOG(LogTemp, Error, TEXT("PlayerDatas Null!"));
         }
     }
 
@@ -64,7 +64,7 @@ UURGameInstance::UURGameInstance()
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("MonsterDatas Null!"));
+            UE_LOG(LogTemp, Error, TEXT("ItemDatas Null!"));
         }
     }
 
@@ -82,7 +82,7 @@ UURGameInstance::UURGameInstance()
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("MonsterDatas Null!"));
+            UE_LOG(LogTemp, Error, TEXT("ObjectDatas Null!"));
         }
     }
     
