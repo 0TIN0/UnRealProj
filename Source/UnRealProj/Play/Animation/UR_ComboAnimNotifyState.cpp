@@ -4,7 +4,10 @@
 #include "Play/Animation/UR_ComboAnimNotifyState.h"
 #include "Kismet/GameplayStatics.h"
 
-UUR_ComboAnimNotifyState::UUR_ComboAnimNotifyState()
+UUR_ComboAnimNotifyState::UUR_ComboAnimNotifyState()	:
+	m_ComboChangeAnimation(WarriorAnimation::Default),
+	m_Player(nullptr),
+	m_IsComboAttack(false)
 {
 }
 
@@ -23,6 +26,8 @@ void UUR_ComboAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 	m_Player->AttackOn();
 
 	m_IsComboAttack = false;
+	m_Player->SetIsCombating(true);
+	m_Player->SetIsComboAttack(false);
 }
 
 void UUR_ComboAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -51,5 +56,7 @@ void UUR_ComboAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 		{
 			m_Player->GetAnimationInstance()->ChangeAnimMontage(m_ComboChangeAnimation);
 		}
+
+		m_Player->AttackOff();
 	}
 }

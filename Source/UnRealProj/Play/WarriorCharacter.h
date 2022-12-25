@@ -8,6 +8,13 @@
 #include "Components/TimelineComponent.h"
 #include "WarriorCharacter.generated.h"
 
+enum class EWarriorComboType
+{
+	Default,
+	ComboA,
+	ComboB,
+	ComboC
+};
 
 UENUM(BlueprintType)
 enum class WarriorAnimation : uint8
@@ -39,10 +46,17 @@ enum class WarriorAnimation : uint8
 	Skill2 UMETA(DisplayName = "SkillE"),
 	Skill3 UMETA(DisplayName = "SkillR"),
 	Jump UMETA(DisplayName = "Jump"),
-	Combo1 UMETA(DisplayName = "콤보1"),
-	Combo2 UMETA(DisplayName = "콤보2"),
-	Combo3 UMETA(DisplayName = "콤보3"),
-	Combo4 UMETA(DisplayName = "콤보4"),
+	ComboA1 UMETA(DisplayName = "A콤보1"),
+	ComboA2 UMETA(DisplayName = "A콤보2"),
+	ComboA3 UMETA(DisplayName = "A콤보3"),
+	ComboB1 UMETA(DisplayName = "B콤보1"),
+	ComboB2 UMETA(DisplayName = "B콤보2"),
+	ComboB3 UMETA(DisplayName = "B콤보3"),
+	ComboB4 UMETA(DisplayName = "B콤보4"),
+	ComboC1 UMETA(DisplayName = "C콤보1"),
+	ComboC2 UMETA(DisplayName = "C콤보2"),
+	ComboC3 UMETA(DisplayName = "C콤보3"),
+	ComboC4 UMETA(DisplayName = "C콤보4"),
 	Max UMETA(DisplayName = "최대치")
 };
 
@@ -87,6 +101,8 @@ public:
 	AWarriorCharacter();
 
 private:
+	FRandomStream m_Stream;
+
 	// 기본이외의 동작들
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<WarriorAnimation, UAnimMontage*> m_PlayerAnimations;
@@ -104,6 +120,8 @@ private:
 	class APlayerController* m_PlayerController;
 
 	QuestProgress m_QuestProgress;
+
+	EWarriorComboType m_ComboType;
 
 	bool m_IsMoveing;
 
@@ -350,6 +368,8 @@ private:
 	bool DashJudgeFunc();
 
 	void DashFunc(const FVector& DashDir, const FVector& DashVelocity);
+
+	void TurnFunc();
 
 
 

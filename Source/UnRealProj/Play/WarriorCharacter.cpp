@@ -17,9 +17,12 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Math/UnrealMathUtility.h"
 
 AWarriorCharacter::AWarriorCharacter() :
+	m_Stream(FDateTime::Now().GetTicks()),
 	m_QuestProgress(QuestProgress::Default),
+	m_ComboType(EWarriorComboType::Default),
 	m_IsRun(false),
 	m_IsForwardDown(false),
 	m_IsBackwardDown(false),
@@ -57,15 +60,6 @@ AWarriorCharacter::AWarriorCharacter() :
 
 	RootComponent = Component;
 
-	/*bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;*/
-
-
-	/*GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 940.0f, 0.0f);
-	GetCharacterMovement()->bConstrainToPlane = true;
-	GetCharacterMovement()->bSnapToPlaneAtStart = true;*/
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 
@@ -92,7 +86,10 @@ void AWarriorCharacter::MouseMoveX(float Value)
 	}
 
 
-	AddControllerYawInput(Value * m_MouseXDPI);
+	//AddControllerYawInput(Value * m_MouseXDPI);
+
+	FRotator Rot = FRotator(0.0, 1.0, 0.0);
+	m_CameraSpringArmComponent->AddWorldRotation(Rot * Value);
 }
 
 void AWarriorCharacter::MouseMoveY(float Value)
@@ -140,6 +137,8 @@ void AWarriorCharacter::PlayerLeftMove(float Value)
 	}
 
 	AddMovementInput(-GetActorRightVector(), Value);
+
+	TurnFunc();
 
 	m_IsLeftDown = true;
 
@@ -227,6 +226,9 @@ void AWarriorCharacter::PlayerRightMove(float Value)
 
 
 	AddMovementInput(GetActorRightVector(), Value);
+
+	TurnFunc();
+
 	m_IsRightDown = true;
 
 	if (JudgeFunc())
@@ -314,6 +316,8 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 	m_IsForwardDown = true;
 	AddMovementInput(GetActorForwardVector(), Value);
 
+	TurnFunc();
+
 	if (JudgeFunc())
 	{
 		return;
@@ -356,8 +360,6 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 	}
 
 	AttackOff();
-
-
 }
 
 void AWarriorCharacter::PlayerBackwardMove(float Value)
@@ -369,6 +371,8 @@ void AWarriorCharacter::PlayerBackwardMove(float Value)
 
 	m_IsBackwardDown = true;
 	AddMovementInput(-GetActorForwardVector(), Value);
+
+	TurnFunc();
 
 	if (JudgeFunc())
 	{
@@ -442,16 +446,31 @@ void AWarriorCharacter::LeftAttack()
 		return;
 	}
 
-	GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
-	AttackOn();
+	// 1 ~ 3의 값을 나오도록 콤보가 3개이기 때문
+	m_ComboType = (EWarriorComboType)m_Stream.RandRange(1, 3);
 
-
-
+	switch (m_ComboType)
+	{
+	case EWarriorComboType::ComboA:
+		AttackOn();
+		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+		break;
+	case EWarriorComboType::ComboB:
+		AttackOn();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboB1);
+		break;
+	case EWarriorComboType::ComboC:
+		AttackOn();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboC1);
+		break;
+	}
+	
+	/*FVector ActorPos = GetActorLocation();
+	FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("root")));*/
 }
 
 void AWarriorCharacter::LeftAttackUp()
 {
-	m_IsComboAttack = false;
 }
 
 void AWarriorCharacter::SkillQ()
@@ -621,44 +640,13 @@ void AWarriorCharacter::ShiftKeyDown()
 		return;
 	}
 
+	AttackOff();
+	m_IsComboAttack = false;
+	m_Stamina -= 20.f;
+	
+
 	// 텔레포트 어떤 방향으로 할지 판단하는 함수이다
 	DashToJudge();
-	AttackOff();
-
-	m_Stamina -= 20.f;
-
-	if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashRight);
-	}
-	else if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashLeft);
-	}
-	else if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown && !m_IsBackwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForward);
-	}
-	else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsRightDown && !m_IsLeftDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackward);
-	}
-	else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForwardRight);
-	}
-	else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForwardLeft);
-	}
-	else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackwardRight);
-	}
-	else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
-	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackwardLeft);
-	}
 }
 
 void AWarriorCharacter::ShiftKeyOn()
@@ -803,6 +791,7 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		}
 	}
 
+
 	CombatTick(DeltaTime);
 	CoolTimeTick(DeltaTime);
 }
@@ -837,7 +826,6 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction(FName(TEXT("ShiftKey")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::ShiftKeyDown);
 	PlayerInputComponent->BindAction(FName(TEXT("ShiftKey")), EInputEvent::IE_Released, this, &AWarriorCharacter::ShiftKeyOn);
-
 
 
 	PlayerInputComponent->BindAxis(FName(TEXT("WheelAxis")), this, &AWarriorCharacter::WheelKey);
@@ -895,56 +883,10 @@ void AWarriorCharacter::SetDefaultData()
 
 void AWarriorCharacter::DashToJudge()
 {
-	/*if (m_IsForwardDown && !m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
-	{
-		FVector Location = GetActorLocation() + GetActorForwardVector() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
-	{
-		FVector Location = GetActorLocation() - GetActorForwardVector() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsLeftDown && !m_IsForwardDown && !m_IsBackwardDown && !m_IsRightDown)
-	{
-		FVector Location = GetActorLocation() - GetActorRightVector() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-	{
-		FVector Location = GetActorLocation() + GetActorRightVector() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsForwardDown && m_IsLeftDown)
-	{
-		FVector Location = GetActorLocation() + (GetActorForwardVector() - GetActorRightVector()).GetSafeNormal() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsForwardDown && m_IsRightDown)
-	{
-		FVector Location = GetActorLocation() + (GetActorForwardVector() + GetActorRightVector()).GetSafeNormal() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsBackwardDown && m_IsLeftDown)
-	{
-		FVector Location = GetActorLocation() + (-GetActorForwardVector() - GetActorRightVector()).GetSafeNormal() * m_DashDist;
-		SetActorLocation(Location);
-	}
-
-	else if (m_IsBackwardDown && m_IsRightDown)
-	{
-		FVector Location = GetActorLocation() + (-GetActorForwardVector() + GetActorRightVector()).GetSafeNormal() * m_DashDist;
-		SetActorLocation(Location);
-	}*/
-	FVector InputVec = GetCharacterMovement()->GetLastInputVector();
+	//FVector InputVec = GetCharacterMovement()->GetLastInputVector();
 
 	FHitResult HitResult;
+	FVector InputVec;
 
 	bool BlockingHit = false;
 	bool InitialOverlap = false;
@@ -964,6 +906,47 @@ void AWarriorCharacter::DashToJudge()
 	int32 FaceIndex;
 	FVector TraceStart;
 	FVector TraceEnd;
+
+	if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+	{
+		InputVec = GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashRight);
+	}
+	else if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+	{
+		InputVec = -GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashLeft);
+	}
+	else if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown && !m_IsBackwardDown)
+	{
+		InputVec = GetActorForwardVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForward);
+	}
+	else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsRightDown && !m_IsLeftDown)
+	{
+		InputVec = -GetActorForwardVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackward);
+	}
+	else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+	{
+		InputVec = GetActorForwardVector() + GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForwardRight);
+	}
+	else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+	{
+		InputVec = GetActorForwardVector() - GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashForwardLeft);
+	}
+	else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+	{
+		InputVec = -GetActorForwardVector() + GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackwardRight);
+	}
+	else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+	{
+		InputVec = -GetActorForwardVector() - GetActorRightVector();
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackwardLeft);
+	}
 
 	if (UAIBlueprintHelperLibrary::IsValidAIDirection(InputVec))
 	{
@@ -987,27 +970,7 @@ void AWarriorCharacter::DashToJudge()
 			DashFunc(TraceEnd, InputVec);
 		}
 	}
-	else
-	{
-		FVector EndVec = GetActorForwardVector() * 500.f + GetActorLocation();
-			
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), EndVec, ECollisionChannel::ECC_Visibility))
-		{
-			UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
-				ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
-				ElementIndex, FaceIndex, TraceStart, TraceEnd);
-
-			DashFunc((GetActorForwardVector() * -55.f) + Location, GetActorForwardVector());
-		}
-		else
-		{
-			UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
-				ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
-				ElementIndex, FaceIndex, TraceStart, TraceEnd);
-
-			DashFunc(TraceEnd, GetActorForwardVector());
-		}
-	}
+	
 }
 
 void AWarriorCharacter::CombatTick(float DeltaTime)
@@ -1076,10 +1039,9 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashForwardRight) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashBackwardLeft) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashBackwardRight) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Combo1) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Combo2) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Combo3) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Combo4) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA1) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA2) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA3) ||
 		GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack))
 	{
 		return true;
@@ -1114,6 +1076,19 @@ void AWarriorCharacter::DashFunc(const FVector& DashDir, const FVector& DashVelo
 	m_DashDir = DashDir;
 	m_DashVelocity = DashVelocity;
 	PlayTimeline();
+}
+
+void AWarriorCharacter::TurnFunc()
+{
+	FRotator PlayerRot = GetControlRotation();
+	FRotator CameraRot = m_CameraSpringArmComponent->GetComponentRotation();
+	FRotator Rot = FMath::RInterpTo(GetControlRotation(), m_CameraComponent->GetComponentRotation(),
+		GetWorld()->GetDeltaSeconds(), 5.f);
+
+	Rot.Roll = PlayerRot.Roll;
+	Rot.Pitch = PlayerRot.Pitch;
+
+	GetController()->SetControlRotation(Rot);
 }
 
 void AWarriorCharacter::TimelineCallback(float val)
