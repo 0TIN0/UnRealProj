@@ -4,15 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Global/UREnum.h"
 #include "UR_AttackEndAnimNotifyState.generated.h"
 
-UENUM(BlueprintType)
-enum class UPLAYER_TYPE : uint8
-{
-	Default UMETA(DisplayName = "선택x"),
-	Wizard UMETA(DisplayName = "마법사"),
-	Warrior UMETA(DisplayName = "전사")
-};
 
 UCLASS()
 class UNREALPROJ_API UUR_AttackEndAnimNotifyState : public UAnimNotifyState
@@ -21,7 +15,7 @@ class UNREALPROJ_API UUR_AttackEndAnimNotifyState : public UAnimNotifyState
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		UPLAYER_TYPE m_PlayerType;
+	UPLAYER_TYPE m_PlayerType;
 
 
 protected:

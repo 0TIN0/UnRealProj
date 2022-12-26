@@ -57,6 +57,6 @@ void UUR_ComboAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 			m_Player->GetAnimationInstance()->ChangeAnimMontage(m_ComboChangeAnimation);
 		}
 
-		m_Player->AttackOff();
+		//m_Player->AttackOff();
 	}
 }

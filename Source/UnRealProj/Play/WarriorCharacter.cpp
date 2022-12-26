@@ -18,9 +18,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
+#include "Engine/EngineTypes.h"
+
 
 AWarriorCharacter::AWarriorCharacter() :
 	m_Stream(FDateTime::Now().GetTicks()),
+	m_CombatIdleMontage(nullptr),
 	m_QuestProgress(QuestProgress::Default),
 	m_ComboType(EWarriorComboType::Default),
 	m_IsRun(false),
@@ -39,7 +42,9 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_MoveSpeed(1.f),
 	m_DashDist(600.f),
 	m_IsQuesting(false),
-	m_IsQuestCompletion(false)
+	m_IsQuestCompletion(false),
+	m_OnDash(false),
+	m_IsJump(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -131,7 +136,7 @@ void AWarriorCharacter::PlayerPickingMove()
 
 void AWarriorCharacter::PlayerLeftMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack())
+	if (Value == 0.f || true == IsAttack() || m_IsJump)
 	{
 		return;
 	}
@@ -219,7 +224,7 @@ void AWarriorCharacter::PlayerLeftMove(float Value)
 
 void AWarriorCharacter::PlayerRightMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack())
+	if (Value == 0.f || true == IsAttack() || m_IsJump)
 	{
 		return;
 	}
@@ -308,7 +313,7 @@ void AWarriorCharacter::PlayerRightMove(float Value)
 
 void AWarriorCharacter::PlayerForwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack())
+	if (Value == 0.f || true == IsAttack() || m_IsJump)
 	{
 		return;
 	}
@@ -364,7 +369,7 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 
 void AWarriorCharacter::PlayerBackwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack())
+	if (Value == 0.f || true == IsAttack() || m_IsJump)
 	{
 		return;
 	}
@@ -464,9 +469,6 @@ void AWarriorCharacter::LeftAttack()
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboC1);
 		break;
 	}
-	
-	/*FVector ActorPos = GetActorLocation();
-	FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("root")));*/
 }
 
 void AWarriorCharacter::LeftAttackUp()
@@ -620,6 +622,8 @@ void AWarriorCharacter::CtrlKeyDown()
 {
 	m_IsRun = true;
 	GetCharacterMovement()->MaxWalkSpeed = 1000;
+
+	
 }
 
 void AWarriorCharacter::CtrlKeyOn()
@@ -741,9 +745,18 @@ void AWarriorCharacter::BeginPlay()
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 
+
+	for (auto& Anim : m_PlayerJumpAnimations)
+	{
+		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
+	}
+
+
 	m_PlayerInfo = GetWorld()->GetGameInstance<UURGameInstance>()->GetPlayerData(FName(TEXT("Player2")));
 
 	SetDefaultData();
+
+	m_CombatIdleMontage = GetAnimationInstance()->GetAnimation(WarriorCombatAnimation::CombatIdle);
 }
 
 void AWarriorCharacter::Tick(float DeltaTime)
@@ -791,9 +804,15 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	/*FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("pelvis")));
+	SkeletonPos.Z -= 20.f;
+	SetActorLocation(SkeletonPos);*/
 
+	
 	CombatTick(DeltaTime);
 	CoolTimeTick(DeltaTime);
+
+	JumpTrace();
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -812,8 +831,8 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(FName(TEXT("RightMove")), EInputEvent::IE_Released, this, &AWarriorCharacter::RightKeyEnd);
 	PlayerInputComponent->BindAction(FName(TEXT("BackwardMove")), EInputEvent::IE_Released, this, &AWarriorCharacter::BackwardKeyEnd);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction(FName(TEXT("Jump")), IE_Pressed, this, &AWarriorCharacter::Jump);
+	PlayerInputComponent->BindAction(FName(TEXT("Jump")), IE_Released, this, &AWarriorCharacter::StopJumping);
 
 	PlayerInputComponent->BindAction(FName(TEXT("AttackClick")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::LeftAttack);
 	PlayerInputComponent->BindAction(FName(TEXT("AttackClick")), EInputEvent::IE_Released, this, &AWarriorCharacter::LeftAttackUp);
@@ -831,6 +850,76 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(FName(TEXT("WheelAxis")), this, &AWarriorCharacter::WheelKey);
 
 
+}
+
+void AWarriorCharacter::Jump()
+{
+	Super::Jump();
+
+	m_IsJump = true;
+
+	if (!m_IsCombating)
+	{
+		if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpStartRight);
+			m_JumpType = EWarriorJumpType::Right;
+		}
+		else if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpStartLeft);
+			m_JumpType = EWarriorJumpType::Left;
+		}
+		else if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpStartForward);
+			m_JumpType = EWarriorJumpType::Forward;
+		}
+		else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsRightDown && !m_IsLeftDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpStartBackward);
+			m_JumpType = EWarriorJumpType::Backward;
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpStartForward);
+			m_JumpType = EWarriorJumpType::Forward;
+		}
+	}
+	else
+	{
+		if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatStartRight);
+			m_JumpType = EWarriorJumpType::Right;
+		}
+		else if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatStartLeft);
+			m_JumpType = EWarriorJumpType::Left;
+		}
+		else if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatStartForward);
+			m_JumpType = EWarriorJumpType::Forward;
+		}
+		else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsRightDown && !m_IsLeftDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatStartBackward);
+			m_JumpType = EWarriorJumpType::Backward;
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatStartForward);
+			m_JumpType = EWarriorJumpType::Forward;
+		}
+	}
+	
+}
+
+void AWarriorCharacter::StopJumping()
+{
+	Super::StopJumping();
 }
 
 void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor)
@@ -885,10 +974,10 @@ void AWarriorCharacter::DashToJudge()
 {
 	//FVector InputVec = GetCharacterMovement()->GetLastInputVector();
 
-	FHitResult HitResult;
+	//FHitResult HitResult;
 	FVector InputVec;
 
-	bool BlockingHit = false;
+	/*bool BlockingHit = false;
 	bool InitialOverlap = false;
 	float Time = 0.f;
 	float Distance = 0.f;
@@ -905,7 +994,7 @@ void AWarriorCharacter::DashToJudge()
 	int32 ElementIndex;
 	int32 FaceIndex;
 	FVector TraceStart;
-	FVector TraceEnd;
+	FVector TraceEnd;*/
 
 	if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
 	{
@@ -947,50 +1036,68 @@ void AWarriorCharacter::DashToJudge()
 		InputVec = -GetActorForwardVector() - GetActorRightVector();
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::DashBackwardLeft);
 	}
-
-	if (UAIBlueprintHelperLibrary::IsValidAIDirection(InputVec))
+	if (!m_OnDash)
 	{
-		FVector EndVec = InputVec * 500.f + GetActorLocation();
+		FVector EndVec = InputVec * 8000.f;
+		EndVec.Z = 0.f;
 
-
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), EndVec, ECollisionChannel::ECC_Visibility))
-		{
-			UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
-				ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
-				ElementIndex, FaceIndex, TraceStart, TraceEnd);
-
-			DashFunc((InputVec * 800.f) + Location, InputVec);
-		}
-		else
-		{
-			UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
-				ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
-				ElementIndex, FaceIndex, TraceStart, TraceEnd);
-
-			DashFunc(TraceEnd, InputVec);
-		}
+		LaunchCharacter(EndVec, true, true);
+		m_OnDash = true;
+		GetWorldTimerManager().SetTimer(m_TimerHandle, this, &AWarriorCharacter::StopDashing, 0.1f, false);
 	}
+
+	// 벽 관통하는 대쉬 사용하고 싶으면 상황에 맞게 적용해서 사용가능
+	//if (UAIBlueprintHelperLibrary::IsValidAIDirection(InputVec))
+	//{
+	//	FVector EndVec = InputVec * 800.f + GetActorLocation();
+
+	//	/*if (GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), EndVec, ECollisionChannel::ECC_WorldStatic))
+	//	{
+	//		UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
+	//			ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
+	//			ElementIndex, FaceIndex, TraceStart, TraceEnd);
+
+	//		DashFunc((InputVec * 100.f) + Location, InputVec);
+	//	}
+	//	else
+	//	{
+	//		UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
+	//			ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
+	//			ElementIndex, FaceIndex, TraceStart, TraceEnd);
+
+	//		DashFunc(TraceEnd, InputVec);
+	//	}*/
+	//}
+	//else
+	//{
+	//	FVector EndVec = GetActorForwardVector() * 800.f + GetActorLocation();
+
+
+	//	if (GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), EndVec, ECollisionChannel::ECC_WorldStatic))
+	//	{
+	//		UGameplayStatics::BreakHitResult(HitResult, BlockingHit, InitialOverlap, Time, Distance, Location,
+	//			ImpactPoint, Normal, ImpactNormal, PhysMat, HitActor, HitComponent, HitBoneName, BoneName, HitItem,
+	//			ElementIndex, FaceIndex, TraceStart, TraceEnd);
+
+	//		DashFunc((InputVec * 800.f) + Location, InputVec);
+	//	}
+	//}
 	
 }
-
+ 
 void AWarriorCharacter::CombatTick(float DeltaTime)
 {
 	if (m_IsCombating)
 	{
 		m_CombatTime -= DeltaTime;
 
-		if (m_CombatTime <= 0.f)
+		if ((m_CombatTime <= 0.f) && GetAnimationInstance()->Montage_IsPlaying(m_CombatIdleMontage))
 		{
 			m_CombatTime = 7.f;
 
 			m_IsCombating = false;
 
-			UAnimMontage* FindMontage = GetAnimationInstance()->GetAnimation(WarriorCombatAnimation::CombatIdle);
-
-			if (GetAnimationInstance()->Montage_IsPlaying(FindMontage))
-			{
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 		}
 	}
 }
@@ -1042,7 +1149,7 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA1) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA2) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA3) ||
-		GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack))
+		GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack) || m_IsJump)
 	{
 		return true;
 	}
@@ -1071,6 +1178,13 @@ bool AWarriorCharacter::DashJudgeFunc()
 	}
 }
 
+void AWarriorCharacter::StopDashing()
+{
+	GetCharacterMovement()->StopMovementImmediately();
+	GetWorldTimerManager().SetTimer(m_TimerHandle, this, &AWarriorCharacter::ResetDash, 0.2f, false);
+	GetCharacterMovement()->BrakingFrictionFactor = 2.f;
+}
+
 void AWarriorCharacter::DashFunc(const FVector& DashDir, const FVector& DashVelocity)
 {
 	m_DashDir = DashDir;
@@ -1089,6 +1203,52 @@ void AWarriorCharacter::TurnFunc()
 	Rot.Pitch = PlayerRot.Pitch;
 
 	GetController()->SetControlRotation(Rot);
+}
+
+void AWarriorCharacter::JumpTrace()
+{
+	if (m_IsJump && !GetCharacterMovement()->IsFalling())
+	{
+		m_IsJump = false;
+
+		if (!m_IsCombating)
+		{
+			switch (m_JumpType)
+			{
+			case EWarriorJumpType::Forward:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpEndForward);
+				break;
+			case EWarriorJumpType::Backward:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpEndBackward);
+				break;
+			case EWarriorJumpType::Left:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpEndLeft);
+				break;
+			case EWarriorJumpType::Right:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpEndRight);
+				break;
+			}
+		}
+		else
+		{
+			switch (m_JumpType)
+			{
+			case EWarriorJumpType::Forward:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatEndForward);
+				break;
+			case EWarriorJumpType::Backward:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatEndBackward);
+				break;
+			case EWarriorJumpType::Left:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatEndLeft);
+				break;
+			case EWarriorJumpType::Right:
+				GetAnimationInstance()->ChangeAnimMontage(WarriorJumpAnimation::JumpCombatEndRight);
+				break;
+			}
+		}
+		
+	}
 }
 
 void AWarriorCharacter::TimelineCallback(float val)

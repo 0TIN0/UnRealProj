@@ -75,7 +75,8 @@ void UURAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	if (1.f <= Percent)
 	{
-		m_CurrentAnimationKey = m_DefaultKey;
-		ChangeAnimMontage(m_DefaultKey, true);
+		//m_CurrentAnimationKey = m_DefaultKey;
+		ChangeAnimMontage(m_CurrentAnimationKey, true);
 	}
+	
 }

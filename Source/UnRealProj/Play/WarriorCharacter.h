@@ -16,6 +16,16 @@ enum class EWarriorComboType
 	ComboC
 };
 
+enum class EWarriorJumpType
+{
+	Default,
+	Forward,
+	Backward,
+	Left,
+	Right,
+	Max
+};
+
 UENUM(BlueprintType)
 enum class WarriorAnimation : uint8
 {
@@ -91,6 +101,32 @@ enum class WarriorCombatAnimation : uint8
 	CombatDashForwardRight UMETA(DisplayName = "전투 오른쪽 앞 대쉬"),
 	CombatDashBackwardLeft UMETA(DisplayName = "전투 왼쪽 뒤 대쉬"),
 	CombatDashBackwardRight UMETA(DisplayName = "전투 오른쪽 뒤 대쉬"),
+	Max UMETA(DisplayName = "최대치")
+};
+
+UENUM(BlueprintType)
+enum class WarriorJumpAnimation : uint8
+{
+	Default UMETA(DisplayName = "디폴트"),
+	JumpStartLeft = static_cast<uint8>(WarriorCombatAnimation::Max) UMETA(DisplayName = "점프 시작 왼"),
+	JumpStartRight UMETA(DisplayName = "점프 시작 오"),
+	JumpStartForward UMETA(DisplayName = "점프 시작 앞"),
+	JumpStartBackward UMETA(DisplayName = "점프 시작 뒤"),
+	JumpLoop UMETA(DisplayName = "점프 루프"),
+	JumpEndLeft UMETA(DisplayName = "점프 끝 왼"),
+	JumpEndRight UMETA(DisplayName = "점프 끝 오"),
+	JumpEndForward UMETA(DisplayName = "점프 끝 앞"),
+	JumpEndBackward UMETA(DisplayName = "점프 끝 뒤"),
+	JumpCombatStartLeft  UMETA(DisplayName = "전투 상태 점프 시작 왼"),
+	JumpCombatStartRight UMETA(DisplayName = "전투 상태 점프 시작 오"),
+	JumpCombatStartForward UMETA(DisplayName = "전투 상태 점프 시작 앞"),
+	JumpCombatStartBackward UMETA(DisplayName = "전투 상태 점프 시작 뒤"),
+	JumpCombatLoop UMETA(DisplayName = "전투 상태 점프 루프"),
+	JumpCombatEndLeft UMETA(DisplayName = "전투 상태 점프 끝 왼"),
+	JumpCombatEndRight UMETA(DisplayName = "전투 상태 점프 끝 오"),
+	JumpCombatEndForward UMETA(DisplayName = "전투 상태 점프 끝 앞"),
+	JumpCombatEndBackward UMETA(DisplayName = "전투 상태 점프 끝 뒤"),
+	Max UMETA(DisplayName = "최대치")
 };
 
 UCLASS()
@@ -103,6 +139,8 @@ public:
 private:
 	FRandomStream m_Stream;
 
+	FTimerHandle m_TimerHandle;
+
 	// 기본이외의 동작들
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<WarriorAnimation, UAnimMontage*> m_PlayerAnimations;
@@ -111,6 +149,10 @@ private:
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<WarriorCombatAnimation, UAnimMontage*> m_PlayerCombatAnimations;
 
+	// 점프시의 동작들
+	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		TMap<WarriorJumpAnimation, UAnimMontage*> m_PlayerJumpAnimations;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* m_CameraComponent;
 
@@ -118,6 +160,8 @@ private:
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
 	class APlayerController* m_PlayerController;
+
+	class UAnimMontage* m_CombatIdleMontage;
 
 	QuestProgress m_QuestProgress;
 
@@ -165,8 +209,20 @@ private:
 	FVector m_DashDir;
 	FVector m_DashVelocity;
 
+	bool m_OnDash;
+
+	// 점프
+	bool m_IsJump;
+	EWarriorJumpType m_JumpType;
+
+
 
 public:
+	void ResetDash()
+	{
+		m_OnDash = false;
+	}
+
 	UFUNCTION(BlueprintCallable, Category = RealUn)
 		void MouseMoveX(float Value);
 
@@ -314,6 +370,18 @@ public:
 		m_IsCombating = IsCombating;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+		bool GetIsJumping()
+	{
+		return m_IsJump;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void SetIsJumping(bool IsJump)
+	{
+		m_IsJump = IsJump;
+	}
+
 
 	void AddMonsterCount()
 	{
@@ -350,6 +418,9 @@ protected:
 	// Called to bind functionality to input
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void Jump() override;
+	void StopJumping() override;
+
 protected:
 
 	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
@@ -366,10 +437,13 @@ private:
 	void CoolTimeTick(float DeltaTime);
 	bool JudgeFunc();
 	bool DashJudgeFunc();
+	void StopDashing();
 
 	void DashFunc(const FVector& DashDir, const FVector& DashVelocity);
 
 	void TurnFunc();
+
+	void JumpTrace();
 
 
 

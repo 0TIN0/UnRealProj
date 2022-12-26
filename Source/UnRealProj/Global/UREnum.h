@@ -17,6 +17,14 @@ class UNREALPROJ_API UUREnum : public UObject
 };
 
 UENUM(BlueprintType)
+enum class UPLAYER_TYPE : uint8
+{
+	Default UMETA(DisplayName = "선택x"),
+	Wizard UMETA(DisplayName = "마법사"),
+	Warrior UMETA(DisplayName = "전사")
+};
+
+UENUM(BlueprintType)
 enum class DefaultAnimation : uint8
 {
 	// 1100 
