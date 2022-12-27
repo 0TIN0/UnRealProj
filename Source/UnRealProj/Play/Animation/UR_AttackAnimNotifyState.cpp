@@ -29,24 +29,54 @@ void UUR_AttackAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAni
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
-	AURCharacter* Character = MeshComp->GetOwner<AURCharacter>();
-
-	if (!Character || !Character->IsValidLowLevel())
+	switch (m_PlayerType)
 	{
-		return;
+	case UPLAYER_TYPE::Wizard:
+	{
+		AURCharacter* Character = MeshComp->GetOwner<AURCharacter>();
+
+		if (!Character || !Character->IsValidLowLevel())
+		{
+			return;
+		}
+
+		Character->AttackOff();
+
+		if (m_EndChangeAnimation == DefaultAnimation::Default)
+		{
+			return;
+		}
+
+		Character->GetAnimationInstance()->ChangeAnimMontage(m_EndChangeAnimation);
+	}
+	break;
+	case UPLAYER_TYPE::Warrior:
+	{
+		AWarriorCharacter* Character = MeshComp->GetOwner<AWarriorCharacter>();
+
+		if (!Character || !Character->IsValidLowLevel())
+		{
+			return;
+		}
+
+		Character->AttackOff();
+
+		if (m_EndChangeAnimation == DefaultAnimation::Default)
+		{
+			return;
+		}
+
+		if (!Character->GetIsCombating())
+		{
+			Character->GetAnimationInstance()->ChangeAnimMontage(m_EndChangeAnimation);
+		}
+		else
+		{
+			Character->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		}
+	}
+	break;
 	}
 
-	Character->AttackOff();
-
-	if (m_EndChangeAnimation == DefaultAnimation::Default)
-	{
-		return;
-	}
-
-	/*if (m_IsSkillW)
-	{
-		Cast<APlayCharacter>(Character)->SetESkillEnable(!m_IsSkillW);
-	}*/
-
-	Character->GetAnimationInstance()->ChangeAnimMontage(m_EndChangeAnimation);
+	
 }

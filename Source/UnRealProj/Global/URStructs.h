@@ -120,3 +120,14 @@ struct FURItemData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int MP;
 };
+
+USTRUCT()
+struct FURWarriorCommand
+{
+	GENERATED_USTRUCT_BODY()
+
+	bool IsWClicked;
+	bool IsWDoubleClicked;
+	float WResetTime;
+	float WDoubleResetTime;
+};

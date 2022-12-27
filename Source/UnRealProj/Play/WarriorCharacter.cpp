@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
+#include "Math/Matrix.h"
 #include "Engine/EngineTypes.h"
 
 
@@ -44,7 +45,8 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_IsQuesting(false),
 	m_IsQuestCompletion(false),
 	m_OnDash(false),
-	m_IsJump(false)
+	m_IsJump(false),
+	m_JumpType(EWarriorJumpType::Default)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -329,6 +331,7 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 	}
 
 
+
 	if (!m_IsCombating)
 	{
 		if (!m_IsRun)
@@ -451,23 +454,34 @@ void AWarriorCharacter::LeftAttack()
 		return;
 	}
 
-	// 1 ~ 3의 값을 나오도록 콤보가 3개이기 때문
-	m_ComboType = (EWarriorComboType)m_Stream.RandRange(1, 3);
+	m_CombatTime = 7.f;
 
-	switch (m_ComboType)
+	if (m_IsRun && m_IsForwardDown)
 	{
-	case EWarriorComboType::ComboA:
 		AttackOn();
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
-		break;
-	case EWarriorComboType::ComboB:
-		AttackOn();
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboB1);
-		break;
-	case EWarriorComboType::ComboC:
-		AttackOn();
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboC1);
-		break;
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::CommandDashAttack);
+	}
+
+	else
+	{
+		// 1 ~ 3의 값을 나오도록 콤보가 3개이기 때문
+		m_ComboType = (EWarriorComboType)m_Stream.RandRange(1, 3);
+
+		switch (m_ComboType)
+		{
+		case EWarriorComboType::ComboA:
+			AttackOn();
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+			break;
+		case EWarriorComboType::ComboB:
+			AttackOn();
+			GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboB1);
+			break;
+		case EWarriorComboType::ComboC:
+			AttackOn();
+			GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ComboC1);
+			break;
+		}
 	}
 }
 
@@ -739,14 +753,17 @@ void AWarriorCharacter::BeginPlay()
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 
-
 	for (auto& Anim : m_PlayerCombatAnimations)
 	{
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 
-
 	for (auto& Anim : m_PlayerJumpAnimations)
+	{
+		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
+	}
+
+	for (auto& Anim : m_PlayerHitAnimations)
 	{
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
@@ -755,6 +772,7 @@ void AWarriorCharacter::BeginPlay()
 	m_PlayerInfo = GetWorld()->GetGameInstance<UURGameInstance>()->GetPlayerData(FName(TEXT("Player2")));
 
 	SetDefaultData();
+	CommandStructInit();
 
 	m_CombatIdleMontage = GetAnimationInstance()->GetAnimation(WarriorCombatAnimation::CombatIdle);
 }
@@ -770,20 +788,35 @@ void AWarriorCharacter::Tick(float DeltaTime)
 
 	if (m_IsForwardDown || m_IsBackwardDown || m_IsLeftDown || m_IsRightDown)
 	{
-		if (m_IsRun)
+		if (m_IsRun && !m_IsAttack)
 		{
 			if (m_Stamina - DeltaTime * 15.f > 0.f)
 			{
 				m_Stamina -= DeltaTime * 15.f;
 			}
-			else if (m_Stamina < 0.f)
+			if (m_Stamina <= 0.f)
 			{
 				m_Stamina = 0.f;
+				m_IsRun = false;
+				GetCharacterMovement()->MaxWalkSpeed = 600;
 			}
 
 		}
+
+		else
+		{
+			if (m_Stamina < m_PlayerInfo->MaxStamina)
+			{
+				m_Stamina += DeltaTime * 15.f;
+			}
+			else if (m_Stamina > m_PlayerInfo->MaxStamina)
+			{
+				m_Stamina = m_PlayerInfo->MaxStamina;
+			}
+		}
 	}
-	if (!m_IsRun)
+
+	else
 	{
 		if (m_Stamina < m_PlayerInfo->MaxStamina)
 		{
@@ -795,24 +828,20 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (m_IsRun)
-	{
-		if (m_Stamina <= 0.f)
-		{
-			m_IsRun = false;
-			GetCharacterMovement()->MaxWalkSpeed = 600;
-		}
-	}
 
 	/*FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("pelvis")));
 	SkeletonPos.Z -= 20.f;
 	SetActorLocation(SkeletonPos);*/
-
+	/*if (m_IsAttack)
+	{
+		TurnFunc();
+	}*/
 	
 	CombatTick(DeltaTime);
 	CoolTimeTick(DeltaTime);
 
 	JumpTrace();
+	CommandTimeJudge(DeltaTime);
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -932,23 +961,16 @@ void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor)
 
 	if (_Actor != nullptr)
 	{
-		if (m_IsMoveing)
-		{
-
-		}
-		else
-		{
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
-		}
+		AttackDirJudge(_Actor);
 	}
-	else
-	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
+}
 
-		FHitResult HitResult;
-		m_PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(m_PlayerController, GetActorLocation());
-	}
+void AWarriorCharacter::CommandStructInit()
+{
+	//m_Command.IsWClicked = false;
+	//m_Command.IsWDoubleClicked = false;
+	//m_Command.WResetTime = 0.7f;
+	//m_Command.WDoubleResetTime = 0.7f;
 }
 
 void AWarriorCharacter::SetDefaultData()
@@ -976,25 +998,6 @@ void AWarriorCharacter::DashToJudge()
 
 	//FHitResult HitResult;
 	FVector InputVec;
-
-	/*bool BlockingHit = false;
-	bool InitialOverlap = false;
-	float Time = 0.f;
-	float Distance = 0.f;
-	FVector Location;
-	FVector ImpactPoint;
-	FVector Normal;
-	FVector ImpactNormal;
-	UPhysicalMaterial* PhysMat = nullptr;
-	AActor* HitActor = nullptr;
-	UPrimitiveComponent* HitComponent = nullptr;
-	FName HitBoneName;
-	FName BoneName;
-	int32 HitItem;
-	int32 ElementIndex;
-	int32 FaceIndex;
-	FVector TraceStart;
-	FVector TraceEnd;*/
 
 	if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
 	{
@@ -1038,7 +1041,7 @@ void AWarriorCharacter::DashToJudge()
 	}
 	if (!m_OnDash)
 	{
-		FVector EndVec = InputVec * 8000.f;
+		FVector EndVec = InputVec * 9000.f;
 		EndVec.Z = 0.f;
 
 		LaunchCharacter(EndVec, true, true);
@@ -1047,6 +1050,26 @@ void AWarriorCharacter::DashToJudge()
 	}
 
 	// 벽 관통하는 대쉬 사용하고 싶으면 상황에 맞게 적용해서 사용가능
+
+	/*bool BlockingHit = false;
+	bool InitialOverlap = false;
+	float Time = 0.f;
+	float Distance = 0.f;
+	FVector Location;
+	FVector ImpactPoint;
+	FVector Normal;
+	FVector ImpactNormal;
+	UPhysicalMaterial* PhysMat = nullptr;
+	AActor* HitActor = nullptr;
+	UPrimitiveComponent* HitComponent = nullptr;
+	FName HitBoneName;
+	FName BoneName;
+	int32 HitItem;
+	int32 ElementIndex;
+	int32 FaceIndex;
+	FVector TraceStart;
+	FVector TraceEnd;*/
+
 	//if (UAIBlueprintHelperLibrary::IsValidAIDirection(InputVec))
 	//{
 	//	FVector EndVec = InputVec * 800.f + GetActorLocation();
@@ -1149,7 +1172,16 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA1) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA2) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboA3) ||
-		GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack) || m_IsJump)
+		GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboB1) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboB2) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboB3) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboB4) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC1) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC2) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC3) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC4) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::CommandDashAttack) || m_IsJump)
 	{
 		return true;
 	}
@@ -1248,6 +1280,162 @@ void AWarriorCharacter::JumpTrace()
 			}
 		}
 		
+	}
+}
+
+void AWarriorCharacter::CommandTimeJudge(float DeltaTime)
+{
+	//if (*m_qCommand.Peek() == 'w')
+	//{
+	//	m_qCommandTime -= DeltaTime;
+
+	//	if (0.f >= m_qCommandTime)
+	//	{
+	//		m_qCommandTime = 0.5f;
+
+	//		// 전부 비워버린다 (짜피 한개만 있음)
+	//		m_qCommand.Empty();
+	//	}
+	//}
+}
+
+void AWarriorCharacter::AttackDirJudge(AActor* _Actor)
+{
+	FVector MonsterPos = _Actor->GetActorLocation();
+	FVector PlayerPos = GetActorLocation();
+	FVector MonsterDir = MonsterPos - PlayerPos;
+	MonsterDir = MonsterDir.GetSafeNormal();
+
+	// 내적을 통해 코사인세타 값을 구한다음
+	double FValue = FVector::DotProduct(MonsterDir, GetActorForwardVector());
+	double BValue = FVector::DotProduct(MonsterDir, -GetActorForwardVector());
+	double LValue = FVector::DotProduct(MonsterDir, -GetActorRightVector());
+	double RValue = FVector::DotProduct(MonsterDir, GetActorRightVector());
+
+	// 아크코사인과 라디안 투 디그리를 이용해서 디그리의 각도로 변환하여
+	// 어느위치에서 공격했는지를 판단한다.
+	float FConvert = acosf(static_cast<float>(FValue));
+	FConvert = FMath::RadiansToDegrees(FConvert);
+	float BConvert = acosf(static_cast<float>(BValue));
+	BConvert = FMath::RadiansToDegrees(BConvert);
+	float LConvert = acosf(static_cast<float>(LValue));
+	LConvert = FMath::RadiansToDegrees(LConvert);
+	float RConvert = acosf(static_cast<float>(RValue));
+	RConvert = FMath::RadiansToDegrees(RConvert);
+
+	const int Random = static_cast<int>(m_Stream.FRandRange(1, 6));
+
+	switch (m_HitType)
+	{
+	case EHitType::NormalHit:
+	{
+		switch (Random)
+		{
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			HitAnimation(FConvert, BConvert, LConvert, RConvert, false);
+			break;
+		case 5:
+		case 6:
+			HitAnimation(FConvert, BConvert, LConvert, RConvert, true);
+			break;
+		}
+	}
+		break;
+	case EHitType::KnockDownHit:
+	{
+		
+	}
+		break;
+	}
+	
+}
+
+void AWarriorCharacter::HitAnimation(float FValue, float BValue, float LValue, float RValue, bool IsLarge)
+{
+	if (!IsLarge)
+	{
+		if (!m_IsCombating)
+		{
+			if (FValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+			}
+			else if (BValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
+			}
+			else if (RValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
+			}
+			else if (LValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
+			}
+		}
+		else
+		{
+			if (FValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
+			}
+			else if (BValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
+			}
+			else if (RValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
+			}
+			else if (LValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
+			}
+		}
+	}
+	else
+	{
+		if (!m_IsCombating)
+		{
+			if (FValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeForward);
+			}
+			else if (BValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeBackward);
+			}
+			else if (RValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeRight);
+			}
+			else if (LValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeLeft);
+			}
+		}
+		else
+		{
+			if (FValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeForward);
+			}
+			else if (BValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeBackward);
+			}
+			else if (RValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeRight);
+			}
+			else if (LValue < 45.f)
+			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeLeft);
+			}
+		}
 	}
 }
 

@@ -4,24 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "UR_DamageAnimNotifyState.generated.h"
+#include "Global/UREnum.h"
+#include "UR_ChangeIdleAnimNotifyState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_DamageAnimNotifyState : public UAnimNotifyState
+class UNREALPROJ_API UUR_ChangeIdleAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 private:
-	bool m_OneFrame;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-	bool m_IsKnockDown;
+		UPLAYER_TYPE m_PlayerType;
+
 
 protected:
-	void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
-	void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
 	void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+	
 };

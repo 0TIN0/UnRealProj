@@ -6,9 +6,8 @@
 #include "URAICharacter.h"
 #include "Monster.generated.h"
 
-/**
- * 
- */
+
+
 UCLASS()
 class UNREALPROJ_API AMonster : public AURAICharacter
 {

@@ -182,7 +182,15 @@ void AMonster::DamageOn()
 		if (Character)
 		{
 			Check = true;
-			Character->CallDamage(3.0);
+			Character->CallDamage(3.0, this);
+			if (m_IsKnockDown)
+			{
+				Character->SetHitType(EHitType::KnockDownHit);
+			}
+			else
+			{
+				Character->SetHitType(EHitType::NormalHit);
+			}
 		}
 	}
 

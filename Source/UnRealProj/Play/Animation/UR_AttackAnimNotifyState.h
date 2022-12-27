@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "../URCharacter.h"
+#include "../WarriorCharacter.h"
+#include "Global/UREnum.h"
 #include "UR_AttackAnimNotifyState.generated.h"
 
 /**
@@ -16,6 +17,9 @@ class UNREALPROJ_API UUR_AttackAnimNotifyState : public UAnimNotifyState
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		UPLAYER_TYPE m_PlayerType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	float m_MinAnimationPercent; // ÆÛ¼¾Æ®
 

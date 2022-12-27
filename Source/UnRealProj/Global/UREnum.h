@@ -25,6 +25,15 @@ enum class UPLAYER_TYPE : uint8
 };
 
 UENUM(BlueprintType)
+enum class EHitType : uint8
+{
+	Default UMETA(DisplayName = "선택x"),
+	NormalHit UMETA(DisplayName = "피격"),
+	KnockDownHit UMETA(DisplayName = "넉다운 피격")
+};
+
+
+UENUM(BlueprintType)
 enum class DefaultAnimation : uint8
 {
 	// 1100 

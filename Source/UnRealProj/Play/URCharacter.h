@@ -133,6 +133,27 @@ public:
 		return m_RSkillMaxCollTime;
 	}
 
+	void SetHitType(EHitType _HitType)
+	{
+		m_HitType = _HitType;
+	}
+
+	EHitType GetHitType()	const
+	{
+		return m_HitType;
+	}
+
+
+	void SetKnockDown(bool _HitType)
+	{
+		m_IsKnockDown = _HitType;
+	}
+
+	bool IsHitType()	const
+	{
+		return m_IsKnockDown;
+	}
+
 
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
@@ -242,6 +263,9 @@ private:
 
 protected:
 	struct FURPlayerDataInfo* m_PlayerInfo;
+
+	EHitType m_HitType;
+	bool m_IsKnockDown;
 
 	bool m_IsAttack;
 

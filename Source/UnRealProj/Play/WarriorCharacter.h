@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Play/URCharacter.h"
-#include "Global/UREnum.h"
 #include "Components/TimelineComponent.h"
+#include "Global/URStructs.h"
 #include "WarriorCharacter.generated.h"
 
 enum class EWarriorComboType
@@ -67,6 +67,7 @@ enum class WarriorAnimation : uint8
 	ComboC2 UMETA(DisplayName = "C콤보2"),
 	ComboC3 UMETA(DisplayName = "C콤보3"),
 	ComboC4 UMETA(DisplayName = "C콤보4"),
+	CommandDashAttack UMETA(DisplayName = "대쉬어택"),
 	Max UMETA(DisplayName = "최대치")
 };
 
@@ -129,6 +130,35 @@ enum class WarriorJumpAnimation : uint8
 	Max UMETA(DisplayName = "최대치")
 };
 
+UENUM(BlueprintType)
+enum class WarriorHitAnimation : uint8
+{
+	Default UMETA(DisplayName = "디폴트"),
+	HitLeft = static_cast<uint8>(WarriorJumpAnimation::Max) UMETA(DisplayName = "피격 왼"),
+	HitRight UMETA(DisplayName = "피격 오"),
+	HitForward UMETA(DisplayName = "피격 앞"),
+	HitBackward UMETA(DisplayName = "피격 뒤"),
+	CombatHitLeft UMETA(DisplayName = "전투 피격 왼"),
+	CombatHitRight UMETA(DisplayName = "전투 피격 오"),
+	CombatHitForward UMETA(DisplayName = "전투 피격 앞"),
+	CombatHitBackward UMETA(DisplayName = "전투 피격 뒤"),
+	HitLargeLeft UMETA(DisplayName = "큰 피격 왼"),
+	HitLargeRight UMETA(DisplayName = "큰 피격 오"),
+	HitLargeForward UMETA(DisplayName = "큰 피격 앞"),
+	HitLargeBackward UMETA(DisplayName = "큰 피격 뒤"),
+	CombatHitLargeLeft UMETA(DisplayName = "전투 큰 피격 왼"),
+	CombatHitLargeRight UMETA(DisplayName = "전투 큰 피격 오"),
+	CombatHitLargeForward UMETA(DisplayName = "전투 큰 피격 앞"),
+	CombatHitLargeBackward UMETA(DisplayName = "전투 큰 피격 뒤"),
+	HitLargeToFallDown UMETA(DisplayName = "큰 피격 후 넘어짐"),
+	CombatHitLargeToFallDown UMETA(DisplayName = "전투 큰 피격 후 넘어짐"),
+	Dead UMETA(DisplayName = "사망"),
+	CombatDead UMETA(DisplayName = "전투시 사망"),
+	GetUp UMETA(DisplayName = "일어나는 동작"),
+	CombatGetUp UMETA(DisplayName = "전투시 일어나는 동작"),
+	Max UMETA(DisplayName = "최대치")
+};
+
 UCLASS()
 class UNREALPROJ_API AWarriorCharacter : public AURCharacter
 {
@@ -152,6 +182,10 @@ private:
 	// 점프시의 동작들
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<WarriorJumpAnimation, UAnimMontage*> m_PlayerJumpAnimations;
+
+	// 피격시의 동작들
+	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		TMap<WarriorHitAnimation, UAnimMontage*> m_PlayerHitAnimations;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* m_CameraComponent;
@@ -214,6 +248,11 @@ private:
 	// 점프
 	bool m_IsJump;
 	EWarriorJumpType m_JumpType;
+
+	// 커맨드 판단
+	//FURWarriorCommand m_Command;
+	//TQueue<char> m_qCommand;
+	//float m_qCommandTime;
 
 
 
@@ -430,6 +469,7 @@ protected:
 
 
 private:
+	void CommandStructInit();
 	void SetDefaultData();
 	// 텔레포트 어떤 방향으로 할지 판단하는 함수
 	void DashToJudge();
@@ -444,6 +484,12 @@ private:
 	void TurnFunc();
 
 	void JumpTrace();
+
+	// 커맨드 시간 판단
+	void CommandTimeJudge(float DeltaTime);
+
+	void AttackDirJudge(AActor* _Actor);
+	void HitAnimation(float FValue, float BValue, float LValue, float RValue, bool IsLarge);
 
 
 
