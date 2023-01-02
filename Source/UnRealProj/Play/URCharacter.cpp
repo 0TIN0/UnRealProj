@@ -10,6 +10,10 @@
 
 // Sets default values
 AURCharacter::AURCharacter()	:
+	m_HitType(EHitType::Default),
+	m_HitDir(EHitDir::Default),
+	m_IsBlocking(false),
+	m_IsInvincibility(false),
 	m_IsAttack(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -163,7 +167,36 @@ TArray<AActor*> AURCharacter::TargetsSearch(FName _Name, float _Range)
 
 void AURCharacter::CallDamage(double _Damage, AActor* _Actor)
 {
-	m_HP -= _Damage;
+	HitDirJudge(_Actor);
+	if (!m_IsBlocking)
+		m_HP -= _Damage;
+	else
+	{
+		// 정면에서 공격받을경우에는 데미지가 들어가지 않고 넉백만 들어간다.
+		switch (m_HitDir)
+		{
+		case EHitDir::Forward:
+			break;
+		case EHitDir::Backward:
+		case EHitDir::Left:
+		case EHitDir::Right:
+			m_HP -= _Damage;
+			break;
+		}
+	}
+	FVector Dir = GetActorLocation() - _Actor->GetActorLocation();
+
+	Dir = Dir.GetSafeNormal();
+	switch (m_HitType)
+	{
+	case EHitType::NormalHit:
+		LaunchCharacter(Dir * 2000.f, true, false);
+		break;
+	case EHitType::KnockDownHit:
+		LaunchCharacter(Dir * 3000.f, true, false);
+		break;
+	}
+
 }
 
 TArray<FHitResult> AURCharacter::CollisionCheck(const FVector& Start, const FVector& End, const FQuat& Rot, FName ProfileName, const FCollisionShape& CollisionShape)
@@ -252,8 +285,7 @@ bool AURCharacter::PathMove()
 		// 첫번째 인덱스 제거
 		m_Path->PathPoints.RemoveAt(0);
 		
-		if (0 == m_Path->PathPoints.Num())
-		{
+		if (0 == m_Path->PathPoints.Num())		{
 			return false;
 		}
 
@@ -338,5 +370,51 @@ void AURCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AURCharacter::HitDirJudge(AActor* _Actor)
+{
+	FVector MonsterPos = _Actor->GetActorLocation();
+	FVector PlayerPos = GetActorLocation();
+	FVector MonsterDir = MonsterPos - PlayerPos;
+	MonsterDir = MonsterDir.GetSafeNormal();
+
+	// 내적을 통해 코사인세타 값을 구한다음
+	double FValue = FVector::DotProduct(MonsterDir, GetActorForwardVector());
+	double BValue = FVector::DotProduct(MonsterDir, -GetActorForwardVector());
+	double LValue = FVector::DotProduct(MonsterDir, -GetActorRightVector());
+	double RValue = FVector::DotProduct(MonsterDir, GetActorRightVector());
+
+	// 아크코사인과 라디안 투 디그리를 이용해서 디그리의 각도로 변환하여
+	// 어느위치에서 공격했는지를 판단한다.
+	float FConvert = acosf(static_cast<float>(FValue));
+	FConvert = FMath::RadiansToDegrees(FConvert);
+	float BConvert = acosf(static_cast<float>(BValue));
+	BConvert = FMath::RadiansToDegrees(BConvert);
+	float LConvert = acosf(static_cast<float>(LValue));
+	LConvert = FMath::RadiansToDegrees(LConvert);
+	float RConvert = acosf(static_cast<float>(RValue));
+	RConvert = FMath::RadiansToDegrees(RConvert);
+
+	if (FConvert < 45.f)
+	{
+		m_HitDir = EHitDir::Forward;
+	}
+	else if (BConvert < 45.f)
+	{
+		m_HitDir = EHitDir::Backward;
+	}
+	else if (RConvert < 45.f)
+	{
+		m_HitDir = EHitDir::Right;
+	}
+	else if (LConvert < 45.f)
+	{
+		m_HitDir = EHitDir::Left;
+	}
+	else
+	{
+		m_HitDir = EHitDir::Default;
+	}
 }
 

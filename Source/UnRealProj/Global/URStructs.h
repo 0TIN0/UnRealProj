@@ -75,6 +75,8 @@ struct FURPlayerDataInfo : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double MaxAttack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float QSkillCollTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ESkillCollTime;

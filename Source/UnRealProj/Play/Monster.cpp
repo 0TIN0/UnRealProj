@@ -135,22 +135,22 @@ void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_IsUltimateHit)
-	{
-		m_PushTime -= DeltaTime;
+	//if (m_IsUltimateHit)
+	//{
+	//	m_PushTime -= DeltaTime;
 
-		if (m_PushTime < 0.f)
-		{
-			m_PushTime = 1.f;
-			m_IsUltimateHit = false;
-			GetCharacterMovement()->MaxAcceleration = 300.f;	// 300
-			GetCharacterMovement()->MaxWalkSpeed = 400.f;	//400
-		}
+	//	if (m_PushTime < 0.f)
+	//	{
+	//		m_PushTime = 1.f;
+	//		m_IsUltimateHit = false;
+	//		GetCharacterMovement()->MaxAcceleration = 300.f;	// 300
+	//		GetCharacterMovement()->MaxWalkSpeed = 400.f;	//400
+	//	}
 
-		SetDirMovementInput(m_UltimateHitDir);
+	//	SetDirMovementInput(m_UltimateHitDir);
 
 
-	}
+	//}
 }
 
 void AMonster::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -181,8 +181,6 @@ void AMonster::DamageOn()
 
 		if (Character)
 		{
-			Check = true;
-			Character->CallDamage(3.0, this);
 			if (m_IsKnockDown)
 			{
 				Character->SetHitType(EHitType::KnockDownHit);
@@ -191,6 +189,9 @@ void AMonster::DamageOn()
 			{
 				Character->SetHitType(EHitType::NormalHit);
 			}
+			Check = true;
+			Character->CallDamage(3.0, this);
+			
 		}
 	}
 
@@ -212,7 +213,41 @@ void AMonster::DamageOff()
 
 void AMonster::CallDamage(double _Damage, AActor* _Actor)
 {
-	Super::CallDamage(_Damage);
+	Super::CallDamage(_Damage, _Actor);
+
+	switch (m_HitType)
+	{
+	case EHitType::NormalHit:
+	{
+		switch (m_HitDir)
+		{
+		case EHitDir::Forward:
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+			break;
+		case EHitDir::Backward:
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);
+			break;
+		case EHitDir::Left:
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::LeftHit);
+			break;
+		case EHitDir::Right:
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::RightHit);
+			break;
+		}
+	}
+		break;
+	case EHitType::KnockDownHit:
+	{
+		UAnimMontage* Montage = GetAnimationInstance()->GetAnimation(DefaultAnimation::KnockDown);
+
+		if (Montage)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::KnockDown);
+		}
+	}
+		break;
+	}
+
 
 	if (IsDeath())
 	{

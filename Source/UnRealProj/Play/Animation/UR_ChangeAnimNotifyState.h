@@ -5,22 +5,21 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "Global/UREnum.h"
-#include "UR_ChangeIdleAnimNotifyState.generated.h"
+#include "UR_ChangeAnimNotifyState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_ChangeIdleAnimNotifyState : public UAnimNotifyState
+class UNREALPROJ_API UUR_ChangeAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		UPLAYER_TYPE m_PlayerType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		UMONSTER_TYPE m_MonsterType;
+		class UAnimMontage* m_ChangeAnimation;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		EHitType m_HitType;
 
 
 protected:

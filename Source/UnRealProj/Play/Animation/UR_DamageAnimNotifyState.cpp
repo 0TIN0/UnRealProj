@@ -13,9 +13,9 @@ void UUR_DamageAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 		return;
 	}
 
-	Actor->DamageOn();
 
 	Actor->SetKnockDown(m_IsKnockDown);
+	Actor->DamageOn();
 
 	
 

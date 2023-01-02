@@ -143,6 +143,12 @@ public:
 		return m_HitType;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = UR)
+	bool GetIsBlocking()	const
+	{
+		return m_IsBlocking;
+	}
+
 
 	void SetKnockDown(bool _HitType)
 	{
@@ -265,6 +271,12 @@ protected:
 	struct FURPlayerDataInfo* m_PlayerInfo;
 
 	EHitType m_HitType;
+
+	EHitDir m_HitDir;
+	// 막기 (워리어 전용인데 HP계산을 부모인 URCharacter에서 하기때문에 여기서 변수설정
+	bool m_IsBlocking;
+
+	bool m_IsInvincibility;
 	bool m_IsKnockDown;
 
 	bool m_IsAttack;
@@ -290,5 +302,8 @@ protected:
 	int m_QSkillMaxCollTime;
 	int m_ESkillMaxCollTime;
 	int m_RSkillMaxCollTime;
+
+protected:
+	void HitDirJudge(AActor* _Actor);
 
 };

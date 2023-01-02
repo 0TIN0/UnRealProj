@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "Global/UREnum.h"
-#include "UR_ChangeIdleAnimNotifyState.generated.h"
+#include "UR_BlockHitEndAnimNotifyState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_ChangeIdleAnimNotifyState : public UAnimNotifyState
+class UNREALPROJ_API UUR_BlockHitEndAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
@@ -21,7 +21,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 		UMONSTER_TYPE m_MonsterType;
-
 
 protected:
 	void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

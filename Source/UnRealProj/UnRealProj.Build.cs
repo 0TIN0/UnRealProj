@@ -13,7 +13,8 @@ public class UnRealProj : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { 
 			"Core", "CoreUObject", "Engine", "InputCore",		// Base
-			"AIModule", "GameplayTasks", "NavigationSystem"		// AI
+			"AIModule", "GameplayTasks", "NavigationSystem", 		// AI
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

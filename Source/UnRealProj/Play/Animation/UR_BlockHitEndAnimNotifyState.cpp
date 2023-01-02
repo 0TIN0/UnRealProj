@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/Animation/UR_ChangeIdleAnimNotifyState.h"
-#include "../PlayCharacter.h"
+#include "Play/Animation/UR_BlockHitEndAnimNotifyState.h"
 #include "../WarriorCharacter.h"
+#include "../URCharacter.h"
 
-void UUR_ChangeIdleAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UUR_BlockHitEndAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
@@ -19,10 +19,8 @@ void UUR_ChangeIdleAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		{
 			return;
 		}
-
-		Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 	}
-		break;
+	break;
 	}
 
 	switch (m_PlayerType)
@@ -40,13 +38,20 @@ void UUR_ChangeIdleAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 			return;
 		}
 
-		if (!Character->GetIsCombating())
+		if (Character->GetIsBlocking())
 		{
-			Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+			Character->GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockLoop);
 		}
 		else
 		{
-			Character->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+			if (!Character->GetIsCombating())
+			{
+				Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+			}
+			else
+			{
+				Character->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+			}
 		}
 	}
 	break;

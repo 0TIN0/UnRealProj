@@ -545,12 +545,12 @@ void APlayCharacter::CallDamage(double _Damage, AActor* _Actor)
 		}
 		else
 		{
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
 		}
 	}
 	else
 	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Hit);
+		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
 
 		FHitResult HitResult;
 		m_PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);

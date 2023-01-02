@@ -8,6 +8,7 @@
 #include "Play/Controller/URAIController.h"
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UUR_MoveTaskNode::UUR_MoveTaskNode()
 {
@@ -21,6 +22,12 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
+	//Monster->GetCharacterMovement()->MaxWalkSpeed = 2000.f;
+
+	if (!AnimMontageJudge(Monster))
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	if (Monster->GetUltimateHitEnable())
 	{
@@ -79,4 +86,20 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 void UUR_MoveTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
+}
+
+bool UUR_MoveTaskNode::AnimMontageJudge(AMonster* _Monster)
+{
+	if (_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
+	{
+		return false;
+	}
+
+	return true;
 }

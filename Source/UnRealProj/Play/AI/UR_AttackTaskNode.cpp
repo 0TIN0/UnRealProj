@@ -8,6 +8,7 @@
 #include "BehaviorTree/BlackBoardComponent.h"
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
+#include "Global/UREnum.h"
 
 UUR_AttackTaskNode::UUR_AttackTaskNode()
 {
@@ -20,6 +21,11 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
+
+	if (!AnimMontageJudge(Monster))
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	if (Monster->GetUltimateHitEnable())
 	{
@@ -70,4 +76,19 @@ void UUR_AttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	m_WaitTime = 0.0f;
 
 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+}
+
+bool UUR_AttackTaskNode::AnimMontageJudge(class AMonster* _Monster)
+{
+	if (_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
+	{
+		return false;
+	}
+
+	return true;
 }

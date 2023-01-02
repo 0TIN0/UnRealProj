@@ -17,9 +17,13 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetArrayLibrary.h"
 #include "Math/UnrealMathUtility.h"
 #include "Math/Matrix.h"
 #include "Engine/EngineTypes.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
 
 
 AWarriorCharacter::AWarriorCharacter() :
@@ -32,7 +36,7 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_IsBackwardDown(false),
 	m_IsLeftDown(false),
 	m_IsRightDown(false),
-	m_IsQSkillAttacking(false),
+	m_IsQSkill(false),
 	m_IsESkillAttacking(false),
 	m_IsRSkillAttacking(false),
 	m_IsComboAttack(false),
@@ -69,6 +73,10 @@ AWarriorCharacter::AWarriorCharacter() :
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
+
+	m_DamageCollision = CreateDefaultSubobject<USphereComponent>(FName(TEXT("PlayerDamageCollision")));
+	m_DamageCollision->SetCollisionProfileName(FName(TEXT("PlayerAttack")));
+	m_DamageCollision->SetupAttachment(GetMesh(), FName("Attack_Socket"));
 
 	m_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("CameraSpringArm")));
 	m_CameraSpringArmComponent->SetupAttachment(RootComponent);
@@ -143,85 +151,101 @@ void AWarriorCharacter::PlayerLeftMove(float Value)
 		return;
 	}
 
-	AddMovementInput(-GetActorRightVector(), Value);
 
 	TurnFunc();
 
 	m_IsLeftDown = true;
+	AddMovementInput(-GetActorRightVector(), Value);
 
 	if (JudgeFunc())
 	{
 		return;
 	}
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		if (!m_IsRun)
+		if (!m_IsCombating)
 		{
-			if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Left);
+				if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Left);
+				}
+				else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ForWardLeft);
+				}
+				else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::BackWardLeft);
+				}
 			}
-			else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+			else
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ForWardLeft);
-			}
-			else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::BackWardLeft);
+				if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunLeft);
+				}
+				else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForwardLeft);
+				}
+				else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackwardLeft);
+				}
 			}
 		}
 		else
 		{
-			if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunLeft);
+				if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkLeft);
+				}
+				else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForWardLeft);
+				}
+				else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWardLeft);
+				}
 			}
-			else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+			else
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForwardLeft);
-			}
-			else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackwardLeft);
+				if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunLeft);
+				}
+				else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForWardLeft);
+				}
+				else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWardLeft);
+				}
 			}
 		}
 	}
 	else
 	{
-		if (!m_IsRun)
+		if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
 		{
-			if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkLeft);
-			}
-			else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForWardLeft);
-			}
-			else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWardLeft);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopLeft);
 		}
-		else
+		else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
 		{
-			if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunLeft);
-			}
-			else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForWardLeft);
-			}
-			else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWardLeft);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopLF);
+		}
+		else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopLB);
 		}
 	}
-
-	AttackOff();
 }
 
 void AWarriorCharacter::PlayerRightMove(float Value)
@@ -232,81 +256,104 @@ void AWarriorCharacter::PlayerRightMove(float Value)
 	}
 
 
-	AddMovementInput(GetActorRightVector(), Value);
 
 	TurnFunc();
 
 	m_IsRightDown = true;
+
+	AddMovementInput(GetActorRightVector(), Value);
 
 	if (JudgeFunc())
 	{
 		return;
 	}
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		if (!m_IsRun)
+		if (!m_IsCombating)
 		{
-			if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Right);
+				if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Right);
+				}
+				else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ForWardRight);
+				}
+				else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::BackWardRight);
+				}
 			}
-			else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+			else
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::ForWardRight);
-			}
-			else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::BackWardRight);
+				if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunRight);
+				}
+				else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForwardRight);
+				}
+				else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackwardRight);
+				}
 			}
 		}
 		else
 		{
-			if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunRight);
+				if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkRight);
+				}
+				else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForWardRight);
+				}
+				else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWardRight);
+				}
 			}
-			else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+			else
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForwardRight);
-			}
-			else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackwardRight);
+				if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunRight);
+				}
+				else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForWardRight);
+				}
+				else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWardRight);
+				}
 			}
 		}
 	}
 	else
 	{
-		if (!m_IsRun)
+		/*if (GetAnimationInstance()->IsAnimMontage(WarriorBlockAnimation::BlockWalkLoopRight))
 		{
-			if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkRight);
-			}
-			else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForWardRight);
-			}
-			else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWardRight);
-			}
+			return;
+		}*/
+		if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopRight);
 		}
-		else
+		else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
 		{
-			if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunRight);
-			}
-			else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForWardRight);
-			}
-			else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWardRight);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopRF);
+		}
+		else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopRB);
 		}
 	}
 
@@ -321,9 +368,10 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 	}
 
 	m_IsForwardDown = true;
-	AddMovementInput(GetActorForwardVector(), Value);
 
 	TurnFunc();
+
+	AddMovementInput(GetActorForwardVector(), Value);
 
 	if (JudgeFunc())
 	{
@@ -332,38 +380,48 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 
 
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		if (!m_IsRun)
+		if (!m_IsCombating)
 		{
-			if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
+				if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
+				}
+			}
+			else
+			{
+				if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForward);
+				}
 			}
 		}
 		else
 		{
-			if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunForward);
+				if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForward);
+				}
+			}
+			else
+			{
+				if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForward);
+				}
 			}
 		}
 	}
 	else
 	{
-		if (!m_IsRun)
+		if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
 		{
-			if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkForward);
-			}
-		}
-		else
-		{
-			if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunForward);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopForward);
 		}
 	}
 
@@ -378,48 +436,58 @@ void AWarriorCharacter::PlayerBackwardMove(float Value)
 	}
 
 	m_IsBackwardDown = true;
-	AddMovementInput(-GetActorForwardVector(), Value);
 
 	TurnFunc();
+
+	AddMovementInput(-GetActorForwardVector(), Value);
 
 	if (JudgeFunc())
 	{
 		return;
 	}
 
-
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		if (!m_IsRun)
+		if (!m_IsCombating)
 		{
-			if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackWard);
+				if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackWard);
+				}
+			}
+			else
+			{
+				if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackward);
+				}
 			}
 		}
 		else
 		{
-			if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+			if (!m_IsRun)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::RunBackward);
+				if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWard);
+				}
+			}
+			else
+			{
+				if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWard);
+				}
 			}
 		}
 	}
 	else
 	{
-		if (!m_IsRun)
+		if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
 		{
-			if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatWalkBackWard);
-			}
-		}
-		else
-		{
-			if (m_IsBackwardDown && !m_IsLeftDown && !m_IsRightDown)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatRunBackWard);
-			}
+			GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkLoopBackward);
 		}
 	}
 
@@ -456,6 +524,15 @@ void AWarriorCharacter::LeftAttack()
 
 	m_CombatTime = 7.f;
 
+	if (m_Shield != nullptr)
+	{
+		m_Shield->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+		m_Shield->DestroyComponent();
+		GetCharacterMovement()->MaxWalkSpeed = m_PlayerInfo->Speed;
+	}
+
+	m_MonsterActor = GetTargetActor();
+
 	if (m_IsRun && m_IsForwardDown)
 	{
 		AttackOn();
@@ -465,7 +542,7 @@ void AWarriorCharacter::LeftAttack()
 	else
 	{
 		// 1 ~ 3의 값을 나오도록 콤보가 3개이기 때문
-		m_ComboType = (EWarriorComboType)m_Stream.RandRange(1, 3);
+		m_ComboType = EWarriorComboType::ComboA;//(EWarriorComboType)m_Stream.RandRange(1, 3);
 
 		switch (m_ComboType)
 		{
@@ -489,9 +566,91 @@ void AWarriorCharacter::LeftAttackUp()
 {
 }
 
+void AWarriorCharacter::RightBlock()
+{
+	m_IsBlocking = true;
+	m_IsCombating = true;
+
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+
+	AttackOff();
+
+	if (!GetAnimationInstance()->IsAnimMontage(WarriorBlockAnimation::BlockLoop))
+		GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockStart);
+
+	if (m_ShieldEffect)
+	{
+		m_Shield = UNiagaraFunctionLibrary::SpawnSystemAttached(m_ShieldEffect, RootComponent, NAME_None, FVector(0.f), FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
+	}
+}
+
+void AWarriorCharacter::RightBlockUp()
+{
+	m_IsBlocking = false;
+	m_IsCombating = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = m_PlayerInfo->Speed;
+
+	if (m_Shield != nullptr)
+	{
+		m_Shield->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+		m_Shield->DestroyComponent();
+	}
+
+	if (JudgeFunc())
+	{
+		return;
+	}
+
+	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockEnd);
+
+
+
+	// 오른쪽
+	//if (m_IsRightDown && !m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkStopRight);
+	//}
+	//// 왼쪽
+	//else if (m_IsLeftDown && !m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkStopLeft);
+	//}
+	//// 앞
+	//else if (m_IsForwardDown && !m_IsLeftDown && !m_IsRightDown && !m_IsBackwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockWalkStop);
+	//}
+	//// 뒤
+	//else if (m_IsBackwardDown && !m_IsForwardDown && !m_IsRightDown && !m_IsLeftDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::DashBackward);
+	//}
+	//// 우앞
+	//else if (m_IsRightDown && m_IsForwardDown && !m_IsLeftDown && !m_IsBackwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::DashForwardRight);
+	//}
+	//// 왼앞
+	//else if (m_IsLeftDown && m_IsForwardDown && !m_IsRightDown && !m_IsBackwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::DashForwardLeft);
+	//}
+	//// 우뒤
+	//else if (m_IsRightDown && m_IsBackwardDown && !m_IsLeftDown && !m_IsForwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::DashBackwardRight);
+	//}
+	//// 왼뒤
+	//else if (m_IsLeftDown && m_IsBackwardDown && !m_IsRightDown && !m_IsForwardDown)
+	//{
+	//	GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::DashBackwardLeft);
+	//}
+}
+
 void AWarriorCharacter::SkillQ()
 {
-	if (true == IsAttack())
+	if (true == IsAttack() || JudgeFunc())
 	{
 		return;
 	}
@@ -501,15 +660,14 @@ void AWarriorCharacter::SkillQ()
 		return;
 	}
 
-	if (m_IsQSkillAttacking)
+	if (m_IsQSkill)
 	{
 		return;
 	}
 
-	m_IsQSkillAttacking = true;
+	m_IsQSkill = true;
 
-	AttackOn();
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::Skill1);
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillQ);
 
 	m_MP -= m_SkillQConsumedMP;
 
@@ -536,7 +694,7 @@ void AWarriorCharacter::SkillE()
 	m_IsESkillAttacking = true;
 
 	AttackOn();
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::Skill2);
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillE);
 	m_MP -= m_SkillEConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
@@ -550,7 +708,7 @@ void AWarriorCharacter::SkillR()
 	}
 
 	AttackOn();
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::Skill3);
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillR);
 	m_MP -= m_SkillRConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
@@ -565,13 +723,20 @@ void AWarriorCharacter::ForwardKeyEnd()
 		return;
 	}
 	
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		if (!m_IsCombating)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		}
 	}
 	else
 	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockLoop);
 	}
 }
 
@@ -584,13 +749,20 @@ void AWarriorCharacter::BackwardKeyEnd()
 		return;
 	}
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		if (!m_IsCombating)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		}
 	}
 	else
 	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockLoop);
 	}
 }
 
@@ -603,13 +775,20 @@ void AWarriorCharacter::LeftKeyEnd()
 		return;
 	}
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		if (!m_IsCombating)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		}
 	}
 	else
 	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockLoop);
 	}
 }
 
@@ -622,13 +801,20 @@ void AWarriorCharacter::RightKeyEnd()
 		return;
 	}
 
-	if (!m_IsCombating)
+	if (!m_IsBlocking)
 	{
-		GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		if (!m_IsCombating)
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		}
+		else
+		{
+			GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		}
 	}
 	else
 	{
-		GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockLoop);
 	}
 }
 
@@ -643,7 +829,7 @@ void AWarriorCharacter::CtrlKeyDown()
 void AWarriorCharacter::CtrlKeyOn()
 {
 	m_IsRun = false;
-	GetCharacterMovement()->MaxWalkSpeed = 600;
+	GetCharacterMovement()->MaxWalkSpeed = m_PlayerInfo->Speed;
 }
 
 void AWarriorCharacter::ShiftKeyDown()
@@ -673,7 +859,42 @@ void AWarriorCharacter::ShiftKeyOn()
 
 void AWarriorCharacter::DamageOn()
 {
-	TArray<UActorComponent*> Array = GetDamageCollision();
+	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+
+	TArray<FHitResult> Targets = CollisionCheck(m_DamageCollision->GetComponentLocation(),
+		FName(TEXT("PlayerAttackTrace")), m_DamageCollision->GetCollisionShape());
+
+	bool Check = false;
+
+	for (size_t i = 0; i < Targets.Num(); ++i)
+	{
+		AURCharacter* Character = Cast<AURCharacter>(Targets[i].GetActor());
+
+		if (Character)
+		{
+			if (m_IsKnockDown)
+			{
+				Character->SetHitType(EHitType::KnockDownHit);
+			}
+			else
+			{
+				Character->SetHitType(EHitType::NormalHit);
+			}
+			Check = true;
+			Character->CallDamage(3.0, this);
+		}
+	}
+
+	FColor Color = FColor::Green;
+
+	if (Check)
+	{
+		Color = FColor::Red;
+	}
+
+	DrawDebugSphere(GetWorld(), m_DamageCollision->GetComponentLocation(), m_DamageCollision->GetScaledSphereRadius(),
+		15, Color, false, 0.1f);
+	/*TArray<UActorComponent*> Array = GetDamageCollision();
 
 	for (size_t i = 0; i < Array.Num(); ++i)
 	{
@@ -707,7 +928,7 @@ void AWarriorCharacter::DamageOn()
 
 		DrawDebugSphere(GetWorld(), Sphere->GetComponentLocation(), Sphere->GetScaledSphereRadius(),
 			15, Color, false, 0.1f);
-	}
+	}*/
 }
 void AWarriorCharacter::BeginPlay()
 {
@@ -768,6 +989,11 @@ void AWarriorCharacter::BeginPlay()
 		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 
+	for (auto& Anim : m_PlayerBlockAnimations)
+	{
+		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
+	}
+
 
 	m_PlayerInfo = GetWorld()->GetGameInstance<UURGameInstance>()->GetPlayerData(FName(TEXT("Player2")));
 
@@ -780,6 +1006,11 @@ void AWarriorCharacter::BeginPlay()
 void AWarriorCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (m_Shield)
+	{
+		m_Shield->SetWorldLocation(GetActorLocation());
+	}
 
 	if (MyTimeline != NULL)
 	{
@@ -828,7 +1059,7 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		}
 	}
 
-
+	BlockStaminaTick(DeltaTime);
 	/*FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("pelvis")));
 	SkeletonPos.Z -= 20.f;
 	SetActorLocation(SkeletonPos);*/
@@ -865,6 +1096,8 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction(FName(TEXT("AttackClick")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::LeftAttack);
 	PlayerInputComponent->BindAction(FName(TEXT("AttackClick")), EInputEvent::IE_Released, this, &AWarriorCharacter::LeftAttackUp);
+	PlayerInputComponent->BindAction(FName(TEXT("BlockClick")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::RightBlock);
+	PlayerInputComponent->BindAction(FName(TEXT("BlockClick")), EInputEvent::IE_Released, this, &AWarriorCharacter::RightBlockUp);
 	PlayerInputComponent->BindAction(FName(TEXT("SkillQ")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::SkillQ);
 	PlayerInputComponent->BindAction(FName(TEXT("SkillE")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::SkillE);
 	PlayerInputComponent->BindAction(FName(TEXT("SkillR")), EInputEvent::IE_Pressed, this, &AWarriorCharacter::SkillR);
@@ -883,6 +1116,9 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AWarriorCharacter::Jump()
 {
+	if (GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatLoop))
+		return;
+
 	Super::Jump();
 
 	m_IsJump = true;
@@ -953,7 +1189,10 @@ void AWarriorCharacter::StopJumping()
 
 void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor)
 {
-	Super::CallDamage(_Damage);
+	if (m_IsBlocking)
+		m_IsInvincibility = true;
+
+	Super::CallDamage(_Damage, _Actor);
 
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
 
@@ -961,7 +1200,8 @@ void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor)
 
 	if (_Actor != nullptr)
 	{
-		AttackDirJudge(_Actor);
+		AttackOff();
+		HitAnimMontageJudge();
 	}
 }
 
@@ -1127,14 +1367,14 @@ void AWarriorCharacter::CombatTick(float DeltaTime)
 
 void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 {
-	if (m_IsQSkillAttacking)
+	if (m_IsQSkill)
 	{
 		m_QSkillCurCollTime += DeltaTime;
 
 		if (m_QSkillCurCollTime >= m_QSkillMaxCollTime)
 		{
 			m_QSkillCurCollTime = 0.f;
-			m_IsQSkillAttacking = false;
+			m_IsQSkill = false;
 		}
 	}
 	else if (m_IsESkillAttacking)
@@ -1181,7 +1421,9 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC2) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC3) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC4) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::CommandDashAttack) || m_IsJump)
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::CommandDashAttack) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorBlockAnimation::BlockHit) ||
+		m_IsJump)
 	{
 		return true;
 	}
@@ -1299,30 +1541,8 @@ void AWarriorCharacter::CommandTimeJudge(float DeltaTime)
 	//}
 }
 
-void AWarriorCharacter::AttackDirJudge(AActor* _Actor)
+void AWarriorCharacter::HitAnimMontageJudge()
 {
-	FVector MonsterPos = _Actor->GetActorLocation();
-	FVector PlayerPos = GetActorLocation();
-	FVector MonsterDir = MonsterPos - PlayerPos;
-	MonsterDir = MonsterDir.GetSafeNormal();
-
-	// 내적을 통해 코사인세타 값을 구한다음
-	double FValue = FVector::DotProduct(MonsterDir, GetActorForwardVector());
-	double BValue = FVector::DotProduct(MonsterDir, -GetActorForwardVector());
-	double LValue = FVector::DotProduct(MonsterDir, -GetActorRightVector());
-	double RValue = FVector::DotProduct(MonsterDir, GetActorRightVector());
-
-	// 아크코사인과 라디안 투 디그리를 이용해서 디그리의 각도로 변환하여
-	// 어느위치에서 공격했는지를 판단한다.
-	float FConvert = acosf(static_cast<float>(FValue));
-	FConvert = FMath::RadiansToDegrees(FConvert);
-	float BConvert = acosf(static_cast<float>(BValue));
-	BConvert = FMath::RadiansToDegrees(BConvert);
-	float LConvert = acosf(static_cast<float>(LValue));
-	LConvert = FMath::RadiansToDegrees(LConvert);
-	float RConvert = acosf(static_cast<float>(RValue));
-	RConvert = FMath::RadiansToDegrees(RConvert);
-
 	const int Random = static_cast<int>(m_Stream.FRandRange(1, 6));
 
 	switch (m_HitType)
@@ -1335,11 +1555,11 @@ void AWarriorCharacter::AttackDirJudge(AActor* _Actor)
 		case 2:
 		case 3:
 		case 4:
-			HitAnimation(FConvert, BConvert, LConvert, RConvert, false);
+			HitAnimation(false);
 			break;
 		case 5:
 		case 6:
-			HitAnimation(FConvert, BConvert, LConvert, RConvert, true);
+			HitAnimation(true);
 			break;
 		}
 	}
@@ -1353,90 +1573,154 @@ void AWarriorCharacter::AttackDirJudge(AActor* _Actor)
 	
 }
 
-void AWarriorCharacter::HitAnimation(float FValue, float BValue, float LValue, float RValue, bool IsLarge)
+void AWarriorCharacter::HitAnimation(bool IsLarge)
 {
 	if (!IsLarge)
 	{
-		if (!m_IsCombating)
+		switch (m_HitDir)
 		{
-			if (FValue < 45.f)
+		case EHitDir::Forward:
+			// 정면에서 막을때만 블로킹이 되기때문에 Forward에만 블로킹 처리
+			if (!m_IsBlocking)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
 			}
-			else if (BValue < 45.f)
+			else
 			{
+				GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockHit);
+			}
+			break;
+		case EHitDir::Backward:
+			if (!m_IsCombating)
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
-			}
-			else if (RValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
-			}
-			else if (LValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
-			}
-		}
-		else
-		{
-			if (FValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
-			}
-			else if (BValue < 45.f)
-			{
+			else
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
-			}
-			else if (RValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
-			}
-			else if (LValue < 45.f)
-			{
+			break;
+		case EHitDir::Left:
+			if (!m_IsCombating)
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
+			else
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
-			}
+			break;
+		case EHitDir::Right:
+			if (!m_IsCombating)
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
+			else
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
+			break;
 		}
 	}
 	else
 	{
-		if (!m_IsCombating)
+		switch (m_HitDir)
 		{
-			if (FValue < 45.f)
-			{
+		case EHitDir::Forward:
+			if (!m_IsCombating)
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeForward);
-			}
-			else if (BValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeBackward);
-			}
-			else if (RValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeRight);
-			}
-			else if (LValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeLeft);
-			}
-		}
-		else
-		{
-			if (FValue < 45.f)
-			{
+			else
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeForward);
-			}
-			else if (BValue < 45.f)
-			{
+			break;
+		case EHitDir::Backward:
+			if (!m_IsCombating)
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeBackward);
+			else
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeBackward);
-			}
-			else if (RValue < 45.f)
-			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeRight);
-			}
-			else if (LValue < 45.f)
-			{
+			break;
+		case EHitDir::Left:
+			if (!m_IsCombating)
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeLeft);
+			else
 				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeLeft);
+			break;
+		case EHitDir::Right:
+			if (!m_IsCombating)
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeRight);
+			else
+				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeRight);
+			break;
+		}
+	}
+}
+
+void AWarriorCharacter::BlockStaminaTick(float DeltaTime)
+{
+	if (m_IsBlocking)
+	{
+		if (m_MP - DeltaTime > 0.f)
+		{
+			m_MP -= DeltaTime;
+		}
+		if (m_MP <= 0.f)
+		{
+			m_MP = 0.f;
+			m_IsBlocking = false;
+		}
+	}
+
+	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
+}
+
+AActor* AWarriorCharacter::GetTargetActor()
+{
+	AActor* TargetMonster = nullptr;
+	FVector StartPos = GetActorLocation();
+	StartPos.Z -= 100.f;
+	FVector EndPos = GetActorLocation();
+	EndPos.Z += 100.f;
+	
+	TArray<TEnumAsByte<EObjectTypeQuery>> ArrayPawn;
+	TEnumAsByte<EObjectTypeQuery> ObjectTypePawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel2); // Monster Collision 채널
+	ArrayPawn.Add(ObjectTypePawn);
+
+	TArray<AActor*> IgnoreActors; // 무시할 액터들.
+
+	TArray<FHitResult> HitResult; // 히트 결과 값 받을 변수.
+
+	if (UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), StartPos, EndPos, 2000.f, ArrayPawn, true, IgnoreActors,
+		EDrawDebugTrace::None, HitResult, true))
+	{
+		// 여기서 각도를 통해서 먼저 선발한다.
+		TArray<AActor*> TargetActor = CheckAttackTarget(HitResult);
+
+		double DistValue = 100000.0;
+		// 여기서 거리를 통해 마지막으로 판별을한다..
+		for (auto& Monster : TargetActor)
+		{
+			double Dist = (GetActorLocation() - Monster->GetActorLocation()).Size();
+
+			if (Dist < DistValue)
+			{
+				DistValue = std::min(DistValue, Dist);
+				TargetMonster = Monster;
 			}
 		}
 	}
+
+	return TargetMonster;
+}
+
+TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _HitResult)
+{
+	TArray<AActor*> TargetActor;
+
+	for (auto& Hit : _HitResult)
+	{
+		FVector MonsterDir = Hit.GetActor()->GetActorLocation() - GetActorLocation();
+		MonsterDir = MonsterDir.GetSafeNormal();
+
+		double Dot = FVector::DotProduct(MonsterDir, GetActorForwardVector());
+
+		// 내적값이 0.7이상인 녀석들만 선발함
+		if (Dot != 0.0)
+		{
+			TargetActor.Add(Hit.GetActor());
+		}
+	}
+
+	return TargetActor;
 }
 
 void AWarriorCharacter::TimelineCallback(float val)

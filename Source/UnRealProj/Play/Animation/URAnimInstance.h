@@ -68,6 +68,12 @@ public:
 		return *Anim;
 	}
 
+	int FindMontageKey(UAnimMontage* _Montage);
+
+	void SetCurrentKey(int _Key)
+	{
+		m_CurrentAnimationKey = _Key;
+	}
 
 private:
 	// 언리얼의 맵은 해쉬

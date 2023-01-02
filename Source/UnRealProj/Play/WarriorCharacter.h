@@ -26,138 +26,6 @@ enum class EWarriorJumpType
 	Max
 };
 
-UENUM(BlueprintType)
-enum class WarriorAnimation : uint8
-{
-	Default UMETA(DisplayName = "디폴트"),
-	ForWardLeft = static_cast<uint8>(DefaultAnimation::Max) UMETA(DisplayName = "왼쪽 앞 대각선"),
-	ForWardRight UMETA(DisplayName = "오른쪽 앞 대각선"),
-	BackWardLeft UMETA(DisplayName = "왼쪽 뒤 대각선"),
-	BackWardRight UMETA(DisplayName = "오른쪽 뒤 대각선"),
-	RunLeft UMETA(DisplayName = "왼쪽 달리기"),
-	RunRight  UMETA(DisplayName = "오른쪽 달리기"),
-	RunForward UMETA(DisplayName = "앞 달리기"),
-	RunBackward UMETA(DisplayName = "뒤 달리기"),
-	RunForwardLeft UMETA(DisplayName = "왼쪽 앞 대각선 달리기"),
-	RunForwardRight UMETA(DisplayName = "오른쪽 앞 대각선 달리기"),
-	RunBackwardLeft UMETA(DisplayName = "왼쪽 뒤 대각선 달리기"),
-	RunBackwardRight UMETA(DisplayName = "오른쪽 뒤 대각선 달리기"),
-	DashLeft UMETA(DisplayName = "왼쪽 대쉬"),
-	DashRight UMETA(DisplayName = "오른쪽 대쉬"),
-	DashForward UMETA(DisplayName = "앞 대쉬"),
-	DashBackward UMETA(DisplayName = "뒤 대쉬"),
-	DashForwardLeft UMETA(DisplayName = "왼쪽 앞 대쉬"),
-	DashForwardRight UMETA(DisplayName = "오른쪽 앞 대쉬"),
-	DashBackwardLeft UMETA(DisplayName = "왼쪽 뒤 대쉬"),
-	DashBackwardRight UMETA(DisplayName = "오른쪽 뒤 대쉬"),
-	Attack UMETA(DisplayName = "공격모션"),
-	Hit UMETA(DisplayName = "히트모션"),
-	Skill1 UMETA(DisplayName = "SkillQ"),
-	Skill2 UMETA(DisplayName = "SkillE"),
-	Skill3 UMETA(DisplayName = "SkillR"),
-	Jump UMETA(DisplayName = "Jump"),
-	ComboA1 UMETA(DisplayName = "A콤보1"),
-	ComboA2 UMETA(DisplayName = "A콤보2"),
-	ComboA3 UMETA(DisplayName = "A콤보3"),
-	ComboB1 UMETA(DisplayName = "B콤보1"),
-	ComboB2 UMETA(DisplayName = "B콤보2"),
-	ComboB3 UMETA(DisplayName = "B콤보3"),
-	ComboB4 UMETA(DisplayName = "B콤보4"),
-	ComboC1 UMETA(DisplayName = "C콤보1"),
-	ComboC2 UMETA(DisplayName = "C콤보2"),
-	ComboC3 UMETA(DisplayName = "C콤보3"),
-	ComboC4 UMETA(DisplayName = "C콤보4"),
-	CommandDashAttack UMETA(DisplayName = "대쉬어택"),
-	Max UMETA(DisplayName = "최대치")
-};
-
-UENUM(BlueprintType)
-enum class WarriorCombatAnimation : uint8
-{
-	Default UMETA(DisplayName = "디폴트"), 
-	CombatIdle = static_cast<uint8>(WarriorAnimation::Max) UMETA(DisplayName = "전투 Idle"),
-	CombatIdleToIdle UMETA(DisplayName = "전투 Idle To Idle"),
-	IdleToCombatIdle UMETA(DisplayName = "Idle To 전투 Idle"),
-	CombatWalkLeft UMETA(DisplayName = "전투 왼쪽 걷기"),
-	CombatWalkRight  UMETA(DisplayName = "전투 오른쪽 걷기"),
-	CombatWalkForward UMETA(DisplayName = "전투 앞 걷기"),
-	CombatWalkBackWard UMETA(DisplayName = "전투 뒤 걷기"),
-	CombatWalkForWardLeft UMETA(DisplayName = "전투 왼 앞 대각선 걷기"),
-	CombatWalkForWardRight UMETA(DisplayName = "전투 오 앞 대각선 걷기"),
-	CombatWalkBackWardLeft UMETA(DisplayName = "전투 왼 뒤 대각선 걷기"),
-	CombatWalkBackWardRight UMETA(DisplayName = "전투 오 뒤 대각선 걷기"),
-	CombatRunLeft UMETA(DisplayName = "전투 왼쪽 달리기"),
-	CombatRunRight  UMETA(DisplayName = "전투 오른쪽 달리기"),
-	CombatRunForward UMETA(DisplayName = "전투 앞 달리기"),
-	CombatRunBackWard UMETA(DisplayName = "전투 뒤 달리기"),
-	CombatRunForWardLeft UMETA(DisplayName = "전투 왼 앞 대각선 달리기"),
-	CombatRunForWardRight UMETA(DisplayName = "전투 오 앞 대각선 달리기"),
-	CombatRunBackWardLeft UMETA(DisplayName = "전투 왼 뒤 대각선 달리기"),
-	CombatRunBackWardRight UMETA(DisplayName = "전투 오 뒤 대각선 달리기"),
-	CombatDashLeft UMETA(DisplayName = "전투 왼쪽 대쉬"),
-	CombatDashRight UMETA(DisplayName = "전투 오른쪽 대쉬"),
-	CombatDashForward UMETA(DisplayName = "전투 앞 대쉬"),
-	CombatDashBackward UMETA(DisplayName = "전투 뒤 대쉬"),
-	CombatDashForwardLeft UMETA(DisplayName = "전투 왼쪽 앞 대쉬"),
-	CombatDashForwardRight UMETA(DisplayName = "전투 오른쪽 앞 대쉬"),
-	CombatDashBackwardLeft UMETA(DisplayName = "전투 왼쪽 뒤 대쉬"),
-	CombatDashBackwardRight UMETA(DisplayName = "전투 오른쪽 뒤 대쉬"),
-	Max UMETA(DisplayName = "최대치")
-};
-
-UENUM(BlueprintType)
-enum class WarriorJumpAnimation : uint8
-{
-	Default UMETA(DisplayName = "디폴트"),
-	JumpStartLeft = static_cast<uint8>(WarriorCombatAnimation::Max) UMETA(DisplayName = "점프 시작 왼"),
-	JumpStartRight UMETA(DisplayName = "점프 시작 오"),
-	JumpStartForward UMETA(DisplayName = "점프 시작 앞"),
-	JumpStartBackward UMETA(DisplayName = "점프 시작 뒤"),
-	JumpLoop UMETA(DisplayName = "점프 루프"),
-	JumpEndLeft UMETA(DisplayName = "점프 끝 왼"),
-	JumpEndRight UMETA(DisplayName = "점프 끝 오"),
-	JumpEndForward UMETA(DisplayName = "점프 끝 앞"),
-	JumpEndBackward UMETA(DisplayName = "점프 끝 뒤"),
-	JumpCombatStartLeft  UMETA(DisplayName = "전투 상태 점프 시작 왼"),
-	JumpCombatStartRight UMETA(DisplayName = "전투 상태 점프 시작 오"),
-	JumpCombatStartForward UMETA(DisplayName = "전투 상태 점프 시작 앞"),
-	JumpCombatStartBackward UMETA(DisplayName = "전투 상태 점프 시작 뒤"),
-	JumpCombatLoop UMETA(DisplayName = "전투 상태 점프 루프"),
-	JumpCombatEndLeft UMETA(DisplayName = "전투 상태 점프 끝 왼"),
-	JumpCombatEndRight UMETA(DisplayName = "전투 상태 점프 끝 오"),
-	JumpCombatEndForward UMETA(DisplayName = "전투 상태 점프 끝 앞"),
-	JumpCombatEndBackward UMETA(DisplayName = "전투 상태 점프 끝 뒤"),
-	Max UMETA(DisplayName = "최대치")
-};
-
-UENUM(BlueprintType)
-enum class WarriorHitAnimation : uint8
-{
-	Default UMETA(DisplayName = "디폴트"),
-	HitLeft = static_cast<uint8>(WarriorJumpAnimation::Max) UMETA(DisplayName = "피격 왼"),
-	HitRight UMETA(DisplayName = "피격 오"),
-	HitForward UMETA(DisplayName = "피격 앞"),
-	HitBackward UMETA(DisplayName = "피격 뒤"),
-	CombatHitLeft UMETA(DisplayName = "전투 피격 왼"),
-	CombatHitRight UMETA(DisplayName = "전투 피격 오"),
-	CombatHitForward UMETA(DisplayName = "전투 피격 앞"),
-	CombatHitBackward UMETA(DisplayName = "전투 피격 뒤"),
-	HitLargeLeft UMETA(DisplayName = "큰 피격 왼"),
-	HitLargeRight UMETA(DisplayName = "큰 피격 오"),
-	HitLargeForward UMETA(DisplayName = "큰 피격 앞"),
-	HitLargeBackward UMETA(DisplayName = "큰 피격 뒤"),
-	CombatHitLargeLeft UMETA(DisplayName = "전투 큰 피격 왼"),
-	CombatHitLargeRight UMETA(DisplayName = "전투 큰 피격 오"),
-	CombatHitLargeForward UMETA(DisplayName = "전투 큰 피격 앞"),
-	CombatHitLargeBackward UMETA(DisplayName = "전투 큰 피격 뒤"),
-	HitLargeToFallDown UMETA(DisplayName = "큰 피격 후 넘어짐"),
-	CombatHitLargeToFallDown UMETA(DisplayName = "전투 큰 피격 후 넘어짐"),
-	Dead UMETA(DisplayName = "사망"),
-	CombatDead UMETA(DisplayName = "전투시 사망"),
-	GetUp UMETA(DisplayName = "일어나는 동작"),
-	CombatGetUp UMETA(DisplayName = "전투시 일어나는 동작"),
-	Max UMETA(DisplayName = "최대치")
-};
 
 UCLASS()
 class UNREALPROJ_API AWarriorCharacter : public AURCharacter
@@ -187,13 +55,28 @@ private:
 	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<WarriorHitAnimation, UAnimMontage*> m_PlayerHitAnimations;
 
+	// 막기 동작들
+	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<WarriorBlockAnimation, UAnimMontage*> m_PlayerBlockAnimations;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* m_CameraComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<class USphereComponent> m_DamageCollision;
+
 	class APlayerController* m_PlayerController;
+
+	UPROPERTY(EditAnywhere, Category = "Firing")
+	class UNiagaraSystem* m_ShieldEffect;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		class UNiagaraComponent* m_Shield;
+
+	AActor* m_MonsterActor;
 
 	class UAnimMontage* m_CombatIdleMontage;
 
@@ -210,7 +93,7 @@ private:
 	bool m_IsBackwardDown;
 	bool m_IsLeftDown;
 	bool m_IsRightDown;
-	bool m_IsQSkillAttacking;
+	bool m_IsQSkill;
 	bool m_IsESkillAttacking;
 	bool m_IsRSkillAttacking;
 
@@ -256,6 +139,7 @@ private:
 
 
 
+
 public:
 	void ResetDash()
 	{
@@ -291,6 +175,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		void LeftAttackUp();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void RightBlock();
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void RightBlockUp();
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		void SkillQ();
@@ -421,6 +311,11 @@ public:
 		m_IsJump = IsJump;
 	}
 
+	AActor* GetMotionWarpingActor()	const
+	{
+		return m_MonsterActor;
+	}
+
 
 	void AddMonsterCount()
 	{
@@ -447,6 +342,11 @@ public:
 	bool GetCtrlDown()	const
 	{
 		return m_IsRun;
+	}
+
+	bool GetIsQSkill()	const
+	{
+		return m_IsQSkill;
 	}
 
 protected:
@@ -488,9 +388,14 @@ private:
 	// 커맨드 시간 판단
 	void CommandTimeJudge(float DeltaTime);
 
-	void AttackDirJudge(AActor* _Actor);
-	void HitAnimation(float FValue, float BValue, float LValue, float RValue, bool IsLarge);
+	void HitAnimMontageJudge();
+	void HitAnimation(bool IsLarge);
 
+	void BlockStaminaTick(float DeltaTime);
+
+	AActor* GetTargetActor();
+
+	TArray<AActor*> CheckAttackTarget(const TArray<FHitResult>& _HitResult);
 
 
 

@@ -52,6 +52,19 @@ UAnimMontage* UURAnimInstance::GetAnimation(int _Key)
 	return *FindMontage;
 }
 
+int UURAnimInstance::FindMontageKey(UAnimMontage* _Montage)
+{
+	for (auto& Elem : m_Animations)
+	{
+		if (Elem.Value == _Montage)
+		{
+			return Elem.Key;
+		}
+	}
+
+	return 0;
+}
+
 void UURAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
