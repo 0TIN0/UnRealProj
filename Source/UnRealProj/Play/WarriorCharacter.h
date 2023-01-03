@@ -68,6 +68,12 @@ private:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class USphereComponent> m_DamageCollision;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TArray<UMaterialInterface*> m_ArrayNormalMat;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TArray<UMaterialInterface*> m_ArrayRimLightMat;
+
 	class APlayerController* m_PlayerController;
 
 	UPROPERTY(EditAnywhere, Category = "Firing")
@@ -75,6 +81,7 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		class UNiagaraComponent* m_Shield;
+
 
 	AActor* m_MonsterActor;
 
@@ -137,6 +144,11 @@ private:
 	//TQueue<char> m_qCommand;
 	//float m_qCommandTime;
 
+	// 광폭화 공속관련
+	float m_AttackSpeed;
+
+	// 궁극기 관련
+	TArray<AURCharacter*> m_UltimateTargetMonster;
 
 
 
@@ -216,6 +228,7 @@ public:
 		void ShiftKeyOn();
 
 	void DamageOn() override;
+	void DamageOff() override;
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		FORCEINLINE void SetESkillEnable(bool _WSkillEnable)
@@ -349,6 +362,11 @@ public:
 		return m_IsQSkill;
 	}
 
+	TArray<AURCharacter*> GetUltimateTarget()
+	{
+		return m_UltimateTargetMonster;
+	}
+
 protected:
 	void BeginPlay() override;
 
@@ -375,6 +393,7 @@ private:
 	void DashToJudge();
 	void CombatTick(float DeltaTime);
 	void CoolTimeTick(float DeltaTime);
+	bool FirstJudgeFunc();
 	bool JudgeFunc();
 	bool DashJudgeFunc();
 	void StopDashing();
@@ -397,6 +416,8 @@ private:
 
 	TArray<AActor*> CheckAttackTarget(const TArray<FHitResult>& _HitResult);
 
+	void SetBerserkRateScale();
+
 
 
 	
@@ -417,4 +438,20 @@ protected:
 		void TimelineFinishedCallback();
 
 	void PlayTimeline();
+
+public:
+	void TraceAttackMonster();
+
+	TArray<AURCharacter*> GetSphereTraceHitActor(float _MinMax, float _Radius, ECollisionChannel _CollisionChannel = ECollisionChannel::ECC_GameTraceChannel2);
+
+
+	template <typename T>
+	void CreateHitObject(AActor* _Actor)
+	{
+		FActorSpawnParameters spawnParams;
+		FVector vecSpawnPos = _Actor->GetActorLocation();
+		FTransform SpawnTransform = FTransform(vecSpawnPos);
+
+		GetWorld()->SpawnActor<T>(T::StaticClass(), SpawnTransform, spawnParams);
+	}
 };

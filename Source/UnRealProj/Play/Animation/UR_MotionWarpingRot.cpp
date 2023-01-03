@@ -42,7 +42,7 @@ void UUR_MotionWarpingRot::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequ
 	if (!m_Player)
 		m_Player = MeshComp->GetOwner<AWarriorCharacter>();
 
-	if (!m_Player || !m_Player->IsValidLowLevel())
+	if (!m_Player || !m_Player->IsValidLowLevel() || !m_Player->GetIsQSkill())
 	{
 		return;
 	}

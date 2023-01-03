@@ -2,6 +2,7 @@
 
 
 #include "Play/WarriorCharacter.h"
+#include "Object/Hit/UR_NormalAttackHit.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -23,6 +24,7 @@
 #include "Engine/EngineTypes.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+
 
 
 
@@ -50,7 +52,8 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_IsQuestCompletion(false),
 	m_OnDash(false),
 	m_IsJump(false),
-	m_JumpType(EWarriorJumpType::Default)
+	m_JumpType(EWarriorJumpType::Default),
+	m_AttackSpeed(1.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -146,7 +149,7 @@ void AWarriorCharacter::PlayerPickingMove()
 
 void AWarriorCharacter::PlayerLeftMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || m_IsJump)
+	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
 	{
 		return;
 	}
@@ -250,7 +253,7 @@ void AWarriorCharacter::PlayerLeftMove(float Value)
 
 void AWarriorCharacter::PlayerRightMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || m_IsJump)
+	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
 	{
 		return;
 	}
@@ -362,7 +365,7 @@ void AWarriorCharacter::PlayerRightMove(float Value)
 
 void AWarriorCharacter::PlayerForwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || m_IsJump)
+	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
 	{
 		return;
 	}
@@ -430,7 +433,7 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 
 void AWarriorCharacter::PlayerBackwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || m_IsJump)
+	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
 	{
 		return;
 	}
@@ -517,7 +520,7 @@ void AWarriorCharacter::LeftAttack()
 	m_IsComboAttack = true;
 	m_IsCombating = true;
 
-	if (true == IsAttack())
+	if (true == IsAttack() || m_IsESkillAttacking)
 	{
 		return;
 	}
@@ -531,7 +534,10 @@ void AWarriorCharacter::LeftAttack()
 		GetCharacterMovement()->MaxWalkSpeed = m_PlayerInfo->Speed;
 	}
 
-	m_MonsterActor = GetTargetActor();
+	if (m_IsQSkill)
+	{
+		m_MonsterActor = GetTargetActor();
+	}
 
 	if (m_IsRun && m_IsForwardDown)
 	{
@@ -542,7 +548,7 @@ void AWarriorCharacter::LeftAttack()
 	else
 	{
 		// 1 ~ 3의 값을 나오도록 콤보가 3개이기 때문
-		m_ComboType = EWarriorComboType::ComboA;//(EWarriorComboType)m_Stream.RandRange(1, 3);
+		m_ComboType = (EWarriorComboType)m_Stream.RandRange(1, 3);
 
 		switch (m_ComboType)
 		{
@@ -568,6 +574,10 @@ void AWarriorCharacter::LeftAttackUp()
 
 void AWarriorCharacter::RightBlock()
 {
+	if (true == IsAttack() || m_IsESkillAttacking)
+	{
+		return;
+	}
 	m_IsBlocking = true;
 	m_IsCombating = true;
 
@@ -665,7 +675,14 @@ void AWarriorCharacter::SkillQ()
 		return;
 	}
 
+	for (int32 i = 0; i < m_ArrayRimLightMat.Num(); ++i)
+	{
+		GetMesh()->SetMaterial(i, m_ArrayRimLightMat[i]);
+	}
+
 	m_IsQSkill = true;
+	m_AttackSpeed = 1.3f;
+	SetBerserkRateScale();
 
 	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillQ);
 
@@ -676,7 +693,7 @@ void AWarriorCharacter::SkillQ()
 
 void AWarriorCharacter::SkillE()
 {
-	if (true == IsAttack())
+	if (true == IsAttack() || JudgeFunc())
 	{
 		return;
 	}
@@ -693,8 +710,8 @@ void AWarriorCharacter::SkillE()
 
 	m_IsESkillAttacking = true;
 
-	AttackOn();
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillE);
+	//AttackOn();
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillELoop);
 	m_MP -= m_SkillEConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
@@ -708,7 +725,10 @@ void AWarriorCharacter::SkillR()
 	}
 
 	AttackOn();
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillR);
+
+	m_UltimateTargetMonster = GetSphereTraceHitActor(100.f, 1500.f);
+
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRStart);
 	m_MP -= m_SkillRConsumedMP;
 
 	m_MPPercent = m_MP / m_PlayerInfo->MaxMP;
@@ -859,8 +879,10 @@ void AWarriorCharacter::ShiftKeyOn()
 
 void AWarriorCharacter::DamageOn()
 {
-	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-
+	if (!m_IsQSkill)
+	{
+		m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	}
 	TArray<FHitResult> Targets = CollisionCheck(m_DamageCollision->GetComponentLocation(),
 		FName(TEXT("PlayerAttackTrace")), m_DamageCollision->GetCollisionShape());
 
@@ -882,6 +904,8 @@ void AWarriorCharacter::DamageOn()
 			}
 			Check = true;
 			Character->CallDamage(3.0, this);
+			FActorSpawnParameters spawnParams;
+			CreateHitObject<AUR_NormalAttackHit>(Character);
 		}
 	}
 
@@ -894,6 +918,7 @@ void AWarriorCharacter::DamageOn()
 
 	DrawDebugSphere(GetWorld(), m_DamageCollision->GetComponentLocation(), m_DamageCollision->GetScaledSphereRadius(),
 		15, Color, false, 0.1f);
+	
 	/*TArray<UActorComponent*> Array = GetDamageCollision();
 
 	for (size_t i = 0; i < Array.Num(); ++i)
@@ -929,6 +954,10 @@ void AWarriorCharacter::DamageOn()
 		DrawDebugSphere(GetWorld(), Sphere->GetComponentLocation(), Sphere->GetScaledSphereRadius(),
 			15, Color, false, 0.1f);
 	}*/
+}
+void AWarriorCharacter::DamageOff()
+{
+	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 void AWarriorCharacter::BeginPlay()
 {
@@ -1001,6 +1030,10 @@ void AWarriorCharacter::BeginPlay()
 	CommandStructInit();
 
 	m_CombatIdleMontage = GetAnimationInstance()->GetAnimation(WarriorCombatAnimation::CombatIdle);
+
+	m_ArrayNormalMat = GetMesh()->GetMaterials();
+
+	GetWorld();
 }
 
 void AWarriorCharacter::Tick(float DeltaTime)
@@ -1375,9 +1408,17 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 		{
 			m_QSkillCurCollTime = 0.f;
 			m_IsQSkill = false;
+			m_AttackSpeed = 1.f;
+			SetBerserkRateScale();
+
+
+			for (int32 i = 0; i < m_ArrayNormalMat.Num(); ++i)
+			{
+				GetMesh()->SetMaterial(i, m_ArrayNormalMat[i]);
+			}
 		}
 	}
-	else if (m_IsESkillAttacking)
+	if (m_IsESkillAttacking)
 	{
 		m_ESkillCurCollTime += DeltaTime;
 
@@ -1385,9 +1426,13 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 		{
 			m_ESkillCurCollTime = 0.f;
 			m_IsESkillAttacking = false;
+			m_IsCombating = true;
+			m_CombatTime = 7.f;
+
+			GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillEEnd);
 		}
 	}
-	else if (m_IsRSkillAttacking)
+	if (m_IsRSkillAttacking)
 	{
 		m_RSkillCurCollTime += DeltaTime;
 
@@ -1396,6 +1441,19 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 			m_RSkillCurCollTime = 0.f;
 			m_IsRSkillAttacking = false;
 		}
+	}
+}
+
+bool AWarriorCharacter::FirstJudgeFunc()
+{
+	if (GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillQ) ||
+		m_IsJump)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -1421,9 +1479,10 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC2) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC3) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::ComboC4) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillELoop) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::CommandDashAttack) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorBlockAnimation::BlockHit) ||
-		m_IsJump)
+		m_IsJump || m_IsESkillAttacking)
 	{
 		return true;
 	}
@@ -1442,7 +1501,8 @@ bool AWarriorCharacter::DashJudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashForwardLeft) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashForwardRight) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashBackwardLeft) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashBackwardRight))
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::DashBackwardRight) ||
+		m_IsESkillAttacking)
 	{
 		return true;
 	}
@@ -1543,6 +1603,10 @@ void AWarriorCharacter::CommandTimeJudge(float DeltaTime)
 
 void AWarriorCharacter::HitAnimMontageJudge()
 {
+	if (IsAttack() || JudgeFunc())
+	{
+		return;
+	}
 	const int Random = static_cast<int>(m_Stream.FRandRange(1, 6));
 
 	switch (m_HitType)
@@ -1723,6 +1787,25 @@ TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _
 	return TargetActor;
 }
 
+void AWarriorCharacter::SetBerserkRateScale()
+{
+	GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboA1)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboA2)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboA3)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboB1)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboB2)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboB3)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboB4)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboC1)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboC2)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboC3)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboC4)->RateScale = m_AttackSpeed;
+	GetAnimationInstance()->GetAnimation(WarriorAnimation::SkillELoop)->RateScale = m_AttackSpeed;
+	
+}
+
+
 void AWarriorCharacter::TimelineCallback(float val)
 {
 	FVector NewLocation = UKismetMathLibrary::VLerp(GetActorLocation(), m_DashDir, val);
@@ -1741,4 +1824,62 @@ void AWarriorCharacter::PlayTimeline()
 	{
 		MyTimeline->PlayFromStart();
 	}
+}
+
+void AWarriorCharacter::TraceAttackMonster()
+{
+	AActor* TargetMonster = nullptr;
+	FVector StartPos = GetActorLocation();
+	FVector EndPos = GetActorLocation() + GetActorForwardVector() * 2500.f;
+
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ArrayPawn;
+	TEnumAsByte<EObjectTypeQuery> ObjectTypePawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel2); // Monster Collision 채널
+	ArrayPawn.Add(ObjectTypePawn);
+
+	TArray<AActor*> IgnoreActors; // 무시할 액터들.
+
+	TArray<FHitResult> HitResult; // 히트 결과 값 받을 변수.
+
+	if (UKismetSystemLibrary::LineTraceMultiForObjects(GetWorld(), StartPos, EndPos, ArrayPawn, true, IgnoreActors,
+		EDrawDebugTrace::None, HitResult, true))
+	{
+		for (auto& Target : HitResult)
+		{
+			AURCharacter* Monster = Cast<AURCharacter>(Target.GetActor());
+			Monster->CallDamage(m_PlayerInfo->MaxAttack, this);
+			Monster->SetHitType(EHitType::NormalHit);
+			CreateHitObject<AUR_NormalAttackHit>(Monster);
+		}
+
+	}
+}
+
+TArray<AURCharacter*> AWarriorCharacter::GetSphereTraceHitActor(float _MinMax, float _Radius, ECollisionChannel _CollisionChannel)
+{
+	TArray<AURCharacter*> HitMonster;
+	AActor* TargetMonster = nullptr;
+	FVector StartPos = GetActorLocation();
+	StartPos.Z -= _MinMax;
+	FVector EndPos = GetActorLocation();
+	EndPos.Z += _MinMax;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ArrayPawn;
+	TEnumAsByte<EObjectTypeQuery> ObjectTypePawn = UEngineTypes::ConvertToObjectType(_CollisionChannel); // Monster Collision 채널
+	ArrayPawn.Add(ObjectTypePawn);
+
+	TArray<AActor*> IgnoreActors; // 무시할 액터들.
+
+	TArray<FHitResult> HitResult; // 히트 결과 값 받을 변수.
+
+	if (UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), StartPos, EndPos, _Radius, ArrayPawn, true, IgnoreActors,
+		EDrawDebugTrace::None, HitResult, true))
+	{
+		for (auto& Monster : HitResult)
+		{
+			HitMonster.Add(Monster.GetActor()->GetInstigator<AURCharacter>());
+		}
+	}
+
+	return HitMonster;
 }

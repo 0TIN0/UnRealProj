@@ -28,6 +28,8 @@ void UUR_MotionWarpingDash::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimS
 		return;
 	}
 
+	m_Player->TraceAttackMonster();
+
 	FLatentActionInfo LatentInfo;
 	LatentInfo.CallbackTarget = this;
 	LatentInfo.ExecutionFunction = FName("Finished");

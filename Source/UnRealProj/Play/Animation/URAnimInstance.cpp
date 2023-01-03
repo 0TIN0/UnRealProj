@@ -82,6 +82,7 @@ void UURAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	float Len = FindMontage->GetPlayLength();
+	
 	m_Time += DeltaSeconds;
 
 	float Percent = m_Time / Len;

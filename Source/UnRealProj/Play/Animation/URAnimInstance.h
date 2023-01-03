@@ -86,6 +86,7 @@ private:
 	int	m_DefaultKey;
 	float m_Time;
 
+
 protected:
 	// 이녀석이 만들어질때 이니셜라이즈 할 문제가 있다면 이녀석으로
 	void NativeBeginPlay() override;

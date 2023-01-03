@@ -251,9 +251,9 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor)
 
 	if (IsDeath())
 	{
-		ItemDrop(m_DropTable);
+		//ItemDrop(m_DropTable);
 
-		m_Player->AddMonsterCount();
+		//m_Player->AddMonsterCount();
 
 		Destroy();
 	}
