@@ -149,7 +149,11 @@ private:
 
 	// 궁극기 관련
 	TArray<AURCharacter*> m_UltimateTargetMonster;
-
+	int m_UltimateAttackCount;
+	double m_PrevZ;
+	bool m_IsUltimateAttack;
+	FRotator m_CameraComponentDefaultRot;
+	AURCharacter* m_UltimateCameraTarget;
 
 
 public:
@@ -324,6 +328,11 @@ public:
 		m_IsJump = IsJump;
 	}
 
+	int GetUltimateAttackCount()	const
+	{
+		return m_UltimateAttackCount;
+	}
+
 	AActor* GetMotionWarpingActor()	const
 	{
 		return m_MonsterActor;
@@ -362,9 +371,19 @@ public:
 		return m_IsQSkill;
 	}
 
+	double GetIsPrevZ()	const
+	{
+		return m_PrevZ;
+	}
+
 	TArray<AURCharacter*> GetUltimateTarget()
 	{
 		return m_UltimateTargetMonster;
+	}
+
+	void SetIsUltimateAttack(bool _Enable)
+	{
+		m_IsUltimateAttack = _Enable;
 	}
 
 protected:
@@ -380,7 +399,7 @@ protected:
 
 protected:
 
-	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
 
 
 
@@ -443,6 +462,11 @@ public:
 	void TraceAttackMonster();
 
 	TArray<AURCharacter*> GetSphereTraceHitActor(float _MinMax, float _Radius, ECollisionChannel _CollisionChannel = ECollisionChannel::ECC_GameTraceChannel2);
+
+	void UltimateAttack();
+
+	void Finished();
+	void AdvanceTimer();
 
 
 	template <typename T>

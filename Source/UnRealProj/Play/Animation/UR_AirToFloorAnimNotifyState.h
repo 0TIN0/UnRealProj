@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "UR_FloorToAirAnimNotifyState.generated.h"
+#include "UR_AirToFloorAnimNotifyState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_FloorToAirAnimNotifyState : public UAnimNotifyState
+class UNREALPROJ_API UUR_AirToFloorAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
@@ -22,5 +22,5 @@ protected:
 	void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
 	void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
-
+	
 };

@@ -150,7 +150,7 @@ void AUR_KrakenBoss::DamageOff()
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-void AUR_KrakenBoss::CallDamage(double _Damage, AActor* _Actor)
+void AUR_KrakenBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	Super::CallDamage(_Damage, _Actor);
 

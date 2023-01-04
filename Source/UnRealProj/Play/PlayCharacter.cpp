@@ -529,7 +529,7 @@ void APlayCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}*/
 }
 
-void APlayCharacter::CallDamage(double _Damage, AActor* _Actor)
+void APlayCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	Super::CallDamage(_Damage);
 

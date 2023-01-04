@@ -75,6 +75,6 @@ protected:
 	void Tick(float DeltaTime)	override;
 	void DamageOn() override;
 	void DamageOff() override;
-	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
 	
 };

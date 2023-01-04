@@ -3,27 +3,64 @@
 
 #include "Play/Animation/UR_FloorToAirAnimNotifyState.h"
 #include "../WarriorCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void UUR_FloorToAirAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
-	AWarriorCharacter* Player = MeshComp->GetOwner<AWarriorCharacter>();
+	m_Player = MeshComp->GetOwner<AWarriorCharacter>();
 
-	if (!Player || !Player->IsValidLowLevel())
+	if (!m_Player || !m_Player->IsValidLowLevel())
+	{
+		return;
+	}
+
+	if (m_Player->GetUltimateTarget().IsEmpty())
 	{
 		return;
 	}
 
 	FVector EndVec = FVector(0.0, 0.0, 1.0);
-	EndVec *= 1400.f;
+	EndVec *= 1800.f;
 
-	for (auto& Target : Player->GetUltimateTarget())
+	for (auto& Target : m_Player->GetUltimateTarget())
 	{
 		Target->LaunchCharacter(EndVec, true, true);
+		Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
 	}
 
 	EndVec.Z += 400.f;
 
-	Player->LaunchCharacter(EndVec, true, true);
+	m_Player->LaunchCharacter(EndVec, true, true);
+}
+
+void UUR_FloorToAirAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+{
+	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
+}
+
+void UUR_FloorToAirAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+{
+	Super::NotifyEnd(MeshComp, Animation, EventReference);
+
+	if (!m_Player || !m_Player->IsValidLowLevel())
+	{
+		return;
+	}
+
+
+	if (m_Player->GetActorLocation().Z - m_Player->GetIsPrevZ() >= 800.0)
+	{
+		for (auto& Target : m_Player->GetUltimateTarget())
+		{
+			Target->LaunchCharacter(FVector(), true, true);
+			Target->GetCharacterMovement()->GravityScale = 0.f;
+			Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+		}
+		m_Player->LaunchCharacter(FVector(), true, true);
+		m_Player->GetCharacterMovement()->GravityScale = 0.f;
+		m_Player->GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
+		m_Player->UltimateAttack();
+	}
 }

@@ -138,7 +138,7 @@ void AUR_BossMonster::DamageOff()
 	Super::DamageOff();
 }
 
-void AUR_BossMonster::CallDamage(double _Damage, AActor* _Actor)
+void AUR_BossMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	Super::CallDamage(_Damage);
 

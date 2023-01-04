@@ -237,7 +237,7 @@ protected:
 
 protected:
 
-	void CallDamage(double _Damage, AActor* _Actor = nullptr) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
 
 
 

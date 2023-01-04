@@ -165,7 +165,7 @@ TArray<AActor*> AURCharacter::TargetsSearch(FName _Name, float _Range)
 	return SelectActors;
 }
 
-void AURCharacter::CallDamage(double _Damage, AActor* _Actor)
+void AURCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	HitDirJudge(_Actor);
 	if (!m_IsBlocking)
@@ -184,17 +184,21 @@ void AURCharacter::CallDamage(double _Damage, AActor* _Actor)
 			break;
 		}
 	}
-	FVector Dir = GetActorLocation() - _Actor->GetActorLocation();
 
-	Dir = Dir.GetSafeNormal();
-	switch (m_HitType)
+	if (_IsKnockBack)
 	{
-	case EHitType::NormalHit:
-		LaunchCharacter(Dir * 2000.f, true, false);
-		break;
-	case EHitType::KnockDownHit:
-		LaunchCharacter(Dir * 3000.f, true, false);
-		break;
+		FVector Dir = GetActorLocation() - _Actor->GetActorLocation();
+
+		Dir = Dir.GetSafeNormal();
+		switch (m_HitType)
+		{
+		case EHitType::NormalHit:
+			LaunchCharacter(Dir * 2000.f, true, false);
+			break;
+		case EHitType::KnockDownHit:
+			LaunchCharacter(Dir * 3000.f, true, false);
+			break;
+		}
 	}
 
 }
@@ -268,6 +272,11 @@ bool AURCharacter::PathMove()
 	}
 
 	if (0 == m_Path->PathPoints.Num())
+	{
+		return false;
+	}
+
+	if (m_Path->PathPoints.IsEmpty())
 	{
 		return false;
 	}

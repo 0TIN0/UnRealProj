@@ -211,7 +211,7 @@ void AMonster::DamageOff()
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-void AMonster::CallDamage(double _Damage, AActor* _Actor)
+void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	Super::CallDamage(_Damage, _Actor);
 

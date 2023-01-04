@@ -53,7 +53,8 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_OnDash(false),
 	m_IsJump(false),
 	m_JumpType(EWarriorJumpType::Default),
-	m_AttackSpeed(1.f)
+	m_AttackSpeed(1.f),
+	m_UltimateAttackCount(8)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -84,6 +85,7 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("CameraSpringArm")));
 	m_CameraSpringArmComponent->SetupAttachment(RootComponent);
 	m_CameraSpringArmComponent->TargetArmLength = 800.0f;
+	m_CameraComponentDefaultRot = m_CameraSpringArmComponent->GetTargetRotation();
 	//m_CameraSpringArmComponent->SetRelativeRotation(FRotator(-55.0f, 0.0f, 0.0f));
 	m_CameraSpringArmComponent->bDoCollisionTest = false;
 
@@ -725,8 +727,18 @@ void AWarriorCharacter::SkillR()
 	}
 
 	AttackOn();
+	m_IsUltimateAttack = true;
+	m_IsInvincibility = true;
 
-	m_UltimateTargetMonster = GetSphereTraceHitActor(100.f, 1500.f);
+	m_CameraSpringArmComponent->TargetArmLength = 1500;
+
+	m_UltimateTargetMonster = GetSphereTraceHitActor(100.f, 800.f);
+
+	m_UltimateCameraTarget = this;
+
+	m_UltimateAttackCount = m_UltimateTargetMonster.Num();
+
+	m_PrevZ = GetActorLocation().Z;
 
 	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRStart);
 	m_MP -= m_SkillRConsumedMP;
@@ -1106,6 +1118,25 @@ void AWarriorCharacter::Tick(float DeltaTime)
 
 	JumpTrace();
 	CommandTimeJudge(DeltaTime);
+
+	if (m_IsUltimateAttack)
+	{
+		if (m_UltimateTargetMonster.Num() != 0)
+		{
+			if (m_UltimateCameraTarget)
+			{
+				FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),
+					m_UltimateCameraTarget->GetActorLocation());
+
+				FRotator Rot = m_CameraSpringArmComponent->GetComponentRotation();
+
+				Rot = FMath::RInterpTo(Rot, TargetRotator,
+					DeltaTime, 5.f);
+
+				m_CameraSpringArmComponent->SetWorldRotation(Rot);
+			}
+		}
+	}
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -1220,10 +1251,12 @@ void AWarriorCharacter::StopJumping()
 	Super::StopJumping();
 }
 
-void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor)
+void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
-	if (m_IsBlocking)
-		m_IsInvincibility = true;
+	if (m_IsInvincibility)
+	{
+		return;
+	}
 
 	Super::CallDamage(_Damage, _Actor);
 
@@ -1541,6 +1574,10 @@ void AWarriorCharacter::TurnFunc()
 
 void AWarriorCharacter::JumpTrace()
 {
+	/*if (!GetCharacterMovement()->IsFalling() && m_IsUltimateAttack)
+	{
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillREnd);
+	}*/
 	if (m_IsJump && !GetCharacterMovement()->IsFalling())
 	{
 		m_IsJump = false;
@@ -1882,4 +1919,80 @@ TArray<AURCharacter*> AWarriorCharacter::GetSphereTraceHitActor(float _MinMax, f
 	}
 
 	return HitMonster;
+}
+
+void AWarriorCharacter::UltimateAttack()
+{
+	if (m_UltimateAttackCount <= 0)
+	{
+		m_IsUltimateAttack = false;
+		m_CameraSpringArmComponent->TargetArmLength = 800;
+		return;
+	}
+
+	float WaitTime = 0.3f; //시간을 설정하고
+	GetWorld()->GetTimerManager().SetTimer(
+		m_TimerHandle,    // TimerHandle
+		this,    // FTimerDelegate 델리게이트 수행 객체
+		&AWarriorCharacter::AdvanceTimer,    // FTimerDelegate (TimerManager.h 확인)
+		WaitTime,    // Interval
+		true,    // 반복 여부 (false : 1회만)
+		0.f    // 최초 Interval, 이것이 0이면 Interval이 사용됨
+	);
+}
+
+void AWarriorCharacter::Finished()
+{
+	
+}
+
+void AWarriorCharacter::AdvanceTimer()
+{
+	FLatentActionInfo LatentInfo;
+	LatentInfo.CallbackTarget = this;
+	LatentInfo.ExecutionFunction = FName("Finished");
+	LatentInfo.Linkage = 0;
+	LatentInfo.UUID = 0;
+
+	AURCharacter* Target = m_UltimateTargetMonster[m_UltimateAttackCount - 1];
+
+	FVector Dir = Target->GetActorLocation() - GetActorLocation();
+	Dir = Dir.GetSafeNormal();
+
+	FVector EndPos;
+
+	if (m_UltimateAttackCount > 1)
+		EndPos = Target->GetActorLocation() + Dir * 300.f;
+	else
+		EndPos = Target->GetActorLocation() + Dir * -50.f;
+
+	Target->SetHitType(EHitType::NormalHit);
+	Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
+	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
+
+	FRotator PlayerRot = Dir.Rotation();
+
+	GetController()->SetControlRotation(PlayerRot);
+
+	UKismetSystemLibrary::MoveComponentTo(GetRootComponent(), EndPos, GetActorRotation(),
+		false, false, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+
+	--m_UltimateAttackCount;
+
+	if (m_UltimateAttackCount <= 0)
+	{
+		for (auto& Target1 : m_UltimateTargetMonster)
+		{
+			if (Target1)
+				Target1->GetCharacterMovement()->GravityScale = 5.f;
+		}
+
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillREnd);
+		GetCharacterMovement()->GravityScale = 5.f;
+		m_UltimateCameraTarget = nullptr;
+
+		m_CameraSpringArmComponent->TargetArmLength = 800;
+		// 카운트다운이 완료되면 타이머를 중지
+		GetWorldTimerManager().ClearTimer(m_TimerHandle);
+	}
 }

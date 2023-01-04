@@ -160,6 +160,10 @@ public:
 		return m_IsKnockDown;
 	}
 
+	struct FURPlayerDataInfo* GetPlayerInfo()	const
+	{
+		return m_PlayerInfo;
+	}
 
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
@@ -197,7 +201,7 @@ public:
 	TArray<AActor*> TargetsSearch(FName _Name, float _Range = -1.f);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
-	virtual void CallDamage(double _Damage, AActor* _Actor = nullptr);
+	virtual void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE void SetHP(double _HP)
