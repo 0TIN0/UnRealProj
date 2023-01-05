@@ -3,6 +3,8 @@
 
 #include "Play/WarriorCharacter.h"
 #include "Object/Hit/UR_NormalAttackHit.h"
+#include "Object/UR_UltimateSpline.h"
+#include "Object/UR_UltimateCharge.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -726,17 +728,28 @@ void AWarriorCharacter::SkillR()
 		return;
 	}
 
+	m_UltimateTargetMonster = GetSphereTraceHitActor(100.f, 800.f);
+
+	if (m_UltimateTargetMonster.IsEmpty())
+	{
+		return;
+	}
+
 	AttackOn();
-	m_IsUltimateAttack = true;
 	m_IsInvincibility = true;
+	m_UltimateAttackCount = 14;
+
+	m_CameraSpringArmComponent->bUsePawnControlRotation = false;
+	m_CameraSpringArmComponent->bInheritPitch = false;
+
 
 	m_CameraSpringArmComponent->TargetArmLength = 1500;
 
-	m_UltimateTargetMonster = GetSphereTraceHitActor(100.f, 800.f);
 
-	m_UltimateCameraTarget = this;
+	if (!m_UltimateTargetMonster.IsEmpty())
+		m_UltimateCameraTarget = m_UltimateTargetMonster[0];
 
-	m_UltimateAttackCount = m_UltimateTargetMonster.Num();
+	m_UltimateTargetCount = m_UltimateTargetMonster.Num();
 
 	m_PrevZ = GetActorLocation().Z;
 
@@ -917,7 +930,7 @@ void AWarriorCharacter::DamageOn()
 			Check = true;
 			Character->CallDamage(3.0, this);
 			FActorSpawnParameters spawnParams;
-			CreateHitObject<AUR_NormalAttackHit>(Character);
+			CreateParticleObject<AUR_NormalAttackHit>(Character);
 		}
 	}
 
@@ -1125,8 +1138,9 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		{
 			if (m_UltimateCameraTarget)
 			{
-				FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),
-					m_UltimateCameraTarget->GetActorLocation());
+				FVector TargetPos = GetActorLocation();//m_UltimateCameraTarget->GetActorLocation() + FVector(0.0, 0.0, -1.0) * 1000.f;
+				FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(m_CameraComponent->GetComponentLocation(),
+					TargetPos);
 
 				FRotator Rot = m_CameraSpringArmComponent->GetComponentRotation();
 
@@ -1137,6 +1151,26 @@ void AWarriorCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	//if (m_IsQSkill)
+	//{
+	//	if (m_IsAttack)
+	//	{
+	//		if (m_MonsterActor)
+	//		{
+	//			FVector TargetPos = m_MonsterActor->GetActorLocation();//m_UltimateCameraTarget->GetActorLocation() + FVector(0.0, 0.0, -1.0) * 1000.f;
+	//			FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(m_CameraSpringArmComponent->GetComponentLocation(),
+	//				TargetPos);
+
+	//			FRotator Rot = m_CameraSpringArmComponent->GetComponentRotation();
+
+	//			Rot = FMath::RInterpTo(Rot, TargetRotator,
+	//				DeltaTime, 1.f);
+
+	//			m_CameraSpringArmComponent->SetWorldRotation(Rot);
+	//		}
+	//	}
+	//}
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -1258,7 +1292,7 @@ void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnock
 		return;
 	}
 
-	Super::CallDamage(_Damage, _Actor);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
 
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
 
@@ -1886,7 +1920,7 @@ void AWarriorCharacter::TraceAttackMonster()
 			AURCharacter* Monster = Cast<AURCharacter>(Target.GetActor());
 			Monster->CallDamage(m_PlayerInfo->MaxAttack, this);
 			Monster->SetHitType(EHitType::NormalHit);
-			CreateHitObject<AUR_NormalAttackHit>(Monster);
+			CreateParticleObject<AUR_NormalAttackHit>(Monster);
 		}
 
 	}
@@ -1930,7 +1964,11 @@ void AWarriorCharacter::UltimateAttack()
 		return;
 	}
 
-	float WaitTime = 0.3f; //시간을 설정하고
+	m_IsUltimateAttack = true;
+	m_CameraSpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+	//
+	m_CameraSpringArmComponent->SetWorldLocation(GetActorLocation() + (-GetActorRightVector() * 300.f) + (FVector(0.0, 0.0, 1.0) * 300.f));
+	float WaitTime = 0.15f; //시간을 설정하고
 	GetWorld()->GetTimerManager().SetTimer(
 		m_TimerHandle,    // TimerHandle
 		this,    // FTimerDelegate 델리게이트 수행 객체
@@ -1953,43 +1991,64 @@ void AWarriorCharacter::AdvanceTimer()
 	LatentInfo.ExecutionFunction = FName("Finished");
 	LatentInfo.Linkage = 0;
 	LatentInfo.UUID = 0;
+	if (m_UltimateTargetCount <= 0)
+	{
+		m_UltimateTargetCount = m_UltimateTargetMonster.Num();
+	}
 
-	AURCharacter* Target = m_UltimateTargetMonster[m_UltimateAttackCount - 1];
+	AURCharacter* Target = m_UltimateTargetMonster[m_UltimateTargetCount - 1];
 
-	FVector Dir = Target->GetActorLocation() - GetActorLocation();
-	Dir = Dir.GetSafeNormal();
+	if (Target)
+	{
+		FVector Dir = Target->GetActorLocation() - GetActorLocation();
+		Dir = Dir.GetSafeNormal();
 
-	FVector EndPos;
+		FVector EndPos;
 
-	if (m_UltimateAttackCount > 1)
-		EndPos = Target->GetActorLocation() + Dir * 300.f;
+		if (m_UltimateAttackCount > 0)
+		{
+			EndPos = Target->GetActorLocation() + Dir * 200.f;
+		}
+		else
+		{
+			EndPos = Target->GetActorLocation() - Dir * 50.f;
+		}
+
+		CreateParticleObject<AUR_NormalAttackHit>(Target);
+		Target->SetHitType(EHitType::NormalHit);
+		Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
+
+
+		FRotator PlayerRot = Dir.Rotation();
+
+		GetController()->SetControlRotation(PlayerRot);
+
+		//AUR_UltimateSpline* Spline = GetCreateHitObject<AUR_UltimateSpline>(this);
+
+		//Spline->SetActorRotation(GetActorRotation() + FRotator(90.0, 0.0, 0.0));
+
+		UKismetSystemLibrary::MoveComponentTo(GetRootComponent(), EndPos, GetActorRotation(),
+			false, false, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+	}
 	else
-		EndPos = Target->GetActorLocation() + Dir * -50.f;
+	{
 
-	Target->SetHitType(EHitType::NormalHit);
-	Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
-	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
-
-	FRotator PlayerRot = Dir.Rotation();
-
-	GetController()->SetControlRotation(PlayerRot);
-
-	UKismetSystemLibrary::MoveComponentTo(GetRootComponent(), EndPos, GetActorRotation(),
-		false, false, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+	}
 
 	--m_UltimateAttackCount;
+	--m_UltimateTargetCount;
 
 	if (m_UltimateAttackCount <= 0)
 	{
-		for (auto& Target1 : m_UltimateTargetMonster)
-		{
-			if (Target1)
-				Target1->GetCharacterMovement()->GravityScale = 5.f;
-		}
-
-		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillREnd);
-		GetCharacterMovement()->GravityScale = 5.f;
-		m_UltimateCameraTarget = nullptr;
+		m_CameraSpringArmComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+		m_CameraSpringArmComponent->SetWorldLocation(GetActorLocation() + FVector(0.0, 0.0, 1.0) * 272.0);
+		m_CameraSpringArmComponent->bUsePawnControlRotation = true;
+		m_CameraSpringArmComponent->bInheritPitch = true;
+		GetWorldSettings()->SetTimeDilation(0.3f);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRLoop);
+		//m_UltimateCameraTarget = nullptr;
+		AUR_UltimateCharge* Spline = GetCreateParticleObject<AUR_UltimateCharge>(this);
 
 		m_CameraSpringArmComponent->TargetArmLength = 800;
 		// 카운트다운이 완료되면 타이머를 중지

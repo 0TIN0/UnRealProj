@@ -213,26 +213,30 @@ void AMonster::DamageOff()
 
 void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
-	Super::CallDamage(_Damage, _Actor);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
+
 
 	switch (m_HitType)
 	{
 	case EHitType::NormalHit:
 	{
-		switch (m_HitDir)
+		if (_IsKnockBack)
 		{
-		case EHitDir::Forward:
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
-			break;
-		case EHitDir::Backward:
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);
-			break;
-		case EHitDir::Left:
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::LeftHit);
-			break;
-		case EHitDir::Right:
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::RightHit);
-			break;
+			switch (m_HitDir)
+			{
+			case EHitDir::Forward:
+				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+				break;
+			case EHitDir::Backward:
+				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);
+				break;
+			case EHitDir::Left:
+				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::LeftHit);
+				break;
+			case EHitDir::Right:
+				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::RightHit);
+				break;
+			}
 		}
 	}
 		break;

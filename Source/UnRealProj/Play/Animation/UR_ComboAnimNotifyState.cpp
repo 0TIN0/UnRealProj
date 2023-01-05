@@ -28,6 +28,8 @@ void UUR_ComboAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 	m_IsComboAttack = false;
 	m_Player->SetIsCombating(true);
 	m_Player->SetIsComboAttack(false);
+	// 새로 공격할 대상을 갱신시켜주어야함
+	m_Player->SetMotionWarpingActor(m_Player->GetTargetActor());
 }
 
 void UUR_ComboAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -54,6 +56,7 @@ void UUR_ComboAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 		// 그래서 NotifyEnd일떄 다음 콤보 동작을 시켜주면 됨.
 		if (m_IsComboAttack && m_ComboChangeAnimation != WarriorAnimation::Default)
 		{
+
 			m_Player->GetAnimationInstance()->ChangeAnimMontage(m_ComboChangeAnimation);
 		}
 

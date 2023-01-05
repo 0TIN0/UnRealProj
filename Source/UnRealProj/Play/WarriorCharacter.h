@@ -150,6 +150,7 @@ private:
 	// 궁극기 관련
 	TArray<AURCharacter*> m_UltimateTargetMonster;
 	int m_UltimateAttackCount;
+	int m_UltimateTargetCount;
 	double m_PrevZ;
 	bool m_IsUltimateAttack;
 	FRotator m_CameraComponentDefaultRot;
@@ -338,6 +339,11 @@ public:
 		return m_MonsterActor;
 	}
 
+	void SetMotionWarpingActor(AActor* _Actor)
+	{
+		m_MonsterActor = _Actor;
+	}
+
 
 	void AddMonsterCount()
 	{
@@ -431,8 +437,6 @@ private:
 
 	void BlockStaminaTick(float DeltaTime);
 
-	AActor* GetTargetActor();
-
 	TArray<AActor*> CheckAttackTarget(const TArray<FHitResult>& _HitResult);
 
 	void SetBerserkRateScale();
@@ -469,13 +473,25 @@ public:
 	void AdvanceTimer();
 
 
+	AActor* GetTargetActor();
+
 	template <typename T>
-	void CreateHitObject(AActor* _Actor)
+	void CreateParticleObject(AActor* _Actor)
 	{
 		FActorSpawnParameters spawnParams;
 		FVector vecSpawnPos = _Actor->GetActorLocation();
 		FTransform SpawnTransform = FTransform(vecSpawnPos);
 
 		GetWorld()->SpawnActor<T>(T::StaticClass(), SpawnTransform, spawnParams);
+	}
+
+	template <typename T>
+	T* GetCreateParticleObject(AActor* _Actor)
+	{
+		FActorSpawnParameters spawnParams;
+		FVector vecSpawnPos = _Actor->GetActorLocation();
+		FTransform SpawnTransform = FTransform(vecSpawnPos);
+
+		return GetWorld()->SpawnActor<T>(T::StaticClass(), SpawnTransform, spawnParams);
 	}
 };

@@ -7,9 +7,9 @@ AUR_NormalAttackHit::AUR_NormalAttackHit()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovementParticles"));
+	m_ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("NormalHitParticles"));
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleSystem(TEXT("ParticleSystem'/Game/ParagonKhaimera/FX/ParticleSystems/Abilities/Primary/FX/P_Khaimera_LMB_Impact.P_Khaimera_LMB_Impact'"));
-
+	//ParticleSystem'/Game/ParagonKhaimera/FX/ParticleSystems/Abilities/Ultimate/FX/P_Ult_Impact_DMG.P_Ult_Impact_DMG'
 	if (ParticleSystem.Succeeded())
 	{
 		m_ParticleComponent->SetTemplate(ParticleSystem.Object);

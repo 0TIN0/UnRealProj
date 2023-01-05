@@ -27,7 +27,7 @@ void UUR_FloorToAirAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp
 	for (auto& Target : m_Player->GetUltimateTarget())
 	{
 		Target->LaunchCharacter(EndVec, true, true);
-		Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+		Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::HitAirLoop);
 	}
 
 	EndVec.Z += 400.f;
@@ -38,6 +38,11 @@ void UUR_FloorToAirAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp
 void UUR_FloorToAirAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
+
+	for (auto& Target : m_Player->GetUltimateTarget())
+	{
+		Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::HitAirLoop);
+	}
 }
 
 void UUR_FloorToAirAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
@@ -56,7 +61,7 @@ void UUR_FloorToAirAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		{
 			Target->LaunchCharacter(FVector(), true, true);
 			Target->GetCharacterMovement()->GravityScale = 0.f;
-			Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+			Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::HitAirLoop);
 		}
 		m_Player->LaunchCharacter(FVector(), true, true);
 		m_Player->GetCharacterMovement()->GravityScale = 0.f;

@@ -4,6 +4,8 @@
 #include "Play/Animation/UR_AirToFloorAnimNotifyState.h"
 #include "../WarriorCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "../Object/UR_UltimateShockWave.h"
+#include "../Object/UR_UltimateDisCharge.h"
 
 void UUR_AirToFloorAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -15,6 +17,17 @@ void UUR_AirToFloorAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp
 	{
 		return;
 	}
+
+	for (auto& Target1 : m_Player->GetUltimateTarget())
+	{
+		if (Target1)
+			Target1->GetCharacterMovement()->GravityScale = 5.f;
+	}
+
+	//m_Player->CreateParticleObject<AUR_UltimateDisCharge>(m_Player);
+	m_Player->GetCharacterMovement()->GravityScale = 5.f;
+
+	m_Player->GetWorldSettings()->SetTimeDilation(1.f);
 }
 
 void UUR_AirToFloorAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -30,6 +43,7 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	{
 		return;
 	}
+
 
 	for (auto& Target : m_Player->GetUltimateTarget())
 	{
@@ -53,5 +67,12 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	{
 		m_Player->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
 	}
+
+
+	FActorSpawnParameters spawnParams;
+	FVector vecSpawnPos = m_Player->GetActorLocation();
+	FTransform SpawnTransform = FTransform(vecSpawnPos);
+
+	m_Player->GetWorld()->SpawnActor<AUR_UltimateShockWave>(AUR_UltimateShockWave::StaticClass(), SpawnTransform, spawnParams);
 
 }

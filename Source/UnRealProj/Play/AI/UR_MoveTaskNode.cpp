@@ -96,7 +96,10 @@ bool UUR_MoveTaskNode::AnimMontageJudge(AMonster* _Monster)
 		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
 		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
 		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirLoop) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirToFloorStart) ||
+		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirToFloorEnd))
 	{
 		return false;
 	}
