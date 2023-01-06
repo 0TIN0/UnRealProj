@@ -117,7 +117,9 @@ void AURCharacter::SetDirMovementInput(const FVector& _Dir, float Value)
 
 void AURCharacter::SetTargetLook(AActor* _Target)
 {
-	SetActorRotation(GetTargetDirNormalize(_Target).Rotation());
+	FRotator Rot = GetTargetDirNormalize(_Target).Rotation();
+	Rot.Pitch = 0.0;
+	SetActorRotation(Rot);
 }
 
 void AURCharacter::SetDirLook(const FVector& _Dir)

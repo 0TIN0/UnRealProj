@@ -215,7 +215,17 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 {
 	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
 
+	if (IsDeath())
+	{
+		if (!GetCharacterMovement()->IsFalling())
+		{
+			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::DeathStart);
+		}
 
+		return;
+	}
+
+	// 죽지 않았을때만 동작되도록
 	switch (m_HitType)
 	{
 	case EHitType::NormalHit:
@@ -250,15 +260,5 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 		}
 	}
 		break;
-	}
-
-
-	if (IsDeath())
-	{
-		//ItemDrop(m_DropTable);
-
-		//m_Player->AddMonsterCount();
-
-		Destroy();
 	}
 }

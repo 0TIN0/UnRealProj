@@ -17,7 +17,8 @@ void UUR_DamageAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 	Actor->SetKnockDown(m_IsKnockDown);
 	Actor->DamageOn();
 
-	
+	if (!Actor->GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillELoop))
+		Actor->CameraShake(CameraShake_Type::HitShake);
 
 	m_OneFrame = false;
 }

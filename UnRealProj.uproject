@@ -13,7 +13,8 @@
 				"NavigationSystem",
 				"UMG",
 				"CoreUObject",
-				"AIModule"
+				"AIModule",
+				"GameplayCameras"
 			]
 		}
 	],

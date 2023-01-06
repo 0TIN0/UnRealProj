@@ -45,6 +45,15 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	}
 
 
+
+	FActorSpawnParameters spawnParams;
+	FVector vecSpawnPos = m_Player->GetActorLocation();
+	FTransform SpawnTransform = FTransform(vecSpawnPos);
+
+	m_Player->GetWorld()->SpawnActor<AUR_UltimateShockWave>(AUR_UltimateShockWave::StaticClass(), SpawnTransform, spawnParams);
+
+	m_Player->CameraShake(CameraShake_Type::UltimateShake);
+
 	for (auto& Target : m_Player->GetUltimateTarget())
 	{
 		if (Target)
@@ -67,12 +76,5 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	{
 		m_Player->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
 	}
-
-
-	FActorSpawnParameters spawnParams;
-	FVector vecSpawnPos = m_Player->GetActorLocation();
-	FTransform SpawnTransform = FTransform(vecSpawnPos);
-
-	m_Player->GetWorld()->SpawnActor<AUR_UltimateShockWave>(AUR_UltimateShockWave::StaticClass(), SpawnTransform, spawnParams);
 
 }

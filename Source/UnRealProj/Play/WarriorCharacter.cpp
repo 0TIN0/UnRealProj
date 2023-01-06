@@ -26,9 +26,7 @@
 #include "Engine/EngineTypes.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-
-
-
+#include "MatineeCameraShake.h"
 
 AWarriorCharacter::AWarriorCharacter() :
 	m_Stream(FDateTime::Now().GetTicks()),
@@ -94,6 +92,7 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraComponent = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("CameraComponent")));
 	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent);
 	//m_CameraComponent->bUsePawnControlRotation = false;
+
 
 	m_SkillQConsumedMP = 10.0;
 	m_SkillEConsumedMP = 20.0;
@@ -570,6 +569,7 @@ void AWarriorCharacter::LeftAttack()
 			break;
 		}
 	}
+	CameraShake(CameraShake_Type::HitShake);
 }
 
 void AWarriorCharacter::LeftAttackUp()
@@ -1294,6 +1294,8 @@ void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnock
 
 	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
 
+	CameraShake(CameraShake_Type::HitShake);
+
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
 
 	AUR_CircleActor* BossCIrcle = nullptr;
@@ -1837,12 +1839,41 @@ AActor* AWarriorCharacter::GetTargetActor()
 	return TargetMonster;
 }
 
+void AWarriorCharacter::CameraShake(CameraShake_Type _Type)
+{
+	if (m_CameraShakeMap.IsEmpty())
+	{
+		return;
+	}
+
+	switch (_Type)
+	{
+	case CameraShake_Type::HitShake:
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(),
+			m_CameraShakeMap[_Type],
+			m_CameraComponent->GetComponentLocation(),
+			0.f, 500.f, 1.f);
+		break;
+	case CameraShake_Type::UltimateShake:
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(),
+			m_CameraShakeMap[_Type],
+			m_CameraComponent->GetComponentLocation(),
+			0.f, 500.f, 1.f);
+		break;
+	}
+}
+
 TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _HitResult)
 {
 	TArray<AActor*> TargetActor;
 
 	for (auto& Hit : _HitResult)
 	{
+		// 죽지 않은 녀석만 넣어줌.
+		if (Hit.GetActor()->GetInstigator<AURCharacter>()->IsDeath())
+			continue;
+
+
 		FVector MonsterDir = Hit.GetActor()->GetActorLocation() - GetActorLocation();
 		MonsterDir = MonsterDir.GetSafeNormal();
 
@@ -1917,6 +1948,10 @@ void AWarriorCharacter::TraceAttackMonster()
 	{
 		for (auto& Target : HitResult)
 		{
+			// 죽지 않은 녀석만 넣어줌.
+			if (Target.GetActor()->GetInstigator<AURCharacter>()->IsDeath())
+				continue;
+
 			AURCharacter* Monster = Cast<AURCharacter>(Target.GetActor());
 			Monster->CallDamage(m_PlayerInfo->MaxAttack, this);
 			Monster->SetHitType(EHitType::NormalHit);
@@ -1948,6 +1983,10 @@ TArray<AURCharacter*> AWarriorCharacter::GetSphereTraceHitActor(float _MinMax, f
 	{
 		for (auto& Monster : HitResult)
 		{
+			// 죽지 않은 녀석만 넣어줌.
+			if (Monster.GetActor()->GetInstigator<AURCharacter>()->IsDeath())
+				continue;
+
 			HitMonster.Add(Monster.GetActor()->GetInstigator<AURCharacter>());
 		}
 	}
@@ -1991,6 +2030,25 @@ void AWarriorCharacter::AdvanceTimer()
 	LatentInfo.ExecutionFunction = FName("Finished");
 	LatentInfo.Linkage = 0;
 	LatentInfo.UUID = 0;
+
+	// 새로 배열개수를 얻어왔는데 0이라면 타겟이 다 죽었다는 의미이므로 이대로 종료시켜야한다.
+	if (m_UltimateTargetMonster.IsEmpty())
+	{
+		m_CameraSpringArmComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+		m_CameraSpringArmComponent->SetWorldLocation(GetActorLocation() + FVector(0.0, 0.0, 1.0) * 272.0);
+		m_CameraSpringArmComponent->bUsePawnControlRotation = true;
+		m_CameraSpringArmComponent->bInheritPitch = true;
+		GetWorldSettings()->SetTimeDilation(0.3f);
+		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRLoop);
+		//m_UltimateCameraTarget = nullptr;
+		AUR_UltimateCharge* Spline = GetCreateParticleObject<AUR_UltimateCharge>(this);
+		CameraShake(CameraShake_Type::UltimateShake);
+
+		m_CameraSpringArmComponent->TargetArmLength = 800;
+		GetWorldTimerManager().ClearTimer(m_TimerHandle);
+		return;
+	}
+
 	if (m_UltimateTargetCount <= 0)
 	{
 		m_UltimateTargetCount = m_UltimateTargetMonster.Num();
@@ -2016,7 +2074,21 @@ void AWarriorCharacter::AdvanceTimer()
 
 		CreateParticleObject<AUR_NormalAttackHit>(Target);
 		Target->SetHitType(EHitType::NormalHit);
+
+		bool ReTarget = false;
+
+		/*if (Target->GetHP() - m_PlayerInfo->MaxAttack <= 0)
+		{
+			ReTarget = true;
+		}*/
+
 		Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
+
+		/*if (ReTarget)
+		{
+			m_UltimateTargetMonster.RemoveSingle(Target);
+		}*/
+
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
 
 
@@ -2030,6 +2102,8 @@ void AWarriorCharacter::AdvanceTimer()
 
 		UKismetSystemLibrary::MoveComponentTo(GetRootComponent(), EndPos, GetActorRotation(),
 			false, false, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+
+		CameraShake(CameraShake_Type::UltimateShake);
 	}
 	else
 	{
@@ -2049,6 +2123,7 @@ void AWarriorCharacter::AdvanceTimer()
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRLoop);
 		//m_UltimateCameraTarget = nullptr;
 		AUR_UltimateCharge* Spline = GetCreateParticleObject<AUR_UltimateCharge>(this);
+		CameraShake(CameraShake_Type::UltimateShake);
 
 		m_CameraSpringArmComponent->TargetArmLength = 800;
 		// 카운트다운이 완료되면 타이머를 중지

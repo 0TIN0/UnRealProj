@@ -310,4 +310,7 @@ protected:
 protected:
 	void HitDirJudge(AActor* _Actor);
 
+public:
+	virtual void CameraShake(CameraShake_Type _Type) {};
+
 };

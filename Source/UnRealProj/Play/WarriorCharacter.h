@@ -66,12 +66,15 @@ private:
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		TMap<CameraShake_Type, TSubclassOf<class UMatineeCameraShake>> m_CameraShakeMap;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Collision, meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class USphereComponent> m_DamageCollision;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Material, meta = (AllowPrivateAccess = "true"))
 	TArray<UMaterialInterface*> m_ArrayNormalMat;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Material, meta = (AllowPrivateAccess = "true"))
 	TArray<UMaterialInterface*> m_ArrayRimLightMat;
 
 	class APlayerController* m_PlayerController;
@@ -81,6 +84,7 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		class UNiagaraComponent* m_Shield;
+
 
 
 	AActor* m_MonsterActor;
@@ -474,6 +478,8 @@ public:
 
 
 	AActor* GetTargetActor();
+
+	void CameraShake(CameraShake_Type _Type) override;
 
 	template <typename T>
 	void CreateParticleObject(AActor* _Actor)

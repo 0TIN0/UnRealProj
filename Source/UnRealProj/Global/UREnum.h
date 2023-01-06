@@ -69,6 +69,8 @@ enum class DefaultAnimation : uint8
 	HitAirToFloorStart UMETA(DisplayName = "공중 to 바닥 시작"),
 	HitAirToFloorEnd UMETA(DisplayName = "공중 to 바닥 끝"),
 	KnockDown UMETA(DisplayName = "넉다운"),
+	DeathStart UMETA(DisplayName = "사망 시작"),
+	DeathLoop UMETA(DisplayName = "사망 루프"),
 	GetUp UMETA(DisplayName = "일어나기"),
 	Max UMETA(DisplayName = "최대치"),
 };
@@ -267,4 +269,13 @@ enum class QuestProgress : uint8
 	FirstStageBoss UMETA(DisplayName = "1Stage 보스"),
 	SecondStageMonster UMETA(DisplayName = "2Stage 몬스터"),
 	SecondStageBoss UMETA(DisplayName = "2Stage 보스"),
+};
+
+
+UENUM(BlueprintType)
+enum class CameraShake_Type : uint8
+{
+	Default UMETA(DisplayName = "디폴트"),
+	HitShake UMETA(DisplayName = "히트 카메라 쉐이크"),
+	UltimateShake UMETA(DisplayName = "궁극기 카메라 쉐이크")
 };
