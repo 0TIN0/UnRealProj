@@ -386,6 +386,11 @@ public:
 		return m_PrevZ;
 	}
 
+	void SetIsInvincibility(bool _Enable)
+	{
+		m_IsInvincibility = _Enable;
+	}
+
 	TArray<AURCharacter*> GetUltimateTarget()
 	{
 		return m_UltimateTargetMonster;
@@ -437,7 +442,7 @@ private:
 	void CommandTimeJudge(float DeltaTime);
 
 	void HitAnimMontageJudge();
-	void HitAnimation(bool IsLarge);
+	void HitAnimation(bool IsLarge, bool IsKncokDown = false);
 
 	void BlockStaminaTick(float DeltaTime);
 

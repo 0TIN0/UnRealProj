@@ -28,7 +28,8 @@ UENUM(BlueprintType)
 enum class UMONSTER_TYPE : uint8
 {
 	Default UMETA(DisplayName = "선택x"),
-	Pirate UMETA(DisplayName = "해적")
+	Pirate UMETA(DisplayName = "해적"),
+	Khaimera UMETA(DisplayhName = "카이메라")
 };
 
 UENUM(BlueprintType)
@@ -278,4 +279,17 @@ enum class CameraShake_Type : uint8
 	Default UMETA(DisplayName = "디폴트"),
 	HitShake UMETA(DisplayName = "히트 카메라 쉐이크"),
 	UltimateShake UMETA(DisplayName = "궁극기 카메라 쉐이크")
+};
+
+UENUM(BlueprintType)
+enum class KhaimeraAttack : uint8
+{
+	Default,
+	Attack1,
+	Attack2,
+	Attack3,
+	Combo1,
+	DashAttack,
+	UltimateAttack,
+	Max
 };

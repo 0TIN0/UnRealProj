@@ -14,7 +14,9 @@ AURCharacter::AURCharacter()	:
 	m_HitDir(EHitDir::Default),
 	m_IsBlocking(false),
 	m_IsInvincibility(false),
-	m_IsAttack(false)
+	m_IsAttack(false),
+	m_KnockBackHitPower(2000.f),
+	m_KnockDownHitPower(3000.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -192,13 +194,15 @@ void AURCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
 		FVector Dir = GetActorLocation() - _Actor->GetActorLocation();
 
 		Dir = Dir.GetSafeNormal();
+
+		Dir.Z = 0.0;
 		switch (m_HitType)
 		{
 		case EHitType::NormalHit:
-			LaunchCharacter(Dir * 2000.f, true, false);
+			LaunchCharacter(Dir * m_KnockBackHitPower, true, false);
 			break;
 		case EHitType::KnockDownHit:
-			LaunchCharacter(Dir * 3000.f, true, false);
+			LaunchCharacter(Dir * m_KnockDownHitPower, true, false);
 			break;
 		}
 	}

@@ -26,7 +26,7 @@ EBTNodeResult::Type UUR_DeathTaskNode::ExecuteTask(UBehaviorTreeComponent& Owner
 		return EBTNodeResult::InProgress;
 	}
 
-	return EBTNodeResult::Failed;
+	return EBTNodeResult::Succeeded;
 }
 
 void UUR_DeathTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

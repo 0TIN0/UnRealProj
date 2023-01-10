@@ -152,11 +152,15 @@ void AWarriorCharacter::PlayerPickingMove()
 
 void AWarriorCharacter::PlayerLeftMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
+	if (Value == 0.f || true == IsAttack())
 	{
 		return;
 	}
 
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
 
 	TurnFunc();
 
@@ -256,11 +260,16 @@ void AWarriorCharacter::PlayerLeftMove(float Value)
 
 void AWarriorCharacter::PlayerRightMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
+	if (Value == 0.f || true == IsAttack())
 	{
 		return;
 	}
 
+
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
 
 
 	TurnFunc();
@@ -368,7 +377,12 @@ void AWarriorCharacter::PlayerRightMove(float Value)
 
 void AWarriorCharacter::PlayerForwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
+	if (Value == 0.f || true == IsAttack())
+	{
+		return;
+	}
+
+	if (FirstJudgeFunc())
 	{
 		return;
 	}
@@ -436,7 +450,12 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 
 void AWarriorCharacter::PlayerBackwardMove(float Value)
 {
-	if (Value == 0.f || true == IsAttack() || FirstJudgeFunc())
+	if (Value == 0.f || true == IsAttack())
+	{
+		return;
+	}
+
+	if (FirstJudgeFunc())
 	{
 		return;
 	}
@@ -761,6 +780,11 @@ void AWarriorCharacter::SkillR()
 
 void AWarriorCharacter::ForwardKeyEnd()
 {
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
+
 	m_IsForwardDown = false;
 
 	if (JudgeFunc())
@@ -787,6 +811,11 @@ void AWarriorCharacter::ForwardKeyEnd()
 
 void AWarriorCharacter::BackwardKeyEnd()
 {
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
+
 	m_IsBackwardDown = false;
 
 	if (JudgeFunc())
@@ -813,6 +842,11 @@ void AWarriorCharacter::BackwardKeyEnd()
 
 void AWarriorCharacter::LeftKeyEnd()
 {
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
+
 	m_IsLeftDown = false;
 
 	if (JudgeFunc())
@@ -839,6 +873,11 @@ void AWarriorCharacter::LeftKeyEnd()
 
 void AWarriorCharacter::RightKeyEnd()
 {
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
+
 	m_IsRightDown = false;
 
 	if (JudgeFunc())
@@ -1214,8 +1253,18 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AWarriorCharacter::Jump()
 {
-	if (GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatLoop))
-		return;
+	if (GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatLoop) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpStartBackward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpStartForward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpStartLeft) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpStartRight) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartBackward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartForward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartLeft) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartRight))
+	{
+ 		return;
+	}
 
 	Super::Jump();
 
@@ -1516,6 +1565,10 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 bool AWarriorCharacter::FirstJudgeFunc()
 {
 	if (GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillQ) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeToFallDown) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeToFallDown) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::GetUp) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatGetUp) ||
 		m_IsJump)
 	{
 		return true;
@@ -1551,6 +1604,8 @@ bool AWarriorCharacter::JudgeFunc()
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillELoop) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::CommandDashAttack) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorBlockAnimation::BlockHit) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillRStart) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillQ) ||
 		m_IsJump || m_IsESkillAttacking)
 	{
 		return true;
@@ -1703,82 +1758,92 @@ void AWarriorCharacter::HitAnimMontageJudge()
 		break;
 	case EHitType::KnockDownHit:
 	{
-		
+		HitAnimation(true, true);
 	}
 		break;
 	}
 	
 }
 
-void AWarriorCharacter::HitAnimation(bool IsLarge)
+void AWarriorCharacter::HitAnimation(bool IsLarge, bool IsKncokDown)
 {
-	if (!IsLarge)
+	if (!IsKncokDown)
 	{
-		switch (m_HitDir)
+		if (!IsLarge)
 		{
-		case EHitDir::Forward:
-			// 정면에서 막을때만 블로킹이 되기때문에 Forward에만 블로킹 처리
-			if (!m_IsBlocking)
+			switch (m_HitDir)
 			{
-				if (!m_IsCombating)
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+			case EHitDir::Forward:
+				// 정면에서 막을때만 블로킹이 되기때문에 Forward에만 블로킹 처리
+				if (!m_IsBlocking)
+				{
+					if (!m_IsCombating)
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+					else
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
+				}
 				else
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
+				{
+					GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockHit);
+				}
+				break;
+			case EHitDir::Backward:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
+				break;
+			case EHitDir::Left:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
+				break;
+			case EHitDir::Right:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
+				break;
 			}
-			else
+		}
+		else
+		{
+			switch (m_HitDir)
 			{
-				GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockHit);
+			case EHitDir::Forward:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeForward);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeForward);
+				break;
+			case EHitDir::Backward:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeBackward);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeBackward);
+				break;
+			case EHitDir::Left:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeLeft);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeLeft);
+				break;
+			case EHitDir::Right:
+				if (!m_IsCombating)
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeRight);
+				else
+					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeRight);
+				break;
 			}
-			break;
-		case EHitDir::Backward:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
-			break;
-		case EHitDir::Left:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
-			break;
-		case EHitDir::Right:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
-			break;
 		}
 	}
 	else
 	{
-		switch (m_HitDir)
-		{
-		case EHitDir::Forward:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeForward);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeForward);
-			break;
-		case EHitDir::Backward:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeBackward);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeBackward);
-			break;
-		case EHitDir::Left:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeLeft);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeLeft);
-			break;
-		case EHitDir::Right:
-			if (!m_IsCombating)
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeRight);
-			else
-				GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeRight);
-			break;
-		}
+		if (!m_IsCombating)
+			GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeToFallDown);
+		else
+			GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeToFallDown);
 	}
 }
 
@@ -1846,6 +1911,11 @@ void AWarriorCharacter::CameraShake(CameraShake_Type _Type)
 		return;
 	}
 
+	if(!GetWorld() || !GetWorld()->GetFirstPlayerController() || !GetWorld()->GetFirstPlayerController()->PlayerCameraManager)
+	{
+		return;
+	}
+
 	switch (_Type)
 	{
 	case CameraShake_Type::HitShake:
@@ -1872,7 +1942,6 @@ TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _
 		// 죽지 않은 녀석만 넣어줌.
 		if (Hit.GetActor()->GetInstigator<AURCharacter>()->IsDeath())
 			continue;
-
 
 		FVector MonsterDir = Hit.GetActor()->GetActorLocation() - GetActorLocation();
 		MonsterDir = MonsterDir.GetSafeNormal();
@@ -2063,13 +2132,20 @@ void AWarriorCharacter::AdvanceTimer()
 
 		FVector EndPos;
 
-		if (m_UltimateAttackCount > 0)
+		if (m_UltimateTargetMonster.Num() > 1)
 		{
-			EndPos = Target->GetActorLocation() + Dir * 200.f;
+			if (m_UltimateAttackCount > 0)
+			{
+				EndPos = Target->GetActorLocation() + Dir * 200.f;
+			}
+			else
+			{
+				EndPos = Target->GetActorLocation() - Dir * 150.f;
+			}
 		}
 		else
 		{
-			EndPos = Target->GetActorLocation() - Dir * 50.f;
+			EndPos = Target->GetActorLocation() + Dir * 200.f + GetActorRightVector() * 200.f;
 		}
 
 		CreateParticleObject<AUR_NormalAttackHit>(Target);

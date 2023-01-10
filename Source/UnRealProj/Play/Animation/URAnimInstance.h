@@ -38,15 +38,12 @@ public:
 	void ChangeAnimMontage(int _Key, bool Force = false);
 
 	template<typename EnumType>
-	FORCEINLINE bool IsAnimMontage(EnumType _Key)	const
+	bool IsAnimMontage(EnumType _Key)	const
 	{
 		return IsAnimMontage(static_cast<int>(_Key));
 	}
 
-	FORCEINLINE bool IsAnimMontage(int _Key) const
-	{
-		return m_CurrentAnimationKey == _Key;
-	}
+	bool IsAnimMontage(int _Key) const;
 
 	template<typename EnumType>
 	UAnimMontage* GetAnimation(EnumType _Key)

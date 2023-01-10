@@ -23,6 +23,18 @@ void UUR_ChangeIdleAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 	}
 		break;
+	case UMONSTER_TYPE::Khaimera:
+	{
+		AURCharacter* Character = MeshComp->GetOwner<AURCharacter>();
+
+		if (!Character || !Character->IsValidLowLevel())
+		{
+			return;
+		}
+
+		Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+	}
+	break;
 	}
 
 	switch (m_PlayerType)

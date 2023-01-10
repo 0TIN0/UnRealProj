@@ -39,6 +39,11 @@ void UURAnimInstance::ChangeAnimMontage(int _Key, bool _Force)
 	}
 }
 
+bool UURAnimInstance::IsAnimMontage(int _Key) const
+{
+	return m_CurrentAnimationKey == _Key;
+}
+
 UAnimMontage* UURAnimInstance::GetAnimation(int _Key)
 {
 	UAnimMontage** FindMontage = m_Animations.Find(_Key);
@@ -83,7 +88,7 @@ void UURAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	float Len = FindMontage->GetPlayLength();
 	
-	m_Time += DeltaSeconds;
+	m_Time += DeltaSeconds * FindMontage->RateScale;
 
 	float Percent = m_Time / Len;
 

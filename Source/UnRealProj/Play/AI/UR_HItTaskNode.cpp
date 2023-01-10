@@ -36,7 +36,7 @@ EBTNodeResult::Type UUR_HItTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 
 
-	return EBTNodeResult::Succeeded;
+	return EBTNodeResult::Failed;
 }
 
 void UUR_HItTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

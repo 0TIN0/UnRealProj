@@ -67,6 +67,7 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	m_Player->GetCharacterMovement()->GravityScale = 2.f;
 	m_Player->AttackOff();
 	m_Player->SetIsUltimateAttack(false);
+	m_Player->SetIsInvincibility(false);
 
 	if (!m_Player->GetIsCombating())
 	{
@@ -77,4 +78,16 @@ void UUR_AirToFloorAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		m_Player->GetAnimationInstance()->ChangeAnimMontage(WarriorCombatAnimation::CombatIdle);
 	}
 
+	// 새로 SphereTrace로 탐색하고 아래에 있는 적들을 넉다운 시킨다
+	TArray<AURCharacter*> ReTargetArray = m_Player->GetSphereTraceHitActor(100.f, 2000.f);
+
+
+	for (auto& ReTarget : ReTargetArray)
+	{
+		if (ReTarget)
+		{
+			ReTarget->SetHitType(EHitType::KnockDownHit);
+			ReTarget->CallDamage(m_Player->GetPlayerInfo()->MaxAttack, m_Player);
+		}
+	}
 }

@@ -307,6 +307,10 @@ protected:
 	int m_ESkillMaxCollTime;
 	int m_RSkillMaxCollTime;
 
+	float m_KnockBackHitPower;
+	float m_KnockDownHitPower;
+
+
 protected:
 	void HitDirJudge(AActor* _Actor);
 
