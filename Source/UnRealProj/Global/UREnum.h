@@ -290,6 +290,7 @@ enum class KhaimeraAttack : uint8
 	Attack3,
 	Combo1,
 	DashAttack,
+	RushAttack,
 	UltimateAttack,
 	Max
 };

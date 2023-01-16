@@ -370,7 +370,7 @@ void APlayCharacter::ShiftKeyOn()
 {
 }
 
-void APlayCharacter::DamageOn()
+void APlayCharacter::DamageOn(bool _IsKnockBack)
 {
 	TArray<UActorComponent*> Array = GetDamageCollision();
 
@@ -529,9 +529,9 @@ void APlayCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}*/
 }
 
-void APlayCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void APlayCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	Super::CallDamage(_Damage);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
 

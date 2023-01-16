@@ -114,7 +114,7 @@ void AUR_KrakenBoss::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AUR_KrakenBoss::DamageOn()
+void AUR_KrakenBoss::DamageOn(bool _IsKnockBack)
 {
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 
@@ -150,9 +150,9 @@ void AUR_KrakenBoss::DamageOff()
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-void AUR_KrakenBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void AUR_KrakenBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	Super::CallDamage(_Damage, _Actor);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	if (IsDeath())
 	{

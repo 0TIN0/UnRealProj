@@ -85,7 +85,12 @@ private:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		class UNiagaraComponent* m_Shield;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		class UNiagaraComponent* m_BlackHoleNiagara;
 
+	class UNiagaraSystem* m_BlackHoleFX;
+
+	class AActor* m_BlackHoleActor;
 
 	AActor* m_MonsterActor;
 
@@ -236,7 +241,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = UR)
 		void ShiftKeyOn();
 
-	void DamageOn() override;
+	void DamageOn(bool _IsKnockBack = true) override;
 	void DamageOff() override;
 
 	UFUNCTION(BlueprintCallable, Category = UR)
@@ -401,6 +406,16 @@ public:
 		m_IsUltimateAttack = _Enable;
 	}
 
+	void SetBlackHole(AActor*_BlackHoleActor)
+	{
+		m_BlackHoleActor = _BlackHoleActor;
+	}
+
+	class UNiagaraComponent* GetBlackHoleBodyComponent()
+	{
+		return m_BlackHoleNiagara;
+	}
+
 protected:
 	void BeginPlay() override;
 
@@ -414,7 +429,7 @@ protected:
 
 protected:
 
-	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true, bool _IsCameraShake = true) override;
 
 
 

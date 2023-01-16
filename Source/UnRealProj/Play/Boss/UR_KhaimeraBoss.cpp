@@ -2,6 +2,8 @@
 
 
 #include "Play/Boss/UR_KhaimeraBoss.h"
+#include "BossObj/UR_BlackHole.h"
+#include "../WarriorCharacter.h"
 #include "../Controller/URMonsterController.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,9 +13,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "NiagaraComponent.h"
 
 AUR_KhaimeraBoss::AUR_KhaimeraBoss()	:
-	m_IsBerserk(false)
+	m_SpawnRange(1000.f),
+	m_IsBerserk(false),
+	m_BlackHoleSpawnTime(5.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -98,12 +103,21 @@ const FURMonsterDataInfo* AUR_KhaimeraBoss::BossDataInit()
 	SetAnimations(m_KhaimeraData->Animations);
 
 	SetHP(m_KhaimeraData->HP);
+	m_MaxHP = m_KhaimeraData->HP;
 
 	m_KnockBackHitPower = 700.f;
 	m_KnockDownHitPower = 1500.f;
 	GetCharacterMovement()->MaxWalkSpeed = m_KhaimeraData->Speed;
 
 	return m_KhaimeraData;
+}
+
+void AUR_KhaimeraBoss::SetBerserkMesh()
+{
+	if (m_BerserkerMesh)
+	{
+		GetMesh()->SetSkeletalMesh(m_BerserkerMesh);
+	}
 }
 
 void AUR_KhaimeraBoss::BeginPlay()
@@ -120,14 +134,29 @@ void AUR_KhaimeraBoss::BeginPlay()
 	GetAnimationInstance()->ChangeAnimMontage(KhaimeraBossAnimation::Spawn);
 	SetTargetLook(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	
+
 }
 
 void AUR_KhaimeraBoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (m_IsBerserk)
+	{
+		m_BlackHoleSpawnTime -= DeltaTime;
+
+		if (0.f >= m_BlackHoleSpawnTime)
+		{
+			if (m_BlackHole == nullptr)
+			{
+				CreateBlackHole();
+			}
+		}
+	}
 }
 
-void AUR_KhaimeraBoss::DamageOn()
+void AUR_KhaimeraBoss::DamageOn(bool _IsKnockBack)
 {
 	m_RDamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 
@@ -154,7 +183,7 @@ void AUR_KhaimeraBoss::DamageOn()
 
 			int Damage = GetGameInstance<UURGameInstance>()->GetRandomStream().FRandRange(m_KhaimeraData->MinAttack, m_KhaimeraData->MaxAttack);
 
-			Character->CallDamage(Damage, this);
+			Character->CallDamage(Damage, this, _IsKnockBack);
 		}
 	}
 
@@ -174,9 +203,13 @@ void AUR_KhaimeraBoss::DamageOff()
 	m_RDamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-void AUR_KhaimeraBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void AUR_KhaimeraBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
+	if (m_IsInvincibility)
+	{
+		return;
+	}
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	if (IsDeath())
 	{
@@ -223,6 +256,39 @@ void AUR_KhaimeraBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockB
 		}
 	}
 	break;
+	}
+}
+
+void AUR_KhaimeraBoss::CreateBlackHole()
+{
+	UURGameInstance* Inst = GetWorld()->GetGameInstance<UURGameInstance>();
+	FVector vecSpawnPos;
+
+	// 범위값을 기반으로 랜덤한 float타입 값을 얻어온다.
+	// 하지만 이런식으로 구성을 하면 사각형의 모양이 만들어지게 된다.
+	vecSpawnPos.X = Inst->GetRandomStream().FRandRange(-m_SpawnRange, m_SpawnRange);
+	vecSpawnPos.Y = Inst->GetRandomStream().FRandRange(-m_SpawnRange, m_SpawnRange);
+
+	vecSpawnPos.Normalize();
+
+	vecSpawnPos *= Inst->GetRandomStream().FRandRange(0.f, m_SpawnRange);
+
+	vecSpawnPos.Z = 0.0;
+
+	// 기본적으로 0을 중심으로 하고있기 때문에 스폰엑터의 위치 중심으로 바꿔줌
+	vecSpawnPos += GetActorLocation();
+
+	FRotator Rot = FRotator();
+
+	//FTransform SpawnTransform = FTransform(Rot, vecSpawnPos);
+
+	m_BlackHole = GetWorld()->SpawnActor<AUR_BlackHole>(vecSpawnPos, Rot);
+
+	if (m_BlackHole)
+	{
+		AWarriorCharacter* Player = GetWorld()->GetFirstPlayerController()->GetPawn<AWarriorCharacter>();
+		Player->SetBlackHole(m_BlackHole);
+		Player->GetBlackHoleBodyComponent()->SetVariableVec3(FName(TEXT("Start Position_SpawnRate")), m_BlackHole->GetActorLocation());
 	}
 }
 

@@ -24,9 +24,9 @@ public:
 	const struct FURMonsterDataInfo* MonsterDataInit();
 
 protected:
-	void DamageOn() override;
+	void DamageOn(bool _IsKnockBack = true) override;
 	void DamageOff() override;
-	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true, bool _IsCameraShake = true) override;
 
 
 private:

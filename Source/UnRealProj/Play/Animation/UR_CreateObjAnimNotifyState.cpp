@@ -3,6 +3,7 @@
 
 #include "Play/Animation/UR_CreateObjAnimNotifyState.h"
 #include "Global/URBlueprintFunctionLibrary.h"
+#include "../Boss/UR_KhaimeraBoss.h"
 #include "../Skill/URProjectile.h"
 #include "../Monster.h"
 #include "EngineUtils.h"
@@ -21,7 +22,7 @@ void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	{
 		return;
 	}
-
+	
 	switch (m_ActorType)
 	{
 	case ActorType::Normal:
@@ -58,24 +59,77 @@ void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,
 		break;
 	case ActorType::Projectile:
 	{
-		// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
-		FVector Pos = MeshComp->GetSocketLocation(m_SocketName);
-		Pos.Z += m_AddLocationZ;
+		switch (m_MonsterType)
+		{
+			// 플레이어
+		case UMONSTER_TYPE::Default:
+		{
+			// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
+			FVector Pos = MeshComp->GetSocketLocation(m_SocketName);
+			Pos.Z += m_AddLocationZ;
 
-		FTransform SpawnTransform = FTransform(Pos);
+			FTransform SpawnTransform = FTransform(Pos);
 
-		SpawnTransform.SetRotation(MeshComp->GetOwner()->GetTransform().GetRotation());
+			SpawnTransform.SetRotation(MeshComp->GetOwner()->GetTransform().GetRotation());
 
-		// 새로운 엑터를 만들어준다.
-		AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
+			// 새로운 엑터를 만들어준다.
+			AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
 
-		AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
+			AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
 
-		if (!Projectile)
-			return;
+			if (!Projectile)
+				return;
 
-		// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
-		Projectile->SetInfo(m_CollisionProfileName, m_Speed, m_LifeTime);
+			// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
+			Projectile->SetInfo(m_CollisionProfileName, m_Speed, m_LifeTime);
+		}
+			break;
+		case UMONSTER_TYPE::Khaimera:
+		{
+			AUR_KhaimeraBoss* Boss = MeshComp->GetOwner<AUR_KhaimeraBoss>();
+
+			if (Boss->GetIsBerserk())
+			{
+				AURCharacter* Player = MeshComp->GetWorld()->GetFirstPlayerController()->GetPawn<AURCharacter>();
+				// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
+				FVector Pos = MeshComp->GetSocketLocation(m_SocketName);
+				Pos.Z += m_AddLocationZ;
+
+				FTransform SpawnTransform = FTransform(Pos);
+
+				SpawnTransform.SetRotation(MeshComp->GetOwner()->GetTransform().GetRotation());
+
+				// 새로운 엑터를 만들어준다.
+				AActor* NewActor = MeshComp->GetWorld()->SpawnActor<AActor>(m_SpawnActorClass, SpawnTransform);
+
+				AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
+
+				FVector Dir;
+
+				if (!Projectile)
+					return;
+
+				if (Player)
+				{
+					Dir = Player->GetActorLocation() - Projectile->GetActorLocation();
+
+					Dir = Dir.GetSafeNormal();
+
+					// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
+					Projectile->SetInfo(m_CollisionProfileName, Dir, m_Speed, m_LifeTime);
+				}
+				else
+				{
+					// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
+					Projectile->SetInfo(m_CollisionProfileName, Projectile->GetActorForwardVector(), m_Speed, m_LifeTime);
+				}
+
+			}
+			
+		}
+			break;
+		}
+		
 	}
 		break;
 	}

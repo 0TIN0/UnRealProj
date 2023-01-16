@@ -14,11 +14,17 @@ class UNREALPROJ_API UUR_DamageAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
+public:
+	UUR_DamageAnimNotifyState();
+
 private:
 	bool m_OneFrame;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	bool m_IsKnockDown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+	bool m_IsKnockBack;
 
 protected:
 	void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;

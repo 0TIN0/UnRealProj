@@ -27,6 +27,8 @@ enum class KhaimeraBossAnimation : uint8
 	StunStart UMETA(DisPlayName = "StunStart"),
 	StunLoop UMETA(DisPlayName = "StunLoop"),
 	StunEnd UMETA(DisPlayName = "StunEnd"),
+	RushAttackStart UMETA(DisPlayName = "RushAttackStart"),
+	RushAttack UMETA(DisPlayName = "RushAttack"),
 	Max UMETA(DisPlayName = "Max")
 };
 
@@ -71,11 +73,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<class AActor>	m_SpawnActorClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+		class USkeletalMesh* m_BerserkerMesh;
+
+	class AUR_BlackHole* m_BlackHole;
+
+	float m_SpawnRange;
+
 	const struct FURMonsterDataInfo* m_KhaimeraData;
 
 	int m_RandNumb;
 
 	bool m_IsBerserk;
+
+	float m_BlackHoleSpawnTime;
 
 public:
 	const struct FURMonsterDataInfo* BossDataInit();
@@ -100,12 +111,18 @@ public:
 		m_IsBerserk = _Enable;
 	}
 
+	void SetBerserkMesh();
+
 protected:
 	void BeginPlay() override;
 
 	void Tick(float DeltaTime)	override;
-	void DamageOn() override;
+	void DamageOn(bool _IsKnockBack = true) override;
 	void DamageOff() override;
-	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true, bool _IsCameraShake = true) override;
+
+
+private:
+	void CreateBlackHole();
 	
 };

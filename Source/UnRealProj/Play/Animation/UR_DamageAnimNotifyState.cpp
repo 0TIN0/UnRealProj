@@ -4,6 +4,11 @@
 #include "UR_DamageAnimNotifyState.h"
 #include "../URCharacter.h"
 
+UUR_DamageAnimNotifyState::UUR_DamageAnimNotifyState()	:
+	m_IsKnockBack(true)
+{
+}
+
 void UUR_DamageAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	AURCharacter* Actor = MeshComp->GetOwner<AURCharacter>();
@@ -15,7 +20,7 @@ void UUR_DamageAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 
 
 	Actor->SetKnockDown(m_IsKnockDown);
-	Actor->DamageOn();
+	Actor->DamageOn(m_IsKnockBack);
 
 	if (!Actor->GetAnimationInstance()->IsAnimMontage(WarriorAnimation::SkillELoop))
 		Actor->CameraShake(CameraShake_Type::HitShake);

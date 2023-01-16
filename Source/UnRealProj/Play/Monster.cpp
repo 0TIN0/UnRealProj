@@ -166,7 +166,7 @@ void AMonster::NotifyActorEndOverlap(AActor* OtherActor)
 {
 }
 
-void AMonster::DamageOn()
+void AMonster::DamageOn(bool _IsKnockBack)
 {
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 
@@ -211,9 +211,9 @@ void AMonster::DamageOff()
 	m_DamageCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	if (IsDeath())
 	{

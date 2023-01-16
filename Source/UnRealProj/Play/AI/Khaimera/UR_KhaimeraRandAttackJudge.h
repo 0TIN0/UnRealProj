@@ -20,6 +20,7 @@ public:
 private:
 	class AURAIController* m_Controller;
 	class AUR_KhaimeraBoss* m_Boss;
+	FRandomStream m_Stream;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

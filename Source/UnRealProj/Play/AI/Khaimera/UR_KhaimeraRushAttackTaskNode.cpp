@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Play/AI/Khaimera/UR_KhaimeraIdleTaskNode.h"
+#include "Play/AI/Khaimera/UR_KhaimeraRushAttackTaskNode.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "../../Controller/URAIController.h"
 #include "../../Boss/UR_KhaimeraBoss.h"
 #include "Global/URStructs.h"
 
-UUR_KhaimeraIdleTaskNode::UUR_KhaimeraIdleTaskNode()
+UUR_KhaimeraRushAttackTaskNode::UUR_KhaimeraRushAttackTaskNode() :
+	m_Enable(false)
 {
-	// TickTask함수를 동작시킬지 결정해주 변수
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UUR_KhaimeraIdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UUR_KhaimeraRushAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
@@ -24,33 +24,61 @@ EBTNodeResult::Type UUR_KhaimeraIdleTaskNode::ExecuteTask(UBehaviorTreeComponent
 	if (!m_Boss)
 		m_Boss = m_Controller->GetPawn<AUR_KhaimeraBoss>();
 
-	if (AnimMontageJudge(m_Boss))
+	const FURMonsterDataInfo* KhaimeraInfo = m_Boss->GetKhaimeraData();
+
+	// 먼저 몇번째 공격인지를 판단해준다.
+	int AttackNumb = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("RandAttackNumb"));
+
+	// 5가 아니라면 데쉬 어택이 아니다.
+	if (AttackNumb != 6)
+	{
+		return EBTNodeResult::Succeeded;
+	}
+
+	m_AttackType = static_cast<KhaimeraAttack>(AttackNumb);
+
+	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
+
+	if (nullptr == Target)
 	{
 		return EBTNodeResult::Failed;
 	}
-	
-	const FURMonsterDataInfo* MonsterInfo = m_Boss->GetKhaimeraData();
 
+	AActor* TargetActor = Cast<AActor>(Target);
 
-
-	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
-
-	if (Target)
+	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+	if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->SkillRange))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	m_Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+	switch (m_AttackType)
+	{
+	case KhaimeraAttack::RushAttack:
+		if (!m_Enable)
+		{
+			m_Enable = true;
+			m_Boss->GetAnimationInstance()->ChangeAnimMontage(KhaimeraBossAnimation::RushAttackStart);
+		}
+		break;
+	}
 
-	return EBTNodeResult::InProgress;
+	if (m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardFastComboAttack))
+	{
+		return EBTNodeResult::InProgress;
+	}
+
+	m_Enable = false;
+
+	return EBTNodeResult::Failed;
 }
 
-void UUR_KhaimeraIdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UUR_KhaimeraRushAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }
 
-bool UUR_KhaimeraIdleTaskNode::AnimMontageJudge(AUR_KhaimeraBoss* _Monster)
+bool UUR_KhaimeraRushAttackTaskNode::AnimMontageJudge(AUR_KhaimeraBoss* _Monster)
 {
 	if (_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack1) ||
 		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack2) ||

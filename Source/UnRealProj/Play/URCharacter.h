@@ -165,6 +165,11 @@ public:
 		return m_PlayerInfo;
 	}
 
+	void SetIsInvincibility(bool _Enable)
+	{
+		m_IsInvincibility = _Enable;
+	}
+
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
 
@@ -200,8 +205,9 @@ public:
 
 	TArray<AActor*> TargetsSearch(FName _Name, float _Range = -1.f);
 
+	// 카메라 쉐이크는 플레이어에만 해당됨
 	UFUNCTION(BlueprintCallable, Category = UR)
-	virtual void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true);
+	virtual void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true, bool _IsCameraShake = true);
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE void SetHP(double _HP)
@@ -215,7 +221,7 @@ public:
 		m_Animations = _Animations;
 	}
 
-	virtual void DamageOn() {};
+	virtual void DamageOn(bool _IsKnockBack = true) {};
 	virtual void DamageOff() {};
 
 

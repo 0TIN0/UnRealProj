@@ -156,7 +156,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = UR)
 		void ShiftKeyOn();
 
-	void DamageOn() override;
+	void DamageOn(bool _IsKnockBack = true) override;
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		FORCEINLINE void SetESkillEnable(bool _WSkillEnable)
@@ -237,7 +237,7 @@ protected:
 
 protected:
 
-	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true) override;
+	void CallDamage(double _Damage, AActor* _Actor = nullptr, bool _IsKnockBack = true, bool _IsCameraShake = true) override;
 
 
 

@@ -5,15 +5,18 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "Global/UREnum.h"
-#include "UR_KhaimeraAttackTaskNode.generated.h"
+#include "UR_KhaimeraDashAttackTaskNode.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class UNREALPROJ_API UUR_KhaimeraAttackTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_KhaimeraDashAttackTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_KhaimeraAttackTaskNode();
+	UUR_KhaimeraDashAttackTaskNode();
 
 private:
 	class AURAIController* m_Controller;
@@ -29,6 +32,6 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	bool AnimMontageJudge(class AUR_KhaimeraBoss* _Monster);
+	bool AnimMontageJudge();
 	
 };

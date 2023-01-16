@@ -128,7 +128,7 @@ void AUR_BossMonster::Tick(float DeltaTime)
 	}
 }
 
-void AUR_BossMonster::DamageOn()
+void AUR_BossMonster::DamageOn(bool _IsKnockBack)
 {
 	Super::DamageOn();
 }
@@ -138,9 +138,9 @@ void AUR_BossMonster::DamageOff()
 	Super::DamageOff();
 }
 
-void AUR_BossMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void AUR_BossMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	Super::CallDamage(_Damage);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	if (IsDeath())
 	{

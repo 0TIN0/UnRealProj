@@ -9,7 +9,8 @@
 #include "Global/URStructs.h"
 #include "Global/URGameInstance.h"
 
-UUR_KhaimeraRandAttackJudge::UUR_KhaimeraRandAttackJudge()
+UUR_KhaimeraRandAttackJudge::UUR_KhaimeraRandAttackJudge()	:
+	m_Stream(FRandomStream(FDateTime::Now().GetTicks()))
 {
 }
 
@@ -17,16 +18,16 @@ EBTNodeResult::Type UUR_KhaimeraRandAttackJudge::ExecuteTask(UBehaviorTreeCompon
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	// 어떤 공격을 할지 정해주는 TaskNode이다.
-	if (!m_Controller)
-		m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
+	//// 어떤 공격을 할지 정해주는 TaskNode이다.
+	//if (!m_Controller)
+	//	m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if (!m_Boss)
-		m_Boss = m_Controller->GetPawn<AUR_KhaimeraBoss>();
+	//if (!m_Boss)
+	//	m_Boss = m_Controller->GetPawn<AUR_KhaimeraBoss>();
 
-	int32 RandAttackNumb = (int32)m_Boss->GetGameInstance<UURGameInstance>()->GetRandomStream().FRandRange(1, 4);
+	int32 RandAttackNumb = (int32)m_Stream.FRandRange(1, 6);
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsInt(FName("RandAttackNumb"), RandAttackNumb);
 
-	return EBTNodeResult::Succeeded;
+	return EBTNodeResult::Failed;
 }

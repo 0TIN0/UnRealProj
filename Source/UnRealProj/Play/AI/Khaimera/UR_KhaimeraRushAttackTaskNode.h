@@ -5,15 +5,18 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "Global/UREnum.h"
-#include "UR_KhaimeraAttackTaskNode.generated.h"
+#include "UR_KhaimeraRushAttackTaskNode.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class UNREALPROJ_API UUR_KhaimeraAttackTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_KhaimeraRushAttackTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_KhaimeraAttackTaskNode();
+	UUR_KhaimeraRushAttackTaskNode();
 
 private:
 	class AURAIController* m_Controller;

@@ -25,12 +25,13 @@ EBTNodeResult::Type UUR_KhaimeraDeathTaskNode::ExecuteTask(UBehaviorTreeComponen
 
 	if (m_Boss->GetHP() > 0.0)
 	{
-		return EBTNodeResult::Failed;
+		return EBTNodeResult::Succeeded;
 	}
 
 	if (!m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathStart))
 	{
 		m_Boss->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::DeathLoop);
+		m_Boss->SetIsInvincibility(true);
 	}
 
 	return EBTNodeResult::InProgress;

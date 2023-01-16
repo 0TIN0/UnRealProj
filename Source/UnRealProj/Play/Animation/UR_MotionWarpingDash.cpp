@@ -39,6 +39,8 @@ void UUR_MotionWarpingDash::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimS
 	FVector Dir = m_TargetActor->GetActorLocation() - m_Player->GetActorLocation();
 	Dir = Dir.GetSafeNormal();
 
+	Dir.Z = 0.0;
+
 	FVector EndPos = m_TargetActor->GetActorLocation() + Dir * 500.f;
 
 	UKismetSystemLibrary::MoveComponentTo(m_Player->GetRootComponent(), EndPos, m_Player->GetActorRotation(),

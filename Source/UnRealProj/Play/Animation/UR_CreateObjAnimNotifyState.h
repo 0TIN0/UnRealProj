@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Global/UREnum.h"
 #include "UR_CreateObjAnimNotifyState.generated.h"
 
 
@@ -23,6 +24,9 @@ class UNREALPROJ_API UUR_CreateObjAnimNotifyState : public UAnimNotifyState
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AActor>	m_SpawnActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		UMONSTER_TYPE m_MonsterType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	FName m_SocketName;;

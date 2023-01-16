@@ -65,6 +65,17 @@ void AURProjectile::SetInfo(FName _CollisionProfileName, float _Speed, float _Li
 	m_SphereComponent->SetCollisionProfileName(_CollisionProfileName);
 }
 
+void AURProjectile::SetInfo(FName _CollisionProfileName, FVector _Dir, float _Speed, float _LifeTime)
+{
+	m_Speed = _Speed;
+
+	m_LifeTime = _LifeTime;
+
+	m_SkillDir = _Dir;
+
+	m_SphereComponent->SetCollisionProfileName(_CollisionProfileName);
+}
+
 void AURProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent, int32 _OtherBodyIndex, bool _FromSweep, const FHitResult& _Result)
 {
 	// 충돌했을경우 대상의 컴포넌트를 얻어올 수 있다.
@@ -75,6 +86,6 @@ void AURProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestAc
 		return;
 	}
 
-	Chracter->CallDamage(m_Damage);
+	Chracter->CallDamage(m_Damage, this);
 }
 

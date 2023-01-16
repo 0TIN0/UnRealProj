@@ -93,6 +93,17 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent);
 	//m_CameraComponent->bUsePawnControlRotation = false;
 
+	{
+		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Trace(TEXT("NiagaraSystem'/Game/BluePrint/Play/Monster/BossSubObj/Khaimera/FX_Body.FX_Body'"));
+
+		m_BlackHoleFX = Trace.Object;
+
+		// Parameters can be set like this (see documentation for further info) - the names and type must match the user exposed parameter in the Niagara System
+		m_BlackHoleNiagara = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("BlackholeBodyParticles")));
+		m_BlackHoleNiagara->SetAsset(m_BlackHoleFX);
+		m_BlackHoleNiagara->SetupAttachment(GetMesh());
+		//Start Position_SpawnRate
+	}
 
 	m_SkillQConsumedMP = 10.0;
 	m_SkillEConsumedMP = 20.0;
@@ -941,7 +952,7 @@ void AWarriorCharacter::ShiftKeyOn()
 {
 }
 
-void AWarriorCharacter::DamageOn()
+void AWarriorCharacter::DamageOn(bool _IsKnockBack)
 {
 	if (!m_IsQSkill)
 	{
@@ -1261,7 +1272,8 @@ void AWarriorCharacter::Jump()
 		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartBackward) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartForward) ||
 		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartLeft) ||
-		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartRight))
+		GetAnimationInstance()->IsAnimMontage(WarriorJumpAnimation::JumpCombatStartRight) ||
+		IsAttack() || m_IsESkillAttacking)
 	{
  		return;
 	}
@@ -1334,16 +1346,19 @@ void AWarriorCharacter::StopJumping()
 	Super::StopJumping();
 }
 
-void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack)
+void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
 	if (m_IsInvincibility)
 	{
 		return;
 	}
 
-	Super::CallDamage(_Damage, _Actor, _IsKnockBack);
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
-	CameraShake(CameraShake_Type::HitShake);
+	if (_IsCameraShake)
+	{
+		CameraShake(CameraShake_Type::HitShake);
+	}
 
 	m_HPPercent = GetHP() / m_PlayerInfo->MaxHP;
 
@@ -1352,7 +1367,8 @@ void AWarriorCharacter::CallDamage(double _Damage, AActor* _Actor, bool _IsKnock
 	if (_Actor != nullptr)
 	{
 		AttackOff();
-		HitAnimMontageJudge();
+		if (_IsKnockBack)
+			HitAnimMontageJudge();
 	}
 }
 
@@ -2134,9 +2150,9 @@ void AWarriorCharacter::AdvanceTimer()
 
 		if (m_UltimateTargetMonster.Num() > 1)
 		{
-			if (m_UltimateAttackCount > 0)
+			if (m_UltimateAttackCount > 1)
 			{
-				EndPos = Target->GetActorLocation() + Dir * 200.f;
+				EndPos = Target->GetActorLocation() + Dir * 400.f;
 			}
 			else
 			{
@@ -2145,7 +2161,14 @@ void AWarriorCharacter::AdvanceTimer()
 		}
 		else
 		{
-			EndPos = Target->GetActorLocation() + Dir * 200.f + GetActorRightVector() * 200.f;
+			if (m_UltimateAttackCount > 1)
+			{
+				EndPos = Target->GetActorLocation() + Dir * 400.f + GetActorRightVector() * 400.f;
+			}
+			else
+			{
+				EndPos = Target->GetActorLocation() - Dir * 150.f;
+			}
 		}
 
 		CreateParticleObject<AUR_NormalAttackHit>(Target);

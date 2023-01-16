@@ -45,6 +45,8 @@ protected:
 public:
 	void SetInfo(FName _CollisionProfileName, float _Speed, float _LifeTime);
 
+	void SetInfo(FName _CollisionProfileName, FVector _Dir, float _Speed, float _LifeTime);
+
 private:
 	UFUNCTION()
 		void OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent,
