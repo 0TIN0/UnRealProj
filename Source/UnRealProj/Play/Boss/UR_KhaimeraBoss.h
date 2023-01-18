@@ -14,6 +14,7 @@ enum class KhaimeraBossAnimation : uint8
 	FowardAttack1 = static_cast<int>(DefaultAnimation::Max) UMETA(DisplayName = "FowardAttack1"),
 	FowardAttack2 UMETA(DisplayName = "FowardAttack2"),
 	FowardAttack3 UMETA(DisplayName = "FowardAttack3"),
+	FowardCombo1 UMETA(DisplayName = "Combo1"),
 	FowardFastComboAttack UMETA(DisplayName = "FowardFastComboAttack"),
 	Attack1Recovery UMETA(DisplayName = "Attack1Recovery"),
 	Attack2Recovery UMETA(DisplayName = "Attack2Recovery"),

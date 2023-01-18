@@ -3,6 +3,7 @@
 
 #include "Play/Animation/UR_MotionWarpingRot.h"
 #include "../WarriorCharacter.h"
+#include "../Object/UR_GlowEffectActor.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 void UUR_MotionWarpingRot::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

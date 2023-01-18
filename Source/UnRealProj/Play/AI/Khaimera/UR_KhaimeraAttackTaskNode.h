@@ -18,6 +18,7 @@ public:
 private:
 	class AURAIController* m_Controller;
 	class AUR_KhaimeraBoss* m_Boss;
+	class AWarriorCharacter* m_Player;
 
 	KhaimeraAttack m_AttackType;
 
@@ -29,6 +30,6 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	bool AnimMontageJudge(class AUR_KhaimeraBoss* _Monster);
+	bool AnimMontageJudge();
 	
 };

@@ -30,11 +30,15 @@ EBTNodeResult::Type UUR_KhaimeraDashAttackTaskNode::ExecuteTask(UBehaviorTreeCom
 	int AttackNumb = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("RandAttackNumb"));
 
 	// 5가 아니라면 데쉬 어택이 아니다.
-	if (AttackNumb != 5)
+	if (AttackNumb != 6)
 	{
 		return EBTNodeResult::Succeeded;
 	}
-	
+
+	if (AnimMontageJudge())
+	{
+		return EBTNodeResult::Succeeded;
+	}
 	m_AttackType = static_cast<KhaimeraAttack>(AttackNumb);
 
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
@@ -46,10 +50,13 @@ EBTNodeResult::Type UUR_KhaimeraDashAttackTaskNode::ExecuteTask(UBehaviorTreeCom
 
 	AActor* TargetActor = Cast<AActor>(Target);
 
-	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-	if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->SkillRange))
+	if (!m_Enable)
 	{
-		return EBTNodeResult::Failed;
+		// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+		if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->SkillRange))
+		{
+			return EBTNodeResult::Failed;
+		}
 	}
 
 	switch (m_AttackType)
@@ -62,6 +69,7 @@ EBTNodeResult::Type UUR_KhaimeraDashAttackTaskNode::ExecuteTask(UBehaviorTreeCom
 		}
 		break;
 	}
+
 
 	if (m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashStart) ||
 		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashAttack))
@@ -81,19 +89,7 @@ void UUR_KhaimeraDashAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp,
 
 bool UUR_KhaimeraDashAttackTaskNode::AnimMontageJudge()
 {
-	if (m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack1) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack2) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack3) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack1Recovery) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack2Recovery) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack3Recovery) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardFastComboAttack) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashStart) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashAttack) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::BerserkStart) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::RushAttackStart) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::RushAttack) ||
-		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
+	if (m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
 		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
 		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
 		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||

@@ -27,6 +27,6 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	bool AnimMontageJudge(class AUR_KhaimeraBoss* _Monster);
+	bool AnimMontageJudge();
 	
 };

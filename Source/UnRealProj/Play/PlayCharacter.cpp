@@ -3,8 +3,8 @@
 
 #include "PlayCharacter.h"
 #include "Components/SphereComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+	#include "Components/CapsuleComponent.h"
+	#include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Global/URGameInstance.h"
@@ -263,6 +263,8 @@ void APlayCharacter::SkillQ()
 
 	AttackOn();
 	GetAnimationInstance()->ChangeAnimMontage(PlayerAnimationEx::Skill1);
+
+
 
 	m_MP -= m_SkillQConsumedMP;
 

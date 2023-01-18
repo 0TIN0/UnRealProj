@@ -58,7 +58,7 @@ EBTNodeResult::Type UUR_KhaimeraTurnTaskNode::ExecuteTask(UBehaviorTreeComponent
 
 	float Delta = GetWorld()->DeltaTimeSeconds;
 	float YawDelta = 0;
-	if (CrossPrdt.Z < -0.08f)
+	if (CrossPrdt.Z < 0.f)
 	{
 		YawDelta = Angle * Delta * -1;
 	}
@@ -70,7 +70,8 @@ EBTNodeResult::Type UUR_KhaimeraTurnTaskNode::ExecuteTask(UBehaviorTreeComponent
 	{
 		return EBTNodeResult::Type::Succeeded;
 	}
-	YawDelta *= 5.f;
+
+	YawDelta *= 10.f;
 	FRotator DeltaRotation = FRotator(0, YawDelta, 0);   //Yaw
 
 	// 각도가 클 수록 빠르게 회전을 하게된다.

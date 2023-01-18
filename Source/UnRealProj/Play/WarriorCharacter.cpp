@@ -5,8 +5,10 @@
 #include "Object/Hit/UR_NormalAttackHit.h"
 #include "Object/UR_UltimateSpline.h"
 #include "Object/UR_UltimateCharge.h"
+#include "Object/UR_GlowEffectActor.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -54,7 +56,8 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_IsJump(false),
 	m_JumpType(EWarriorJumpType::Default),
 	m_AttackSpeed(1.f),
-	m_UltimateAttackCount(8)
+	m_UltimateAttackCount(8),
+	m_PostProcessDeleteTime(4.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -92,6 +95,15 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraComponent = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("CameraComponent")));
 	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent);
 	//m_CameraComponent->bUsePawnControlRotation = false;
+
+	m_PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName(TEXT("DrunkPostProcessComponent")));
+	m_PostProcessComponent->SetupAttachment(m_CameraComponent);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatInst(TEXT("MaterialInstanceConstant'/Game/Resource/Play/Effect/Drunk_Effect/Drunk_Effect_Inst.Drunk_Effect_Inst'"));
+
+	m_WeightedBlend = FWeightedBlendable(1.f, MatInst.Object);
+
+	// m_PostProcessComponent->Settings.WeightedBlendables.Array.Add(m_WeightedBlend);
 
 	{
 		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Trace(TEXT("NiagaraSystem'/Game/BluePrint/Play/Monster/BossSubObj/Khaimera/FX_Body.FX_Body'"));
@@ -409,8 +421,6 @@ void AWarriorCharacter::PlayerForwardMove(float Value)
 		return;
 	}
 
-
-
 	if (!m_IsBlocking)
 	{
 		if (!m_IsCombating)
@@ -612,6 +622,12 @@ void AWarriorCharacter::RightBlock()
 	{
 		return;
 	}
+
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
+
 	m_IsBlocking = true;
 	m_IsCombating = true;
 
@@ -630,6 +646,10 @@ void AWarriorCharacter::RightBlock()
 
 void AWarriorCharacter::RightBlockUp()
 {
+	if (FirstJudgeFunc())
+	{
+		return;
+	}
 	m_IsBlocking = false;
 	m_IsCombating = false;
 
@@ -719,6 +739,12 @@ void AWarriorCharacter::SkillQ()
 	SetBerserkRateScale();
 
 	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillQ);
+
+
+	m_GlowSphere = GetWorld()->SpawnActor<AUR_GlowEffectActor>(AUR_GlowEffectActor::StaticClass(), GetActorTransform());
+	m_GlowSphere->AttachToComponent(m_CameraComponent, FAttachmentTransformRules::KeepWorldTransform);
+	//m_GlowSphere->SetPivotOffset(FVector(-500.0, 0.0, 0.0));
+
 
 	m_MP -= m_SkillQConsumedMP;
 
@@ -1168,14 +1194,6 @@ void AWarriorCharacter::Tick(float DeltaTime)
 	}
 
 	BlockStaminaTick(DeltaTime);
-	/*FVector SkeletonPos = GetMesh()->GetSocketLocation(FName(TEXT("pelvis")));
-	SkeletonPos.Z -= 20.f;
-	SetActorLocation(SkeletonPos);*/
-	/*if (m_IsAttack)
-	{
-		TurnFunc();
-	}*/
-	
 	CombatTick(DeltaTime);
 	CoolTimeTick(DeltaTime);
 
@@ -1202,25 +1220,7 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	//if (m_IsQSkill)
-	//{
-	//	if (m_IsAttack)
-	//	{
-	//		if (m_MonsterActor)
-	//		{
-	//			FVector TargetPos = m_MonsterActor->GetActorLocation();//m_UltimateCameraTarget->GetActorLocation() + FVector(0.0, 0.0, -1.0) * 1000.f;
-	//			FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(m_CameraSpringArmComponent->GetComponentLocation(),
-	//				TargetPos);
-
-	//			FRotator Rot = m_CameraSpringArmComponent->GetComponentRotation();
-
-	//			Rot = FMath::RInterpTo(Rot, TargetRotator,
-	//				DeltaTime, 1.f);
-
-	//			m_CameraSpringArmComponent->SetWorldRotation(Rot);
-	//		}
-	//	}
-	//}
+	TickPostProcessDeleteFunc(DeltaTime);
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -1544,7 +1544,11 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 			m_IsQSkill = false;
 			m_AttackSpeed = 1.f;
 			SetBerserkRateScale();
-
+			if (m_GlowSphere)
+			{
+				m_GlowSphere->Destroy();
+				m_GlowSphere = nullptr;
+			}
 
 			for (int32 i = 0; i < m_ArrayNormalMat.Num(); ++i)
 			{
@@ -1949,6 +1953,18 @@ void AWarriorCharacter::CameraShake(CameraShake_Type _Type)
 	}
 }
 
+void AWarriorCharacter::AddPostProcessDrunkMat()
+{
+	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 0)
+	m_PostProcessComponent->Settings.WeightedBlendables.Array.Add(m_WeightedBlend);
+}
+
+void AWarriorCharacter::DeletePostProcessDrunkMat()
+{
+	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
+		m_PostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
+}
+
 TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _HitResult)
 {
 	TArray<AActor*> TargetActor;
@@ -1990,6 +2006,20 @@ void AWarriorCharacter::SetBerserkRateScale()
 	GetAnimationInstance()->GetAnimation(WarriorAnimation::ComboC4)->RateScale = m_AttackSpeed;
 	GetAnimationInstance()->GetAnimation(WarriorAnimation::SkillELoop)->RateScale = m_AttackSpeed;
 	
+}
+
+void AWarriorCharacter::TickPostProcessDeleteFunc(float DeltaTime)
+{
+	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
+	{
+		m_PostProcessDeleteTime -= DeltaTime;
+
+		if (m_PostProcessDeleteTime <= 0.f)
+		{
+			m_PostProcessDeleteTime = 5.f;
+			m_PostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
+		}
+	}
 }
 
 

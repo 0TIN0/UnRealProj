@@ -30,7 +30,12 @@ EBTNodeResult::Type UUR_KhaimeraComboAttackTaskNode::ExecuteTask(UBehaviorTreeCo
 	int AttackNumb = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("RandAttackNumb"));
 
 	// 5가 아니라면 데쉬 어택이 아니다.
-	if (AttackNumb != 4)
+	if (AttackNumb != 5)
+	{
+		return EBTNodeResult::Succeeded;
+	}
+
+	if (AnimMontageJudge())
 	{
 		return EBTNodeResult::Succeeded;
 	}
@@ -49,23 +54,29 @@ EBTNodeResult::Type UUR_KhaimeraComboAttackTaskNode::ExecuteTask(UBehaviorTreeCo
 	if (!m_Boss->GetIsBerserk())
 	{
 		// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-		if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->AttRange))
+		if (!m_Enable)
 		{
-			return EBTNodeResult::Failed;
+			if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->AttRange))
+			{
+				return EBTNodeResult::Failed;
+			}
 		}
 	}
 	else
 	{
-		// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-		if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->SkillRange))
+		if (!m_Enable)
 		{
-			return EBTNodeResult::Failed;
+			// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+			if (!m_Boss->GetIsRangeInTarget(TargetActor, KhaimeraInfo->SkillRange))
+			{
+				return EBTNodeResult::Failed;
+			}
 		}
 	}
 
 	switch (m_AttackType)
 	{
-	case KhaimeraAttack::Combo1:
+	case KhaimeraAttack::FastCombo:
 		if (!m_Enable)
 		{
 			m_Enable = true;
@@ -81,7 +92,7 @@ EBTNodeResult::Type UUR_KhaimeraComboAttackTaskNode::ExecuteTask(UBehaviorTreeCo
 
 	m_Enable = false;
 
-	return EBTNodeResult::Failed;
+	return EBTNodeResult::Succeeded;
 }
 
 void UUR_KhaimeraComboAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -89,25 +100,15 @@ void UUR_KhaimeraComboAttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp
 	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }
 
-bool UUR_KhaimeraComboAttackTaskNode::AnimMontageJudge(AUR_KhaimeraBoss* _Monster)
+bool UUR_KhaimeraComboAttackTaskNode::AnimMontageJudge()
 {
-	if (_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack1) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack2) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardAttack3) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack1Recovery) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack2Recovery) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Attack3Recovery) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::FowardFastComboAttack) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashStart) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::DashAttack) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::BerserkStart) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirLoop) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
-		_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
+	if (m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirLoop) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
 	{
 		return true;
 	}

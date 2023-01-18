@@ -66,6 +66,11 @@ private:
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UPostProcessComponent* m_PostProcessComponent;
+
+	FWeightedBlendable m_WeightedBlend;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		TMap<CameraShake_Type, TSubclassOf<class UMatineeCameraShake>> m_CameraShakeMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Collision, meta = (AllowPrivateAccess = "true"))
@@ -87,6 +92,8 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		class UNiagaraComponent* m_BlackHoleNiagara;
+
+	class AUR_GlowEffectActor* m_GlowSphere;
 
 	class UNiagaraSystem* m_BlackHoleFX;
 
@@ -164,6 +171,10 @@ private:
 	bool m_IsUltimateAttack;
 	FRotator m_CameraComponentDefaultRot;
 	AURCharacter* m_UltimateCameraTarget;
+
+
+	// 포스트프로세스 제거 관련
+	float m_PostProcessDeleteTime;
 
 
 public:
@@ -416,6 +427,11 @@ public:
 		return m_BlackHoleNiagara;
 	}
 
+	class AUR_GlowEffectActor* GetGlowEffect()
+	{
+		return m_GlowSphere;
+	}
+
 protected:
 	void BeginPlay() override;
 
@@ -465,7 +481,7 @@ private:
 
 	void SetBerserkRateScale();
 
-
+	void TickPostProcessDeleteFunc(float DeltaTime);
 
 	
 protected:
@@ -500,6 +516,9 @@ public:
 	AActor* GetTargetActor();
 
 	void CameraShake(CameraShake_Type _Type) override;
+
+	void AddPostProcessDrunkMat();
+	void DeletePostProcessDrunkMat();
 
 	template <typename T>
 	void CreateParticleObject(AActor* _Actor)

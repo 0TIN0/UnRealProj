@@ -231,16 +231,44 @@ void AUR_KhaimeraBoss::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockB
 			switch (m_HitDir)
 			{
 			case EHitDir::Forward:
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+				if (!GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown))
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+				}
+				else
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::KnockDown);
+				}
 				break;
 			case EHitDir::Backward:
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);
+				if (!GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown))
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);
+				}
+				else
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::KnockDown);
+				}
 				break;
 			case EHitDir::Left:
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::LeftHit);
+				if (!GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown))
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::LeftHit);
+				}
+				else
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::KnockDown);
+				}
 				break;
 			case EHitDir::Right:
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::RightHit);
+				if (!GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown))
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::RightHit);
+				}
+				else
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::KnockDown);
+				}
 				break;
 			}
 		}
