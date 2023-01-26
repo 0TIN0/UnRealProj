@@ -1784,6 +1784,7 @@ void AWarriorCharacter::HitAnimMontageJudge()
 			break;
 		case 5:
 		case 6:
+			DestroyBlockObj();
 			HitAnimation(true);
 			break;
 		}
@@ -1791,6 +1792,7 @@ void AWarriorCharacter::HitAnimMontageJudge()
 		break;
 	case EHitType::KnockDownHit:
 	{
+		DestroyBlockObj();
 		HitAnimation(true, true);
 	}
 		break;
@@ -2032,6 +2034,19 @@ void AWarriorCharacter::TickPostProcessDeleteFunc(float DeltaTime)
 			m_PostProcessDeleteTime = 5.f;
 			m_PostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
 		}
+	}
+}
+
+void AWarriorCharacter::DestroyBlockObj()
+{
+	m_IsBlocking = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = m_PlayerInfo->Speed;
+
+	if (m_Shield != nullptr)
+	{
+		m_Shield->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+		m_Shield->DestroyComponent();
 	}
 }
 

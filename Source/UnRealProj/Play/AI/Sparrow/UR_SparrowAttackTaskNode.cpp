@@ -59,6 +59,34 @@ EBTNodeResult::Type UUR_SparrowAttackTaskNode::ExecuteTask(UBehaviorTreeComponen
 	{
 		return EBTNodeResult::Failed;
 	}
+	AActor* TargetActor = Cast<AActor>(Target);
+
+	FVector ForwardDir = m_Boss->GetActorForwardVector();    // forward 벡터
+	FVector TargetDir = (TargetActor->GetActorLocation() - m_Boss->GetActorLocation());                   // Target 벡터
+	TargetDir = TargetDir.GetSafeNormal();
+	FVector UpDir = ForwardDir.Cross(m_Boss->GetActorRightVector());	// Up 벡터
+
+
+	float Dot = FVector::DotProduct(ForwardDir, TargetDir);
+	float Angle = FMath::RadiansToDegrees(FMath::Acos(Dot));
+	FVector CrossPrdt = FVector::CrossProduct(ForwardDir, TargetDir);
+
+	float Delta = GetWorld()->DeltaTimeSeconds;
+	float YawDelta = 0;
+	if (CrossPrdt.Z < 0.f)
+	{
+		YawDelta = Angle * Delta * -1;
+	}
+	else if (CrossPrdt.Z > 0.08f)
+	{
+		YawDelta = Angle * Delta;
+	}
+
+	YawDelta *= 10.f;
+	FRotator DeltaRotation = FRotator(0, YawDelta, 0);   //Yaw
+
+	// 각도가 클 수록 빠르게 회전을 하게된다.
+	m_Boss->AddActorWorldRotation(DeltaRotation);
 
 	if (!m_Enable)
 	{

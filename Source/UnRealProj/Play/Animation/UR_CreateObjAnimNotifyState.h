@@ -55,5 +55,6 @@ protected:
 
 
 private:
+	void CreateSparrowSP4Shoot(USkeletalMeshComponent* _MeshComp, class AUR_SparrowSubBoss* _Boss);
 	void CreateSparrowBurstShoot(USkeletalMeshComponent* _MeshComp, class AUR_SparrowSubBoss* _Boss);
 };

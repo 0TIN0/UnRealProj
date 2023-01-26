@@ -69,6 +69,16 @@ void AUR_ArrowProjectile::Tick(float DeltaTime)
 void AUR_ArrowProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent, 
 	int32 _OtherBodyIndex, bool _FromSweep, const FHitResult& _Result)
 {
+	AURCharacter* Chracter = Cast<AURCharacter>(_DestActor);
+
+	if (nullptr == Chracter)
+	{
+		return;
+	}
+
+	Chracter->SetHitType(EHitType::NormalHit);
+
+	// 부모에서 CallDamage를 하기떄문에 그 전에 히트 방식을 미리 설정해준다.
 	Super::OnCollision(_Component, _DestActor, _DestComponent, _OtherBodyIndex, _FromSweep, _Result);
 
 	Destroy();

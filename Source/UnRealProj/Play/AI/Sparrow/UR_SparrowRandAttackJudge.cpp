@@ -22,12 +22,12 @@ EBTNodeResult::Type UUR_SparrowRandAttackJudge::ExecuteTask(UBehaviorTreeCompone
 
 	// 어떤 공격을 할지 정해주는 TaskNode이다.
 	// 1 : 
-	// 2 : 
+	// 2 : Charging Shoot (SP4End)
 	// 3 : 
 	// 4 : Burst Shoot
 	// 5 : Rain Hold Shoot
 	// 6 : Rain Burst Shoot
-	int32 RandAttackNumb = (int32)m_Stream.FRandRange(4.0, 4.99999);
+	int32 RandAttackNumb = (int32)m_Stream.FRandRange(2.0, 2.99999);
 
 	// 보스한테 어택 넘버를 넘겨준다.
 	// AnimNotifyState에서 해당 번호에 따라 동작이 바뀌도록 구현

@@ -486,6 +486,8 @@ private:
 
 	void TickPostProcessDeleteFunc(float DeltaTime);
 
+	void DestroyBlockObj();
+
 	
 protected:
 	UPROPERTY()

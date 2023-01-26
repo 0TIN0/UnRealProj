@@ -20,8 +20,10 @@ void UUR_SparrowAttackStartChange::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	case SparrowAttack_Type::Attack1:
 		break;
 	case SparrowAttack_Type::Attack2:
+		Boss->GetAnimationInstance()->ChangeAnimMontage(SparrowBossAnimation::SPShootHold);
 		break;
 	case SparrowAttack_Type::Attack3:
+		Boss->GetAnimationInstance()->ChangeAnimMontage(SparrowBossAnimation::SPShootHold);
 		break;
 	case SparrowAttack_Type::Attack4:
 	{
