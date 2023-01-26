@@ -26,8 +26,13 @@ public:
 	class USphereComponent* m_SphereComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
-	float m_Damage;
+		class UParticleSystemComponent* m_FXComponent;
 
+	const struct FURMonsterDataInfo* m_Data;
+
+	float m_DestroyTime;
+
+public:
 
 private:
 	UFUNCTION()

@@ -57,7 +57,8 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_JumpType(EWarriorJumpType::Default),
 	m_AttackSpeed(1.f),
 	m_UltimateAttackCount(8),
-	m_PostProcessDeleteTime(4.f)
+	m_PostProcessDeleteTime(4.f),
+	m_TestTime(0.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -1221,6 +1222,18 @@ void AWarriorCharacter::Tick(float DeltaTime)
 	}
 
 	TickPostProcessDeleteFunc(DeltaTime);
+
+	m_TestTime += DeltaTime;
+
+	if (m_TestTime >= 2.f)
+	{
+		m_TestTime = 0.f;
+		FVector Velocity = GetCharacterMovement()->Velocity;
+
+		Velocity.Z = 0.f;
+	}
+
+
 }
 
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

@@ -35,6 +35,18 @@ void UUR_ChangeIdleAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 	}
 	break;
+	case UMONSTER_TYPE::Sparrow:
+	{
+		AURCharacter* Character = MeshComp->GetOwner<AURCharacter>();
+
+		if (!Character || !Character->IsValidLowLevel())
+		{
+			return;
+		}
+
+		Character->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		Character->AttackOff();
+	}
 	}
 
 	switch (m_PlayerType)

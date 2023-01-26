@@ -177,6 +177,9 @@ private:
 	float m_PostProcessDeleteTime;
 
 
+	float m_TestTime;
+
+
 public:
 	void ResetDash()
 	{

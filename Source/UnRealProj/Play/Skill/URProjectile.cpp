@@ -86,6 +86,7 @@ void AURProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestAc
 		return;
 	}
 
+	Chracter->SetHitType(EHitType::NormalHit);
 	Chracter->CallDamage(m_Damage, this);
 }
 

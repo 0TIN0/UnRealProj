@@ -67,7 +67,7 @@ AUR_KhaimeraBoss::AUR_KhaimeraBoss()	:
 		ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
 		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'"));
 
-		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("GruxBossIconPlane"));
+		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("KhaimeraBossIconPlane"));
 		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
 		m_PlaneComponent->SetupAttachment(m_IconArm);
 		m_PlaneComponent->SetHiddenInSceneCapture(true);

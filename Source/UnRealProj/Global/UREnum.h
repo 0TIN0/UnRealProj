@@ -29,7 +29,8 @@ enum class UMONSTER_TYPE : uint8
 {
 	Default UMETA(DisplayName = "선택x"),
 	Pirate UMETA(DisplayName = "해적"),
-	Khaimera UMETA(DisplayhName = "카이메라")
+	Khaimera UMETA(DisplayhName = "카이메라"),
+	Sparrow UMETA(DisplayhName = "스페로우")
 };
 
 UENUM(BlueprintType)
@@ -292,5 +293,18 @@ enum class KhaimeraAttack : uint8
 	FastCombo,
 	DashAttack,
 	RushAttack,
+	Max
+};
+
+UENUM(BlueprintType)
+enum class SparrowAttack_Type : uint8
+{
+	Default,
+	Attack1,
+	Attack2,
+	Attack3,
+	Attack4,
+	RainBowShoot,
+	RainBowBurstShoot,
 	Max
 };

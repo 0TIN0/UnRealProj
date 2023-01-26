@@ -47,6 +47,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
 	ActorType m_ActorType;
 
+
+	TArray<std::pair<AActor*, FTransform>> m_ArrowArray;
+
 protected:
 	void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
+
+
+private:
+	void CreateSparrowBurstShoot(USkeletalMeshComponent* _MeshComp, class AUR_SparrowSubBoss* _Boss);
 };

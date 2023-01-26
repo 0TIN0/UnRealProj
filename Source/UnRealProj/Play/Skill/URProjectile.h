@@ -47,9 +47,14 @@ public:
 
 	void SetInfo(FName _CollisionProfileName, FVector _Dir, float _Speed, float _LifeTime);
 
-private:
+	class UProjectileMovementComponent* GetProjectileMovementComponent()	const
+	{
+		return m_ProjectileMovementComponent;
+	}
+
+protected:
 	UFUNCTION()
-		void OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent,
+	virtual	void OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent,
 			int32 _OtherBodyIndex, bool _FromSweep, const FHitResult& _Result);
 
 };
