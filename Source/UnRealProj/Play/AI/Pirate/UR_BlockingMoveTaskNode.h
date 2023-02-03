@@ -4,33 +4,34 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "Global/UREnum.h"
-#include "UR_AttackTaskNode.generated.h"
+#include "UR_BlockingMoveTaskNode.generated.h"
+
+UENUM(BlueprintType)
+enum class PathPos_Type	: uint8
+{
+	Default,
+	Left,
+	Right,
+	Backward
+};
 
 UCLASS()
-class UNREALPROJ_API UUR_AttackTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_BlockingMoveTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_AttackTaskNode();
+	UUR_BlockingMoveTaskNode();
 
 private:
-	class AURAIController* m_Controller;
-
-	class AMonster* m_Monster;
-
-	float m_WaitTime;
-
-	PirateAttack_Type m_AttackType;
+	PathPos_Type m_Type;
 
 	bool m_Enable;
-	
+
+
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-private:
-	bool AnimMontageJudge(class AMonster* _Monster);
+	
 };

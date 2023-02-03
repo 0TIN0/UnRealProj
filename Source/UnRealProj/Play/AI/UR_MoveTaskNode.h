@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Global/UREnum.h"
 #include "UR_MoveTaskNode.generated.h"
 
 /**
@@ -17,6 +18,8 @@ class UNREALPROJ_API UUR_MoveTaskNode : public UBTTaskNode
 public:
 	UUR_MoveTaskNode();
 
+private:
+	PirateAttack_Type m_AttackType;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

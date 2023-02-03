@@ -7,6 +7,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AUR_BlackHole::AUR_BlackHole()	:
@@ -25,6 +26,8 @@ AUR_BlackHole::AUR_BlackHole()	:
 	//m_BlackHole = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), m_NiagaraFX, GetActorLocation());
 
 	RootComponent = m_BlackHole;
+
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	
 }
 
@@ -44,6 +47,8 @@ void AUR_BlackHole::Tick(float DeltaTime)
 
 	if (m_Player)
 	{
+		SetTargetMovementInput(m_Player);
+
 		FVector Dir = GetActorLocation() - m_Player->GetActorLocation();
 
 		float Dist = Dir.Length();
@@ -57,7 +62,7 @@ void AUR_BlackHole::Tick(float DeltaTime)
 		if (Dist < m_PullDist)
 		{
 			m_Player->AddMovementInput(Dir * 2.f, Value);
-			Cast<AURCharacter>(m_Player)->CallDamage(Value / 10.f, this, false, false);
+			Cast<AURCharacter>(m_Player)->CallDamage(Value / 10.f, this, false, true);
 		}
 	}
 }

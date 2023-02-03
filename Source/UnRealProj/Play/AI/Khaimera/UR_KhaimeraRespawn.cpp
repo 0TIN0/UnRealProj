@@ -17,11 +17,9 @@ EBTNodeResult::Type UUR_KhaimeraRespawn::ExecuteTask(UBehaviorTreeComponent& Own
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	if (!m_Controller)
-		m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
+	m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if (!m_Boss)
-		m_Boss = m_Controller->GetPawn<AUR_KhaimeraBoss>();
+	m_Boss = m_Controller->GetPawn<AUR_KhaimeraBoss>();
 
 	if (!m_Boss->GetAnimationInstance()->IsAnimMontage(KhaimeraBossAnimation::Spawn))
 	{

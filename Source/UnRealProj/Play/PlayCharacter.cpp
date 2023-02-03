@@ -17,7 +17,6 @@
 #include "Kismet/KismetMathLibrary.h"
 
 APlayCharacter::APlayCharacter()	:
-	m_QuestProgress(QuestProgress::Default),
 	m_IsRun(false),
 	m_IsForwardDown(false),
 	m_IsBackwardDown(false),
@@ -29,9 +28,7 @@ APlayCharacter::APlayCharacter()	:
 	m_MouseXDPI(0.5f),
 	m_MouseYDPI(0.5f),
 	m_MoveSpeed(1.f),
-	m_TeleportDist(600.f),
-	m_IsQuesting(false),
-	m_IsQuestCompletion(false)
+	m_TeleportDist(600.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -571,12 +568,12 @@ void APlayCharacter::SetDefaultData()
 	m_HPPercent = 1.0;
 	m_MP = m_PlayerInfo->MP;
 	m_Stamina = m_PlayerInfo->MaxStamina;
-	m_QSkillCurCollTime = 0.f;
-	m_ESkillCurCollTime = 0.f;
-	m_RSkillCurCollTime = 0.f;
-	m_QSkillMaxCollTime = static_cast<int>(m_PlayerInfo->QSkillCollTime);
-	m_ESkillMaxCollTime = static_cast<int>(m_PlayerInfo->ESkillCollTime);
-	m_RSkillMaxCollTime = static_cast<int>(m_PlayerInfo->RSkillCollTime);
+	m_QSkillCurCoolTime = 0.f;
+	m_ESkillCurCoolTime = 0.f;
+	m_RSkillCurCoolTime = 0.f;
+	m_QSkillMaxCoolTime = static_cast<int>(m_PlayerInfo->QSkillCollTime);
+	m_ESkillMaxCoolTime = static_cast<int>(m_PlayerInfo->ESkillCollTime);
+	m_RSkillMaxCoolTime = static_cast<int>(m_PlayerInfo->RSkillCollTime);
 }
 
 void APlayCharacter::TeleportToJudge()
@@ -634,31 +631,31 @@ void APlayCharacter::CoolTimeTick(float DeltaTime)
 {
 	if (m_IsQSkillAttacking)
 	{
-		m_QSkillCurCollTime += DeltaTime;
+		m_QSkillCurCoolTime += DeltaTime;
 
-		if (m_QSkillCurCollTime >= m_QSkillMaxCollTime)
+		if (m_QSkillCurCoolTime >= m_QSkillMaxCoolTime)
 		{
-			m_QSkillCurCollTime = 0.f;
+			m_QSkillCurCoolTime = 0.f;
 			m_IsQSkillAttacking = false;
 		}
 	}
 	else if (m_IsESkillAttacking)
 	{
-		m_ESkillCurCollTime += DeltaTime;
+		m_ESkillCurCoolTime += DeltaTime;
 
-		if (m_ESkillCurCollTime >= m_ESkillMaxCollTime)
+		if (m_ESkillCurCoolTime >= m_ESkillMaxCoolTime)
 		{
-			m_ESkillCurCollTime = 0.f;
+			m_ESkillCurCoolTime = 0.f;
 			m_IsESkillAttacking = false;
 		}
 	}
 	else if (m_IsRSkillAttacking)
 	{
-		m_RSkillCurCollTime += DeltaTime;
+		m_RSkillCurCoolTime += DeltaTime;
 
-		if (m_RSkillCurCollTime >= m_RSkillMaxCollTime)
+		if (m_RSkillCurCoolTime >= m_RSkillMaxCoolTime)
 		{
-			m_RSkillCurCollTime = 0.f;
+			m_RSkillCurCoolTime = 0.f;
 			m_IsRSkillAttacking = false;
 		}
 	}

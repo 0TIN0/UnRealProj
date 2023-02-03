@@ -4,28 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "Global/UREnum.h"
-#include "UR_AttackTaskNode.generated.h"
+#include "UR_PirateBackMove.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class UNREALPROJ_API UUR_AttackTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_PirateBackMove : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_AttackTaskNode();
+	UUR_PirateBackMove();
 
 private:
-	class AURAIController* m_Controller;
-
-	class AMonster* m_Monster;
-
-	float m_WaitTime;
-
-	PirateAttack_Type m_AttackType;
-
 	bool m_Enable;
-	
+
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
@@ -33,4 +27,5 @@ protected:
 
 private:
 	bool AnimMontageJudge(class AMonster* _Monster);
+	
 };

@@ -6,17 +6,21 @@
 #include "Global/URGameInstance.h"
 #include "Global/URStructs.h"
 #include "URItemActor.h"
+#include "Sound/SoundBase.h"
 #include "Kismet/GamePlayStatics.h"
 
 // Sets default values
 AURCharacter::AURCharacter()	:
+	m_QuestProgress(QuestProgress::Default),
 	m_HitType(EHitType::Default),
 	m_HitDir(EHitDir::Default),
 	m_IsBlocking(false),
 	m_IsInvincibility(false),
 	m_IsAttack(false),
-	m_KnockBackHitPower(2000.f),
-	m_KnockDownHitPower(3000.f)
+	m_KnockBackHitPower(2500.f),
+	m_KnockDownHitPower(3000.f),
+	m_IsQuestCompletion(false),
+	m_IsQuesting(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -302,7 +306,8 @@ bool AURCharacter::PathMove()
 		// 첫번째 인덱스 제거
 		m_Path->PathPoints.RemoveAt(0);
 		
-		if (0 == m_Path->PathPoints.Num())		{
+		if (0 == m_Path->PathPoints.Num())
+		{
 			return false;
 		}
 
@@ -314,6 +319,51 @@ bool AURCharacter::PathMove()
 	SetDirLook(Dir);
 	SetDirMovementInput(Dir);
 	GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Forward);
+
+	return true;
+}
+
+bool AURCharacter::NoAnimPathMove()
+{
+	if (nullptr == m_Path)
+	{
+		return false;
+	}
+
+	if (0 == m_Path->PathPoints.Num())
+	{
+		return false;
+	}
+
+	if (m_Path->PathPoints.IsEmpty())
+	{
+		return false;
+	}
+
+	FVector TargetPos = m_Path->PathPoints[0];
+	FVector ActorPos = GetActorLocation();
+
+	TargetPos.Z = 0.f;
+	ActorPos.Z = 0.f;
+
+	FVector Dir = TargetPos - ActorPos;
+
+	if (50.f >= Dir.Size())
+	{
+		// 첫번째 인덱스 제거
+		m_Path->PathPoints.RemoveAt(0);
+
+		if (0 == m_Path->PathPoints.Num()) {
+			return false;
+		}
+
+		TargetPos = m_Path->PathPoints[0];
+		TargetPos.Z = 0.f;
+		Dir = TargetPos - ActorPos;
+	}
+
+	//SetDirLook(Dir);
+	SetDirMovementInput(Dir);
 
 	return true;
 }
@@ -433,5 +483,11 @@ void AURCharacter::HitDirJudge(AActor* _Actor)
 	{
 		m_HitDir = EHitDir::Default;
 	}
+}
+
+void AURCharacter::CharacterSoundPlay(USoundBase* _Sound, float VolumeMultiplier, float PitchMultiplier)
+{
+	if (GetWorld() != nullptr)
+		UGameplayStatics::PlaySound2D(GetWorld(), _Sound, VolumeMultiplier, PitchMultiplier);
 }
 

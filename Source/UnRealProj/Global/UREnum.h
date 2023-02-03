@@ -251,6 +251,31 @@ enum class WarriorBlockAnimation : uint8
 	Max UMETA(DisplayName = "최대치")
 };
 
+UENUM(BlueprintType)
+enum class PirateAnimation : uint8
+{
+	Default UMETA(DisplayName = "디폴트"),
+	CombatIdle = static_cast<uint8>(DefaultAnimation::Max) UMETA(DisplayName = "전투 Idle"),
+	CombatIdleToIdle UMETA(DisplayName = "전투 Idle To Idle"),
+	IdleToCombatIdle UMETA(DisplayName = "Idle To 전투 Idle"),
+	CombatWalkForward UMETA(DisplayName = "전투 앞 걷기"),
+	CombatWalkBackward UMETA(DisplayName = "전투 뒤 걷기"),
+	CombatRunForward UMETA(DisplayName = "전투 앞 달리기"),
+	CombatRunBackWard UMETA(DisplayName = "전투 뒤 달리기"),
+	AttackCombo1 UMETA(DisplayName = "콤보1"),
+	AttackCombo2 UMETA(DisplayName = "콤보2"),
+	IdleToBlock UMETA(DisplayName = "Idle To 막기"),
+	BlockToIdle UMETA(DisplayName = "막기 To Idle"),
+	BlockLoop UMETA(DisplayName = "막기 루프"),
+	BlockHit UMETA(DisplayName = "막기 상태 히트"),
+	BlockHitBreak UMETA(DisplayName = "막기 상태 깨짐"),
+	BlockWalkForward UMETA(DisplayName = "막기 상태 앞으로 걷기"),
+	BlockWalkBackward UMETA(DisplayName = "막기 상태 뒤로 걷기"),
+	BlockWalkLeft UMETA(DisplayName = "막기 상태 왼쪽 걷기"),
+	BlockWalkRight UMETA(DisplayName = "막기 상태 오른쪽 걷기"),
+	Max UMETA(DisplayName = "최대치")
+};
+
 
 UENUM(BlueprintType)
 enum class ContentsItemType : uint8
@@ -279,7 +304,8 @@ enum class CameraShake_Type : uint8
 {
 	Default UMETA(DisplayName = "디폴트"),
 	HitShake UMETA(DisplayName = "히트 카메라 쉐이크"),
-	UltimateShake UMETA(DisplayName = "궁극기 카메라 쉐이크")
+	UltimateShake UMETA(DisplayName = "궁극기 카메라 쉐이크"),
+	BigShake UMETA(DisplayName = "강력한 카메라 쉐이크")
 };
 
 UENUM(BlueprintType)
@@ -306,5 +332,15 @@ enum class SparrowAttack_Type : uint8
 	Attack4,
 	RainBowShoot,
 	RainBowBurstShoot,
+	Max
+};
+
+UENUM(BlueprintType)
+enum class PirateAttack_Type : uint8
+{
+	Default,
+	Attack,
+	AttackCombo1,
+	AttackCombo2,
 	Max
 };

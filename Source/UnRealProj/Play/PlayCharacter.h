@@ -50,7 +50,6 @@ private:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* m_ElevatorArmComponent;
 
-	QuestProgress m_QuestProgress;
 	float m_Stamina;
 
 	bool m_IsMoveing;
@@ -80,11 +79,6 @@ private:
 
 	float m_TeleportDist;
 
-	// 퀘스트 몬스터 잡았을때 증가
-	int m_MonsterCount;
-
-	bool m_IsQuesting;
-	bool m_IsQuestCompletion;
 
 
 	// Skill
@@ -168,59 +162,6 @@ public:
 	{
 		m_IsMoveing = _Enable;
 	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-	int GetMonsterCount()
-	{
-		return m_MonsterCount;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetMonsterCount(int MonsterCount)
-	{
-		m_MonsterCount = MonsterCount;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		bool GetIsQuesting()
-	{
-		return m_IsQuesting;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetIsQuesting(bool IsQuesting)
-	{
-		m_IsQuesting = IsQuesting;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		bool GetIsQuestCompletion()
-	{
-		return m_IsQuestCompletion;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-	void SetQuestCompletion(bool Completion)
-	{
-		m_IsQuestCompletion = Completion;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		QuestProgress GetQuestProgress()
-	{
-		return m_QuestProgress;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetQuestProgress(QuestProgress Progress)
-	{
-		m_QuestProgress = Progress;
-	}
-	void AddMonsterCount()
-	{
-		m_MonsterCount += 1;
-	}
-
 protected:
 	void BeginPlay() override;
 

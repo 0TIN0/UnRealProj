@@ -16,7 +16,8 @@
 AMonster::AMonster()	:
 	m_IsDamageCheck(false),
 	m_IsUltimateHit(false),
-	m_PushTime(1.f)
+	m_PushTime(1.f),
+	m_BlockCount(5)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AIControllerClass = AURMonsterController::StaticClass();
@@ -102,8 +103,11 @@ const FURMonsterDataInfo* AMonster::MonsterDataInit()
 	// MonsterDataTable에다가 미리 지정을 해놓았기 떄문에
 	// 기존에 갖고있는 애니메이션이 있다면 클리어한다 Empty() == Clear();
 	SetAnimations(m_MonsterData->Animations);
+	GetCharacterMovement()->MaxWalkSpeed = m_MonsterData->Speed;
 
 	SetHP(m_MonsterData->HP);
+	m_MaxHP = m_HP;
+	m_HPPercent = 1.f;
 
 	return m_MonsterData;
 }
@@ -128,6 +132,11 @@ void AMonster::BeginPlay()
 	if (GetWorld() != nullptr)
 	{
 		m_Player = UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetPawn<APlayCharacter>();
+	}
+
+	for (auto& Anim : m_PirateAnimations)
+	{
+		GetAnimationInstance()->AddAnimMontage(static_cast<int>(Anim.Key), Anim.Value);
 	}
 }
 
@@ -213,6 +222,16 @@ void AMonster::DamageOff()
 
 void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
+	// 플레이어가 퀘스트 중일때이고
+	// HP가 0보다 큰 상태에서 데미지를 받았을때 0보다 작아진다면 죽는 시점이므로 이 때 플레이어의 Monster Count를 더해준다.
+	if (Cast<AURCharacter>(_Actor)->GetIsQuesting())
+	{
+		if (m_HP > 0.0 && m_HP - _Damage <= 0.0)
+		{
+			if (_Actor)
+				Cast<AURCharacter>(_Actor)->AddMonsterCount();
+		}
+	}
 	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
 
 	if (IsDeath())
@@ -235,7 +254,14 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, boo
 			switch (m_HitDir)
 			{
 			case EHitDir::Forward:
-				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+				if (!m_IsBlocking)
+				{
+					GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::ForwardHit);
+				}
+				else
+				{
+					GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::BlockHit);
+				}
 				break;
 			case EHitDir::Backward:
 				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::BackwardHit);

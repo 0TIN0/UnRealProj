@@ -21,7 +21,8 @@ EBTNodeResult::Type UUR_DeathTaskNode::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 
-	if (Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathLoop))
+	if (Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathLoop) ||
+		Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathStart))
 	{
 		return EBTNodeResult::InProgress;
 	}

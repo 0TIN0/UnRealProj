@@ -40,7 +40,7 @@ EBTNodeResult::Type UUR_SparrowIdleTaskNode::ExecuteTask(UBehaviorTreeComponent&
 
 void UUR_SparrowIdleTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
+	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
 }
 
 bool UUR_SparrowIdleTaskNode::AnimMontageJudge()

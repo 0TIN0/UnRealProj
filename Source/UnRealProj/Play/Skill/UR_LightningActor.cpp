@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "../PlayCharacter.h"
 #include "GameFramework/PlayerController.h"
+#include "../WarriorCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -48,12 +49,17 @@ void AUR_LightningActor::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("SparrowData Empty"));
 	}
-	/*APlayCharacter* Player = Cast<APlayCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+
+	AWarriorCharacter* Player = Cast<AWarriorCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	if (!Player)
 	{
 		return;
-	}*/
+	}
+
+	Player->CameraShake(CameraShake_Type::BigShake);
+
 	/*APlayerController* Controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 	if (!Controller || Controller->IsValidLowLevel())

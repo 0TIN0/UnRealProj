@@ -39,6 +39,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowprivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> m_PlaneComponent;
 
+	// 추가적인 애니메이션
+	UPROPERTY(Category = "PlayerAnimationData", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		TMap<PirateAnimation, UAnimMontage*> m_PirateAnimations;
+
 	const struct FURMonsterDataInfo* m_MonsterData;
 
 	TArray<const struct FURItemData*> m_DropTable;
@@ -52,6 +56,8 @@ private:
 	FVector m_UltimateHitDir;
 
 	class APlayCharacter* m_Player;
+
+	int m_BlockCount;
 
 public:
 	void SetUltimateHitDir(const FVector& Dir)
@@ -68,6 +74,12 @@ public:
 	{
 		return m_IsUltimateHit;
 	}
+
+	int GetBlockCount()	const
+	{
+		return m_BlockCount;
+	}
+
 
 protected:
 	void BeginPlay() override;

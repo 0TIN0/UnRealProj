@@ -5,6 +5,7 @@
 #include "Global/URBlueprintFunctionLibrary.h"
 #include "../Boss/UR_KhaimeraBoss.h"
 #include "../Boss/UR_SparrowSubBoss.h"
+#include "../Boss/BossObj/UR_SPMuzzleFlash.h"
 #include "../Skill/URProjectile.h"
 #include "../Monster.h"
 #include "EngineUtils.h"
@@ -151,6 +152,7 @@ void UUR_CreateObjAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,
 				CreateSparrowSP4Shoot(MeshComp, Boss);
 				break;
 			case SparrowAttack_Type::Attack3:
+				CreateSparrowSP5Shoot(MeshComp, Boss);
 				break;
 			case SparrowAttack_Type::Attack4:
 				CreateSparrowBurstShoot(MeshComp, Boss);
@@ -184,6 +186,33 @@ void UUR_CreateObjAnimNotifyState::CreateSparrowSP4Shoot(USkeletalMeshComponent*
 	AActor* NewActor = _MeshComp->GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorClass, SpawnTransform);
 
 	NewActor->FinishSpawning(SpawnTransform);
+
+	AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
+
+	if (!Projectile)
+		return;
+
+	FVector Dir = (Player->GetActorLocation() - Projectile->GetActorLocation()).GetSafeNormal();
+
+	// 여기서 미사일의 옵션을 설정하는 이유는 특정 몽타주마다 미사일의 설정을 다르게 할 수 있어서이다.
+	Projectile->SetInfo(m_CollisionProfileName, Dir, m_Speed, m_LifeTime);
+}
+
+void UUR_CreateObjAnimNotifyState::CreateSparrowSP5Shoot(USkeletalMeshComponent* _MeshComp, AUR_SparrowSubBoss* _Boss)
+{
+	AURCharacter* Player = _Boss->GetWorld()->GetFirstPlayerController()->GetPawn<AURCharacter>();
+	// 소켓의 이름을얻어와서 해당 소켓의 위치값을 얻어온다.
+	FVector Pos = _MeshComp->GetSocketLocation(m_SocketName);
+	Pos.Z += m_AddLocationZ;
+
+	FTransform SpawnTransform = FTransform(Pos);
+
+	AActor* NewActor = _MeshComp->GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorClass, SpawnTransform);
+	AUR_SPMuzzleFlash* MuzzleActor = _MeshComp->GetWorld()->SpawnActorDeferred<AUR_SPMuzzleFlash>(AUR_SPMuzzleFlash::StaticClass(), SpawnTransform);
+	MuzzleActor->SetMuzzleType(SPMuzzle_Type::EvadeShoot);
+
+	NewActor->FinishSpawning(SpawnTransform);
+	MuzzleActor->FinishSpawning(SpawnTransform);
 
 	AURProjectile* Projectile = Cast<AURProjectile>(NewActor);
 

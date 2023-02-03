@@ -14,11 +14,6 @@ FString UUR_PlayerStepNotify::GetNotifyName_Implementation() const
 	return FString();
 }
 
-void UUR_PlayerStepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
-{
-	Super::Notify(MeshComp, Animation);
-
-}
 
 void UUR_PlayerStepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, 
 	const FAnimNotifyEventReference& EventReference)

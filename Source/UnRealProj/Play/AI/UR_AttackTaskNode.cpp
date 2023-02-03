@@ -8,7 +8,6 @@
 #include "BehaviorTree/BlackBoardComponent.h"
 #include "Global/URStructs.h"
 #include "Global/URBlueprintFunctionLibrary.h"
-#include "Global/UREnum.h"
 
 UUR_AttackTaskNode::UUR_AttackTaskNode()
 {
@@ -18,16 +17,18 @@ UUR_AttackTaskNode::UUR_AttackTaskNode()
 
 EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AURAIController* Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
-	AMonster* Monster = Controller->GetPawn<AMonster>();
-	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
+	m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if (!AnimMontageJudge(Monster))
+	m_Monster = m_Controller->GetPawn<AMonster>();
+
+	const FURMonsterDataInfo* MonsterInfo = m_Monster->GetMonsterData();
+
+	if (!AnimMontageJudge(m_Monster))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	if (Monster->GetUltimateHitEnable())
+	if (m_Monster->GetUltimateHitEnable())
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -41,25 +42,72 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	AActor* TargetActor = Cast<AActor>(Target);
 
-	// 공격 범위보다 밖에 있다면 Idle로 변경한다.
-	if (!Monster->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange))
-	{
-		return EBTNodeResult::Failed;
-	}
+	m_AttackType = static_cast<PirateAttack_Type>(OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("RandAttackNumb")));
 
-	UAnimMontage* Montage = Monster->GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack);
+	switch (m_AttackType)
+	{
+	case PirateAttack_Type::Attack:
+	case PirateAttack_Type::AttackCombo1:
+		// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+		if (!m_Monster->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange))
+		{
+			return EBTNodeResult::Failed;
+		}
+		break;
+	case PirateAttack_Type::AttackCombo2:
+		// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+		if (!m_Monster->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange + 200.f))
+		{
+			return EBTNodeResult::Failed;
+		}
+		break;
+	}
+	//// 공격 범위보다 밖에 있다면 Idle로 변경한다.
+	//if (!m_Monster->GetIsRangeInTarget(TargetActor, MonsterInfo->AttRange))
+	//{
+	//	return EBTNodeResult::Failed;
+	//}
+
+	UAnimMontage* Montage = m_Monster->GetAnimationInstance()->GetAnimation(DefaultAnimation::Attack);
 
 	if (!Montage)
 	{
-		Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+		m_Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 		return EBTNodeResult::Failed;
 	}
 
 	m_WaitTime = Montage->GetPlayLength();
 
-	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+	if (!m_Enable)
+	{
+		switch (m_AttackType)
+		{
+		case PirateAttack_Type::Attack:
+			m_Enable = true;
+			m_Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
+			break;
+		case PirateAttack_Type::AttackCombo1:
+			m_Enable = true;
+			m_Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::AttackCombo1);
+			break;
+		case PirateAttack_Type::AttackCombo2:
+			m_Enable = true;
+			m_Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::AttackCombo2);
+			break;
+		}
+	}
 
-	return EBTNodeResult::Type();
+	if (m_Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::Attack) ||
+		m_Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::AttackCombo1) ||
+		m_Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::AttackCombo2))
+	{
+		return EBTNodeResult::InProgress;
+	}
+
+
+	m_Enable = false;
+
+	return EBTNodeResult::Failed;
 }
 
 void UUR_AttackTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

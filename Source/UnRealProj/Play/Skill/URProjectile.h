@@ -47,6 +47,11 @@ public:
 
 	void SetInfo(FName _CollisionProfileName, FVector _Dir, float _Speed, float _LifeTime);
 
+	class USphereComponent* GetCollisionComponent()	const
+	{
+		return m_SphereComponent;
+	}
+
 	class UProjectileMovementComponent* GetProjectileMovementComponent()	const
 	{
 		return m_ProjectileMovementComponent;

@@ -33,7 +33,6 @@
 AWarriorCharacter::AWarriorCharacter() :
 	m_Stream(FDateTime::Now().GetTicks()),
 	m_CombatIdleMontage(nullptr),
-	m_QuestProgress(QuestProgress::Default),
 	m_ComboType(EWarriorComboType::Default),
 	m_IsRun(false),
 	m_IsForwardDown(false),
@@ -50,8 +49,6 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_MouseYDPI(0.5f),
 	m_MoveSpeed(1.f),
 	m_DashDist(600.f),
-	m_IsQuesting(false),
-	m_IsQuestCompletion(false),
 	m_OnDash(false),
 	m_IsJump(false),
 	m_JumpType(EWarriorJumpType::Default),
@@ -121,6 +118,19 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_SkillQConsumedMP = 10.0;
 	m_SkillEConsumedMP = 20.0;
 	m_SkillRConsumedMP = 30.0;
+	
+	//VoiceSound 관련
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> NoMPVoice(TEXT("SoundCue'/Game/Resource/Play/Sound/Voice/Kwang/Kwang_Ability_LowMana.Kwang_Ability_LowMana'"));
+
+		if (NoMPVoice.Succeeded())
+			m_NoMPVoice = NoMPVoice.Object;
+
+		static ConstructorHelpers::FObjectFinder<USoundBase> CoolTimeVoice(TEXT("SoundCue'/Game/Resource/Play/Sound/Voice/Kwang/Kwang_Ability_OnCooldown.Kwang_Ability_OnCooldown'"));
+
+		if (CoolTimeVoice.Succeeded())
+			m_CoolTimeVoice = CoolTimeVoice.Object;
+	}
 }
 
 void AWarriorCharacter::MouseMoveX(float Value)
@@ -720,13 +730,15 @@ void AWarriorCharacter::SkillQ()
 		return;
 	}
 
-	if (m_MP < m_SkillQConsumedMP)
+	if (m_IsQSkill)
 	{
+		CharacterSoundPlay(m_CoolTimeVoice, 0.2f, 1.f);
 		return;
 	}
 
-	if (m_IsQSkill)
+	if (m_MP < m_SkillQConsumedMP)
 	{
+		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -759,13 +771,15 @@ void AWarriorCharacter::SkillE()
 		return;
 	}
 
-	if (m_MP < m_SkillEConsumedMP)
+	if (m_IsESkillAttacking)
 	{
+		CharacterSoundPlay(m_CoolTimeVoice, 0.2f, 1.f);
 		return;
 	}
 
-	if (m_IsESkillAttacking)
+	if (m_MP < m_SkillEConsumedMP)
 	{
+		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -782,6 +796,12 @@ void AWarriorCharacter::SkillR()
 {
 	if (true == IsAttack())
 	{
+		return;
+	}
+
+	if (m_MP < m_SkillRConsumedMP)
+	{
+		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -1404,12 +1424,12 @@ void AWarriorCharacter::SetDefaultData()
 	m_HPPercent = 1.0;
 	m_MP = m_PlayerInfo->MP;
 	m_Stamina = m_PlayerInfo->MaxStamina;
-	m_QSkillCurCollTime = 0.f;
-	m_ESkillCurCollTime = 0.f;
-	m_RSkillCurCollTime = 0.f;
-	m_QSkillMaxCollTime = static_cast<int>(m_PlayerInfo->QSkillCollTime);
-	m_ESkillMaxCollTime = static_cast<int>(m_PlayerInfo->ESkillCollTime);
-	m_RSkillMaxCollTime = static_cast<int>(m_PlayerInfo->RSkillCollTime);
+	m_QSkillCurCoolTime = 0.f;
+	m_ESkillCurCoolTime = 0.f;
+	m_RSkillCurCoolTime = 0.f;
+	m_QSkillMaxCoolTime = static_cast<int>(m_PlayerInfo->QSkillCollTime);
+	m_ESkillMaxCoolTime = static_cast<int>(m_PlayerInfo->ESkillCollTime);
+	m_RSkillMaxCoolTime = static_cast<int>(m_PlayerInfo->RSkillCollTime);
 }
 
 void AWarriorCharacter::DashToJudge()
@@ -1549,11 +1569,11 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 {
 	if (m_IsQSkill)
 	{
-		m_QSkillCurCollTime += DeltaTime;
+		m_QSkillCurCoolTime += DeltaTime;
 
-		if (m_QSkillCurCollTime >= m_QSkillMaxCollTime)
+		if (m_QSkillCurCoolTime >= m_QSkillMaxCoolTime)
 		{
-			m_QSkillCurCollTime = 0.f;
+			m_QSkillCurCoolTime = 0.f;
 			m_IsQSkill = false;
 			m_AttackSpeed = 1.f;
 			SetBerserkRateScale();
@@ -1571,11 +1591,11 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 	}
 	if (m_IsESkillAttacking)
 	{
-		m_ESkillCurCollTime += DeltaTime;
+		m_ESkillCurCoolTime += DeltaTime;
 
-		if (m_ESkillCurCollTime >= m_ESkillMaxCollTime)
+		if (m_ESkillCurCoolTime >= m_ESkillMaxCoolTime)
 		{
-			m_ESkillCurCollTime = 0.f;
+			m_ESkillCurCoolTime = 0.f;
 			m_IsESkillAttacking = false;
 			m_IsCombating = true;
 			m_CombatTime = 7.f;
@@ -1585,11 +1605,11 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 	}
 	if (m_IsRSkillAttacking)
 	{
-		m_RSkillCurCollTime += DeltaTime;
+		m_RSkillCurCoolTime += DeltaTime;
 
-		if (m_RSkillCurCollTime >= m_RSkillMaxCollTime)
+		if (m_RSkillCurCoolTime >= m_RSkillMaxCoolTime)
 		{
-			m_RSkillCurCollTime = 0.f;
+			m_RSkillCurCoolTime = 0.f;
 			m_IsRSkillAttacking = false;
 		}
 	}
@@ -1806,40 +1826,43 @@ void AWarriorCharacter::HitAnimation(bool IsLarge, bool IsKncokDown)
 	{
 		if (!IsLarge)
 		{
-			switch (m_HitDir)
+			if (!HitKnockDownAnimJudge())
 			{
-			case EHitDir::Forward:
-				// 정면에서 막을때만 블로킹이 되기때문에 Forward에만 블로킹 처리
-				if (!m_IsBlocking)
+				switch (m_HitDir)
 				{
-					if (!m_IsCombating)
-						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+				case EHitDir::Forward:
+					// 정면에서 막을때만 블로킹이 되기때문에 Forward에만 블로킹 처리
+					if (!m_IsBlocking)
+					{
+						if (!m_IsCombating)
+							GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitForward);
+						else
+							GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
+					}
 					else
-						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitForward);
+					{
+						GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockHit);
+					}
+					break;
+				case EHitDir::Backward:
+					if (!m_IsCombating)
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
+					else
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
+					break;
+				case EHitDir::Left:
+					if (!m_IsCombating)
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
+					else
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
+					break;
+				case EHitDir::Right:
+					if (!m_IsCombating)
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
+					else
+						GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
+					break;
 				}
-				else
-				{
-					GetAnimationInstance()->ChangeAnimMontage(WarriorBlockAnimation::BlockHit);
-				}
-				break;
-			case EHitDir::Backward:
-				if (!m_IsCombating)
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitBackward);
-				else
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitBackward);
-				break;
-			case EHitDir::Left:
-				if (!m_IsCombating)
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLeft);
-				else
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLeft);
-				break;
-			case EHitDir::Right:
-				if (!m_IsCombating)
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitRight);
-				else
-					GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitRight);
-				break;
 			}
 		}
 		else
@@ -1879,6 +1902,28 @@ void AWarriorCharacter::HitAnimation(bool IsLarge, bool IsKncokDown)
 			GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::HitLargeToFallDown);
 		else
 			GetAnimationInstance()->ChangeAnimMontage(WarriorHitAnimation::CombatHitLargeToFallDown);
+	}
+}
+
+bool AWarriorCharacter::HitKnockDownAnimJudge()
+{
+	if (GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeForward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeBackward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeLeft) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeRight) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeForward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeBackward) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeRight) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeToFallDown) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::GetUp) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::HitLargeToFallDown) ||
+		GetAnimationInstance()->IsAnimMontage(WarriorHitAnimation::CombatHitLargeToFallDown))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -1960,6 +2005,12 @@ void AWarriorCharacter::CameraShake(CameraShake_Type _Type)
 			0.f, 500.f, 1.f);
 		break;
 	case CameraShake_Type::UltimateShake:
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(),
+			m_CameraShakeMap[_Type],
+			m_CameraComponent->GetComponentLocation(),
+			0.f, 500.f, 1.f);
+		break;
+	case CameraShake_Type::BigShake:
 		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(),
 			m_CameraShakeMap[_Type],
 			m_CameraComponent->GetComponentLocation(),
@@ -2210,7 +2261,7 @@ void AWarriorCharacter::AdvanceTimer()
 		{
 			if (m_UltimateAttackCount > 1)
 			{
-				EndPos = Target->GetActorLocation() + Dir * 400.f;
+				EndPos = Target->GetActorLocation() + Dir * 250.f;
 			}
 			else
 			{
@@ -2221,7 +2272,7 @@ void AWarriorCharacter::AdvanceTimer()
 		{
 			if (m_UltimateAttackCount > 1)
 			{
-				EndPos = Target->GetActorLocation() + Dir * 400.f + GetActorRightVector() * 400.f;
+				EndPos = Target->GetActorLocation() + Dir * 250.f + GetActorRightVector() * 400.f;
 			}
 			else
 			{

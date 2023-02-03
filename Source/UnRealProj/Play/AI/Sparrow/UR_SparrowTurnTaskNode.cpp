@@ -19,11 +19,9 @@ EBTNodeResult::Type UUR_SparrowTurnTaskNode::ExecuteTask(UBehaviorTreeComponent&
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	if (!m_Controller)
-		m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
+	m_Controller = Cast<AURAIController>(OwnerComp.GetAIOwner());
 
-	if (!m_Boss)
-		m_Boss = m_Controller->GetPawn<AUR_SparrowSubBoss>();
+	m_Boss = m_Controller->GetPawn<AUR_SparrowSubBoss>();
 
 
 	const FURMonsterDataInfo* MonsterInfo = m_Boss->GetSparrowData();
@@ -31,6 +29,11 @@ EBTNodeResult::Type UUR_SparrowTurnTaskNode::ExecuteTask(UBehaviorTreeComponent&
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 
 	if (!Target)
+	{
+		return EBTNodeResult::Failed;
+	}
+
+	if (AnimMontageJudge())
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -83,4 +86,20 @@ EBTNodeResult::Type UUR_SparrowTurnTaskNode::ExecuteTask(UBehaviorTreeComponent&
 void UUR_SparrowTurnTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	FinishLatentTask(OwnerComp, ExecuteTask(OwnerComp, NodeMemory));
+}
+
+bool UUR_SparrowTurnTaskNode::AnimMontageJudge()
+{
+	if (m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ForwardHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::BackwardHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::LeftHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::RightHit) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::HitAirLoop) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::KnockDown) ||
+		m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::GetUp))
+	{
+		return true;
+	}
+
+	return false;
 }

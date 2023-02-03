@@ -4,30 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "../UR_TurnTaskNode.h"
-#include "UR_SparrowTurnTaskNode.generated.h"
+#include "UR_PirateRandAttackJudge.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_SparrowTurnTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_PirateRandAttackJudge : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_SparrowTurnTaskNode();
+	UUR_PirateRandAttackJudge();
 
 private:
 	class AURAIController* m_Controller;
-	class AUR_SparrowSubBoss* m_Boss;
+	class AUR_KhaimeraBoss* m_Boss;
+	FRandomStream m_Stream;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-protected:
-	bool AnimMontageJudge();
 	
 };

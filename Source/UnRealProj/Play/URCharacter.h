@@ -100,37 +100,37 @@ public:
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetQSkillCoolTime()
 	{
-		return m_QSkillCurCollTime;
+		return m_QSkillCurCoolTime;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetESkillCoolTime()
 	{
-		return m_ESkillCurCollTime;
+		return m_ESkillCurCoolTime;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetRSkillCoolTime()
 	{
-		return m_RSkillCurCollTime;
+		return m_RSkillCurCoolTime;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetQSkillMaxCoolTime()
 	{
-		return m_QSkillMaxCollTime;
+		return m_QSkillMaxCoolTime;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetESkillMaxCoolTime()
 	{
-		return m_ESkillMaxCollTime;
+		return m_ESkillMaxCoolTime;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		float GetRSkillMaxCoolTime()
 	{
-		return m_RSkillMaxCollTime;
+		return m_RSkillMaxCoolTime;
 	}
 
 	void SetHitType(EHitType _HitType)
@@ -147,6 +147,11 @@ public:
 	bool GetIsBlocking()	const
 	{
 		return m_IsBlocking;
+	}
+
+	void SetIsBlocking(bool _IsBlocking)
+	{
+		m_IsBlocking = _IsBlocking;
 	}
 
 
@@ -169,6 +174,66 @@ public:
 	{
 		m_IsInvincibility = _Enable;
 	}
+
+	void SetKnockBackPower(float _Power)
+	{
+		m_KnockBackHitPower = _Power;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		QuestProgress GetQuestProgress()
+	{
+		return m_QuestProgress;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void SetQuestProgress(QuestProgress Progress)
+	{
+		m_QuestProgress = Progress;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		bool GetIsQuestCompletion()
+	{
+		return m_IsQuestCompletion;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void SetQuestCompletion(bool Completion)
+	{
+		m_IsQuestCompletion = Completion;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		bool GetIsQuesting()
+	{
+		return m_IsQuesting;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void SetIsQuesting(bool IsQuesting)
+	{
+		m_IsQuesting = IsQuesting;
+	}
+
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		int GetMonsterCount()
+	{
+		return m_MonsterCount;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = UR)
+		void SetMonsterCount(int MonsterCount)
+	{
+		m_MonsterCount = MonsterCount;
+	}
+
+	void AddMonsterCount()
+	{
+		m_MonsterCount += 1;
+	}
+
 
 	// 타겟과의 거리가 2번인자의 Legnth보다 가깝게 있는지 판단
 	bool GetIsRangeInTarget(AActor* _Target, float _Length);
@@ -243,6 +308,7 @@ public:
 	UNavigationPath* PathFind(const FVector& _TargetPosition);
 
 	bool PathMove();
+	bool NoAnimPathMove();
 
 	void SetPath(UNavigationPath* _Path, bool _Debug/* = false*/);
 
@@ -278,6 +344,8 @@ private:
 	UNavigationPath* m_Path;
 
 protected:
+	QuestProgress m_QuestProgress;
+
 	struct FURPlayerDataInfo* m_PlayerInfo;
 
 	EHitType m_HitType;
@@ -305,20 +373,29 @@ protected:
 	float m_Stamina;
 
 	// Skill coll
-	float m_QSkillCurCollTime;
-	float m_ESkillCurCollTime;
-	float m_RSkillCurCollTime;
+	float m_QSkillCurCoolTime;
+	float m_ESkillCurCoolTime;
+	float m_RSkillCurCoolTime;
 
-	int m_QSkillMaxCollTime;
-	int m_ESkillMaxCollTime;
-	int m_RSkillMaxCollTime;
+	int m_QSkillMaxCoolTime;
+	int m_ESkillMaxCoolTime;
+	int m_RSkillMaxCoolTime;
 
 	float m_KnockBackHitPower;
 	float m_KnockDownHitPower;
 
 
+	// 퀘스트
+	bool m_IsQuestCompletion;
+	bool m_IsQuesting;
+
+	// 퀘스트 몬스터 잡았을때 증가
+	int m_MonsterCount;
+
 protected:
 	void HitDirJudge(AActor* _Actor);
+
+	void CharacterSoundPlay(class USoundBase* _Sound, float VolumeMultiplier, float PitchMultiplier);
 
 public:
 	virtual void CameraShake(CameraShake_Type _Type) {};

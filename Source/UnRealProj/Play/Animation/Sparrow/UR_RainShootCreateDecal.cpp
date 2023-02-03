@@ -5,6 +5,8 @@
 #include "../../Boss/UR_SparrowSubBoss.h"
 #include "../../WarriorCharacter.h"
 #include "../../Boss/BossObj/Decal/UR_RainPosDecal.h"
+#include "../../Boss/BossObj/UR_RainShootHoleActor.h"
+#include "../../Boss/BossObj/UR_SparrowMeteor.h"
 
 void UUR_RainShootCreateDecal::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -78,9 +80,17 @@ void UUR_RainShootCreateDecal::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 			FActorSpawnParameters SpawnParams;
 			FTransform SpawnTransform = FTransform(DecalPos);
 
-			AUR_RainPosDecal* Decal = Player->GetWorld()->SpawnActor<AUR_RainPosDecal>(AUR_RainPosDecal::StaticClass(), SpawnTransform, SpawnParams);
-			Decal->SetAttackType(Boss->GetRandAttackNumb());
-			Decal->SetData(Boss->GetSparrowData());
+			AUR_RainShootHoleActor* Decal = Player->GetWorld()->SpawnActor<AUR_RainShootHoleActor>(AUR_RainShootHoleActor::StaticClass(), SpawnTransform, SpawnParams);
+
+			DecalPos.Z += 400.f;
+			FRotator Rot = FRotator(0.0, 0.0, -90.0);
+			SpawnTransform = FTransform(Rot, DecalPos);
+			AUR_SparrowMeteor* Meteor = Player->GetWorld()->SpawnActorDeferred<AUR_SparrowMeteor>(AUR_SparrowMeteor::StaticClass(), SpawnTransform);
+			Meteor->SetInfo(FName(TEXT("MonsterAttack")), 300.f, 3.f);
+			//Meteor->SetActorRotation(Rot);
+			Meteor->FinishSpawning(SpawnTransform);
+			//Decal->SetAttackType(Boss->GetRandAttackNumb());
+			//Decal->SetData(Boss->GetSparrowData());
 		}
 	}
 		break;

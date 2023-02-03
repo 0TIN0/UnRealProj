@@ -103,8 +103,6 @@ private:
 
 	class UAnimMontage* m_CombatIdleMontage;
 
-	QuestProgress m_QuestProgress;
-
 	EWarriorComboType m_ComboType;
 
 	bool m_IsMoveing;
@@ -139,11 +137,6 @@ private:
 
 	float m_DashDist;
 
-	// 퀘스트 몬스터 잡았을때 증가
-	int m_MonsterCount;
-
-	bool m_IsQuesting;
-	bool m_IsQuestCompletion;
 
 	// 대쉬
 	FVector m_DashDir;
@@ -179,6 +172,11 @@ private:
 
 	float m_TestTime;
 
+	// Voice 관련
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+	class USoundBase* m_NoMPVoice;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		class USoundBase* m_CoolTimeVoice;
 
 public:
 	void ResetDash()
@@ -268,53 +266,6 @@ public:
 	{
 		m_IsMoveing = _Enable;
 	}
-	UFUNCTION(BlueprintCallable, Category = UR)
-		int GetMonsterCount()
-	{
-		return m_MonsterCount;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetMonsterCount(int MonsterCount)
-	{
-		m_MonsterCount = MonsterCount;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		bool GetIsQuesting()
-	{
-		return m_IsQuesting;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetIsQuesting(bool IsQuesting)
-	{
-		m_IsQuesting = IsQuesting;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		bool GetIsQuestCompletion()
-	{
-		return m_IsQuestCompletion;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetQuestCompletion(bool Completion)
-	{
-		m_IsQuestCompletion = Completion;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		QuestProgress GetQuestProgress()
-	{
-		return m_QuestProgress;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void SetQuestProgress(QuestProgress Progress)
-	{
-		m_QuestProgress = Progress;
-	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		bool GetIsComboAttack()
@@ -367,11 +318,6 @@ public:
 		m_MonsterActor = _Actor;
 	}
 
-
-	void AddMonsterCount()
-	{
-		m_MonsterCount += 1;
-	}
 
 	bool GetForwardDown()	const
 	{
@@ -478,6 +424,8 @@ private:
 	void HitAnimMontageJudge();
 	void HitAnimation(bool IsLarge, bool IsKncokDown = false);
 
+	bool HitKnockDownAnimJudge();
+	
 	void BlockStaminaTick(float DeltaTime);
 
 	TArray<AActor*> CheckAttackTarget(const TArray<FHitResult>& _HitResult);
@@ -487,7 +435,6 @@ private:
 	void TickPostProcessDeleteFunc(float DeltaTime);
 
 	void DestroyBlockObj();
-
 	
 protected:
 	UPROPERTY()

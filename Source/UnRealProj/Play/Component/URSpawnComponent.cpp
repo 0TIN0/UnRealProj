@@ -3,6 +3,7 @@
 
 #include "Play/Component/URSpawnComponent.h"
 #include "Global/URBlueprintFunctionLibrary.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values for this component's properties
 UURSpawnComponent::UURSpawnComponent()	:
@@ -30,11 +31,18 @@ void UURSpawnComponent::BeginPlay()
 	{
 	case SPAWN_TYPE::Kraken:
 	case SPAWN_TYPE::Lich:
+	case SPAWN_TYPE::Sparrow:
+	case SPAWN_TYPE::Khaimera:
 	{
 		FVector vecSpawnPos = GetOwner()->GetActorLocation();
-		FTransform SpawnTransform = FTransform(vecSpawnPos);
 
-		AActor* NewActor = GetWorld()->SpawnActor(m_SpawnActorsClass[0], &SpawnTransform);
+		FRotator Rot = GetOwner()->GetActorRotation();
+		FTransform SpawnTransform = FTransform(Rot, vecSpawnPos);
+
+		AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorsClass[0], SpawnTransform);
+		UCapsuleComponent* CapsulComponent = NewActor->FindComponentByClass<UCapsuleComponent>();
+		vecSpawnPos.Z += CapsulComponent->GetScaledCapsuleHalfHeight();
+		NewActor->FinishSpawning(FTransform(Rot, vecSpawnPos));
 	}
 		break;
 	}
@@ -100,8 +108,10 @@ void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 			// 엑터타입으로 위에서 설정한 랜덤값을 스폰클래스 인덱스값으로 설정하여 해당 녀석을 스폰한다고 얻어옴
 			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(m_SpawnActorsClass[RandomSelect], SpawnTransform);
 
+			UCapsuleComponent* CapsulComponent = NewActor->FindComponentByClass<UCapsuleComponent>();
+			vecSpawnPos.Z += CapsulComponent->GetScaledCapsuleHalfHeight();
 			//NewActor->SetActorRotation(Quat);
-			NewActor->FinishSpawning(SpawnTransform);
+			NewActor->FinishSpawning(FTransform(Rot, vecSpawnPos));
 
 			m_SpawnActors.Add(NewActor);
 

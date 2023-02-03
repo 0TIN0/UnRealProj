@@ -25,6 +25,7 @@ enum class SparrowBossAnimation : uint8
 	SP5End UMETA(DisPlayName = "SP5End"),
 	ShootCancel UMETA(DisPlayName = "ShootCancel"),
 	BurstShoot UMETA(DisPlayName = "BurstShoot"),
+	Spawn UMETA(DisPlayName = "Spawn"),
 	Max UMETA(DisPlayName = "Max")
 };
 UCLASS()

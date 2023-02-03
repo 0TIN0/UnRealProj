@@ -3,39 +3,41 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Animation/AnimNotifies/AnimNotify.h"
-#include "UR_FootStepSoundNotify.generated.h"
+#include "Animation/AnimNotifies/AnimNotify_PlaySound.h"
+#include "Global/UREnum.h"
+#include "UR_HitSoundNotify.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJ_API UUR_FootStepSoundNotify : public UAnimNotify
+class UNREALPROJ_API UUR_HitSoundNotify : public UAnimNotify_PlaySound
 {
 	GENERATED_BODY()
 
 public:
-	UUR_FootStepSoundNotify();
+	UUR_HitSoundNotify();
 
-	EPhysicalSurface m_StepSurface;
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		class USoundBase* m_WarriorHit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		USoundBase* m_Modern;
+		class USoundBase* m_PirateHit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		USoundBase* m_Dirty;
+		class USoundBase* m_SparrowHit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		USoundBase* m_Snow;
+		class USoundBase* m_KhaimeraHit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		USoundBase* m_Stone;
+		UPLAYER_TYPE m_PlayerType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
+		UMONSTER_TYPE m_MonsterType;
 
 
 protected:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
-	
-
-private:
-	void SelectSoundBase(class USoundBase** _SoundBase);
 };

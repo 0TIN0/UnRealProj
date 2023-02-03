@@ -85,7 +85,7 @@ UURGameInstance::UURGameInstance()
             UE_LOG(LogTemp, Error, TEXT("ObjectDatas Null!"));
         }
     }
-    
+
 }
 
 const FURMonsterDataInfo* UURGameInstance::GetMonsterData(FName Name) const

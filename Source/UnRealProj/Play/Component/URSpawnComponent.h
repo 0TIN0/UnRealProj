@@ -11,7 +11,9 @@ enum class SPAWN_TYPE : uint8
 {
 	Monster UMETA(DisplayName = "몬스터"),
 	Kraken UMETA(DisplayName = "크라켄"),
-	Lich UMETA(DisplayName = "리치")
+	Lich UMETA(DisplayName = "리치"),
+	Sparrow UMETA(DisplayName = "스페로우"),
+	Khaimera UMETA(DisplayName = "카이메라")
 };
 
 
