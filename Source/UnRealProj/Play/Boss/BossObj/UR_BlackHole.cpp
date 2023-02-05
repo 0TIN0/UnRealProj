@@ -8,6 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GamePlayStatics.h"
 
 // Sets default values
 AUR_BlackHole::AUR_BlackHole()	:
@@ -28,14 +29,29 @@ AUR_BlackHole::AUR_BlackHole()	:
 	RootComponent = m_BlackHole;
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> SpawnSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Khaimera/Khaimera_BlackHole_Sound.Khaimera_BlackHole_Sound'"));
+
+		if (SpawnSound.Succeeded())
+			m_SpawnSound = SpawnSound.Object;
+	}
 }
 
 // Called when the game starts or when spawned
 void AUR_BlackHole::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// 위치기반 사운드
+	if (m_SpawnSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_SpawnSound, RootComponent->GetComponentLocation(), 0.3f, 1.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("KhaimeraProjectile_Sound Null!"));
+	}
 
 	m_Player = GetWorld()->GetFirstPlayerController()->GetPawn<AWarriorCharacter>();
 }

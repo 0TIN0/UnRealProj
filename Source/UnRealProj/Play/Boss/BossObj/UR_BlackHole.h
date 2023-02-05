@@ -23,6 +23,8 @@ private:
 
 	class AWarriorCharacter* m_Player;
 
+	USoundBase* m_SpawnSound;
+
 	float m_PullDist;
 
 protected:

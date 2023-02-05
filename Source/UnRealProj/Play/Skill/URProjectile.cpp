@@ -87,5 +87,15 @@ void AURProjectile::OnCollision(UPrimitiveComponent* _Component, AActor* _DestAc
 	}
 
 	Chracter->CallDamage(m_Damage, this);
+
+	// 위치기반 사운드
+	if (m_HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_HitSound, Chracter->GetActorLocation(), 0.3f, 1.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Projectile Hit Sound Null!"));
+	}
 }
 

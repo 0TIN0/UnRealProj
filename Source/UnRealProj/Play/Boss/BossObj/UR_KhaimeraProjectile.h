@@ -24,6 +24,8 @@ private:
 
 	class UNiagaraSystem* m_NiagaraFX;
 
+	USoundBase* m_SpawnSound;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

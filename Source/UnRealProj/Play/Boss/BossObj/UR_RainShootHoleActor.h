@@ -26,6 +26,8 @@ private:
 		class UParticleSystemComponent* m_MeteorComponent;
 	class UParticleSystem* m_MeteorFX;
 
+	class USoundBase* m_SpawnSound;
+
 	float m_DestroyTime;
 
 	bool m_ChangeFXEnable;

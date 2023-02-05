@@ -36,6 +36,13 @@ AUR_LightningActor::AUR_LightningActor()	:
 		m_FXComponent->SetTemplate(ParticleSystem.Object);
 	}
 	m_FXComponent->SetupAttachment(m_SphereComponent);
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> SpawnSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Sparrow/LightningSound.LightningSound'"));
+
+		if (SpawnSound.Succeeded())
+			m_LightningSound = SpawnSound.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -60,18 +67,16 @@ void AUR_LightningActor::BeginPlay()
 
 	Player->CameraShake(CameraShake_Type::BigShake);
 
-	/*APlayerController* Controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-
-	if (!Controller || Controller->IsValidLowLevel())
+	// 위치기반 사운드
+	if (m_LightningSound)
 	{
-		return;
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_LightningSound, RootComponent->GetComponentLocation(), 0.5f, 1.f);
 	}
-	FHitResult HitResult;
-	Controller->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, HitResult);*/
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SP Lightning Hit Sound Null!"));
+	}
 
-	//SetActorLocation(HitResult.ImpactPoint);
-
-	
 }
 
 // Called every frame

@@ -30,6 +30,8 @@ public:
 
 	const struct FURMonsterDataInfo* m_Data;
 
+	USoundBase* m_LightningSound;
+
 	float m_DestroyTime;
 
 public:

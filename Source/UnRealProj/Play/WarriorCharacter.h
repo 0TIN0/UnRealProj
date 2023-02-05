@@ -173,10 +173,7 @@ private:
 	float m_TestTime;
 
 	// Voice 관련
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-	class USoundBase* m_NoMPVoice;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserContents", meta = (AllowPrivateAccess = "true"))
-		class USoundBase* m_CoolTimeVoice;
+	FURWarriorSound m_Sound;
 
 public:
 	void ResetDash()

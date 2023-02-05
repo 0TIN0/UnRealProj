@@ -397,6 +397,11 @@ protected:
 
 	void CharacterSoundPlay(class USoundBase* _Sound, float VolumeMultiplier, float PitchMultiplier);
 
+	void CharacterSoundPlay(class USoundBase* _Sound, USceneComponent* _AttachComponent, FName _AttachPointName,
+		float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f,
+		FVector Location = FVector(ForceInit), EAttachLocation::Type LocationType = EAttachLocation::KeepRelativeOffset,
+		bool bStopWhenAttachedToDestroyed = false);
+
 public:
 	virtual void CameraShake(CameraShake_Type _Type) {};
 

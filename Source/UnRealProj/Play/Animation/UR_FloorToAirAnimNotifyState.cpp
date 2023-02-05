@@ -43,6 +43,11 @@ void UUR_FloorToAirAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp,
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 
+	if (!m_Player || !m_Player->IsValidLowLevel())
+	{
+		return;
+	}
+
 	for (auto& Target : m_Player->GetUltimateTarget())
 	{
 		Target->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::HitAirLoop);

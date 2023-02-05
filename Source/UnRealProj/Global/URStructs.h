@@ -133,3 +133,13 @@ struct FURWarriorCommand
 	float WResetTime;
 	float WDoubleResetTime;
 };
+
+USTRUCT()
+struct FURWarriorSound
+{
+	GENERATED_USTRUCT_BODY()
+
+	class USoundBase* NoMPVoice;
+	class USoundBase* CoolTimeVoice;
+	class USoundBase* UltimateDash;
+};

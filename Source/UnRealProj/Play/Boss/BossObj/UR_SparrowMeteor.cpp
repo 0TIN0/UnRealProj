@@ -36,6 +36,14 @@ AUR_SparrowMeteor::AUR_SparrowMeteor() :
 
 	//m_SkillDir = FVector(0.0, 0.0, 1.0);
 	GetProjectileMovementComponent()->ProjectileGravityScale = 20.f;
+
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> BreakSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Kwang/SP_MeteorHit_Sound.SP_MeteorHit_Sound'"));
+
+		if (BreakSound.Succeeded())
+			m_HitSound = BreakSound.Object;
+	}
 }
 
 void AUR_SparrowMeteor::BeginPlay()
@@ -65,6 +73,7 @@ void AUR_SparrowMeteor::Tick(float DeltaTime)
 			Destroy();
 		}
 	}
+
 }
 
 void AUR_SparrowMeteor::OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent, int32 _OtherBodyIndex, bool _FromSweep, const FHitResult& _Result)

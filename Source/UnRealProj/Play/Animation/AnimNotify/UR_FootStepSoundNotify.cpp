@@ -2,7 +2,7 @@
 
 
 #include "Play/Animation/AnimNotify/UR_FootStepSoundNotify.h"
-#include "../../WarriorCharacter.h"
+#include "../../URCharacter.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -40,7 +40,7 @@ void UUR_FootStepSoundNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 	
-	AWarriorCharacter* Character = MeshComp->GetOwner<AWarriorCharacter>();
+	AURCharacter* Character = MeshComp->GetOwner<AURCharacter>();
 
 	if (!Character || !Character->IsValidLowLevel())
 	{
@@ -86,7 +86,7 @@ void UUR_FootStepSoundNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 			UE_LOG(LogTemp, Error, TEXT("FootStep Sound Null!"));
 		}
 		
-		UAudioComponent* AudioComp = UGameplayStatics::SpawnSoundAttached(Sound, MeshComp, FName(TEXT("FX_Root")), FVector(), EAttachLocation::Type::KeepRelativeOffset,
+		UAudioComponent* AudioComp = UGameplayStatics::SpawnSoundAttached(Sound, MeshComp, FName(TEXT("root")), FVector(), EAttachLocation::SnapToTarget,
 			false, OutValue, OutValue);
 
 		UAISense_Hearing::ReportNoiseEvent(Character->GetWorld(), HitResult.Location, StepSoundM, nullptr, 0.f, FName(TEXT("Detected")));

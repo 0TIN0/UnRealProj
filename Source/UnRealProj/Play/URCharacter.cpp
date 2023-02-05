@@ -489,5 +489,19 @@ void AURCharacter::CharacterSoundPlay(USoundBase* _Sound, float VolumeMultiplier
 {
 	if (GetWorld() != nullptr)
 		UGameplayStatics::PlaySound2D(GetWorld(), _Sound, VolumeMultiplier, PitchMultiplier);
+
+}
+
+void AURCharacter::CharacterSoundPlay(USoundBase* _Sound, USceneComponent* _AttachComponent, FName _AttachPointName, 
+	float VolumeMultiplier, float PitchMultiplier, FVector Location, EAttachLocation::Type LocationType, bool bStopWhenAttachedToDestroyed)
+{
+	if (_Sound)
+	{
+		UGameplayStatics::SpawnSoundAttached(_Sound, _AttachComponent, _AttachPointName, Location, EAttachLocation::SnapToTarget, false, VolumeMultiplier, PitchMultiplier);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("CharacterSoundPlay Func _Sound Null!"));
+	}
 }
 

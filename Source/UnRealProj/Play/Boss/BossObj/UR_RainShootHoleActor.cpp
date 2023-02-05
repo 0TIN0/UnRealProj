@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GamePlayStatics.h"
 
 // Sets default values
 AUR_RainShootHoleActor::AUR_RainShootHoleActor()	:
@@ -47,6 +48,13 @@ AUR_RainShootHoleActor::AUR_RainShootHoleActor()	:
 	{
 		m_MeteorComponent->SetTemplate(m_MeteorFX);
 	}
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> SpawnSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Sparrow/SP_MeteorSpawn_Sound.SP_MeteorSpawn_Sound'"));
+
+		if (SpawnSound.Succeeded())
+			m_SpawnSound = SpawnSound.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +65,16 @@ void AUR_RainShootHoleActor::BeginPlay()
 	if (m_ChangeFXEnable)
 	{
 		m_HoleComponent->SetTemplate(m_NormalHoleFX);
+	}
+
+	// 위치기반 사운드
+	if (m_SpawnSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_SpawnSound, RootComponent->GetComponentLocation(), 0.3f, 1.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SPRainHole_Sound Null!"));
 	}
 }
 

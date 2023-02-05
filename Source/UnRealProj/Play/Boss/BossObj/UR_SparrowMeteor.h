@@ -26,6 +26,7 @@ private:
 
 	class UParticleSystem* m_HitParticleFX;
 
+
 	bool m_HitEnable;
 	float m_DestroyTime;
 

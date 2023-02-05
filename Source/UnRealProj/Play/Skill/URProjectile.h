@@ -35,6 +35,7 @@ private:
 
 protected:
 	FVector m_SkillDir;
+	class USoundBase* m_HitSound;
 
 protected:
 	// Called when the game starts or when spawned

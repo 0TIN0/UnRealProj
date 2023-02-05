@@ -124,12 +124,17 @@ AWarriorCharacter::AWarriorCharacter() :
 		static ConstructorHelpers::FObjectFinder<USoundBase> NoMPVoice(TEXT("SoundCue'/Game/Resource/Play/Sound/Voice/Kwang/Kwang_Ability_LowMana.Kwang_Ability_LowMana'"));
 
 		if (NoMPVoice.Succeeded())
-			m_NoMPVoice = NoMPVoice.Object;
+			m_Sound.NoMPVoice = NoMPVoice.Object;
 
 		static ConstructorHelpers::FObjectFinder<USoundBase> CoolTimeVoice(TEXT("SoundCue'/Game/Resource/Play/Sound/Voice/Kwang/Kwang_Ability_OnCooldown.Kwang_Ability_OnCooldown'"));
 
 		if (CoolTimeVoice.Succeeded())
-			m_CoolTimeVoice = CoolTimeVoice.Object;
+			m_Sound.CoolTimeVoice = CoolTimeVoice.Object;
+
+		static ConstructorHelpers::FObjectFinder<USoundBase> UltimateDash(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Kwang/UltimateDash_Sound.UltimateDash_Sound'"));
+
+		if (UltimateDash.Succeeded())
+			m_Sound.UltimateDash = UltimateDash.Object;
 	}
 }
 
@@ -732,13 +737,13 @@ void AWarriorCharacter::SkillQ()
 
 	if (m_IsQSkill)
 	{
-		CharacterSoundPlay(m_CoolTimeVoice, 0.2f, 1.f);
+		CharacterSoundPlay(m_Sound.CoolTimeVoice, 0.2f, 1.f);
 		return;
 	}
 
 	if (m_MP < m_SkillQConsumedMP)
 	{
-		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
+		CharacterSoundPlay(m_Sound.NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -773,13 +778,13 @@ void AWarriorCharacter::SkillE()
 
 	if (m_IsESkillAttacking)
 	{
-		CharacterSoundPlay(m_CoolTimeVoice, 0.2f, 1.f);
+		CharacterSoundPlay(m_Sound.CoolTimeVoice, 0.2f, 1.f);
 		return;
 	}
 
 	if (m_MP < m_SkillEConsumedMP)
 	{
-		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
+		CharacterSoundPlay(m_Sound.NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -801,7 +806,7 @@ void AWarriorCharacter::SkillR()
 
 	if (m_MP < m_SkillRConsumedMP)
 	{
-		CharacterSoundPlay(m_NoMPVoice, 0.2f, 1.f);
+		CharacterSoundPlay(m_Sound.NoMPVoice, 0.2f, 1.f);
 		return;
 	}
 
@@ -2285,17 +2290,7 @@ void AWarriorCharacter::AdvanceTimer()
 
 		bool ReTarget = false;
 
-		/*if (Target->GetHP() - m_PlayerInfo->MaxAttack <= 0)
-		{
-			ReTarget = true;
-		}*/
-
 		Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
-
-		/*if (ReTarget)
-		{
-			m_UltimateTargetMonster.RemoveSingle(Target);
-		}*/
 
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
 
@@ -2310,6 +2305,8 @@ void AWarriorCharacter::AdvanceTimer()
 
 		UKismetSystemLibrary::MoveComponentTo(GetRootComponent(), EndPos, GetActorRotation(),
 			false, false, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+
+		CharacterSoundPlay(m_Sound.UltimateDash, RootComponent, FName(TEXT("root")), 0.1f, 1.f);
 
 		CameraShake(CameraShake_Type::UltimateShake);
 	}

@@ -66,11 +66,6 @@ EBTNodeResult::Type UUR_PirateBackMove::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	if (m_Enable)
 	{
-		if (Monster->GetCharacterMovement()->MaxWalkSpeed != 200)
-		{
-			Monster->GetCharacterMovement()->MaxWalkSpeed = 200.f;
-		}
-
 		if (Monster->GetTargetDir(TargetActor).Size() > MonsterInfo->AttRange)
 		{
 			Monster->ResetPath();
@@ -85,11 +80,19 @@ EBTNodeResult::Type UUR_PirateBackMove::ExecuteTask(UBehaviorTreeComponent& Owne
 			!Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::IdleToBlock))
 		{
 			Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::IdleToBlock);
+			if (Monster->GetCharacterMovement()->MaxWalkSpeed != 0.f)
+			{
+				Monster->GetCharacterMovement()->MaxWalkSpeed = 0.f;
+			}
 		}
 		else
 		{
 			Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::BlockWalkBackward);
 			Monster->SetDirMovementInput(-Monster->GetActorForwardVector());
+			if (Monster->GetCharacterMovement()->MaxWalkSpeed != 200)
+			{
+				Monster->GetCharacterMovement()->MaxWalkSpeed = 200.f;
+			}
 		}
 	}
 
