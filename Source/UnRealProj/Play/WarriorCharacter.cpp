@@ -94,12 +94,22 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent);
 	//m_CameraComponent->bUsePawnControlRotation = false;
 
-	m_PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName(TEXT("DrunkPostProcessComponent")));
-	m_PostProcessComponent->SetupAttachment(m_CameraComponent);
+	// 포스트 프로세스
+	{
+		m_DrunkPostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName(TEXT("DrunkPostProcessComponent")));
+		m_DrunkPostProcessComponent->SetupAttachment(m_CameraComponent);
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatInst(TEXT("MaterialInstanceConstant'/Game/Resource/Play/Effect/Drunk_Effect/Drunk_Effect_Inst.Drunk_Effect_Inst'"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> DrunkMatInst(TEXT("MaterialInstanceConstant'/Game/Resource/Play/Effect/Drunk_Effect/Drunk_Effect_Inst.Drunk_Effect_Inst'"));
 
-	m_WeightedBlend = FWeightedBlendable(1.f, MatInst.Object);
+		m_DrunkWeightedBlend = FWeightedBlendable(1.f, DrunkMatInst.Object);
+
+		m_GlowPostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName(TEXT("GlowPostProcessComponent")));
+		m_GlowPostProcessComponent->SetupAttachment(m_CameraComponent);
+
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> GlowMatInst(TEXT("MaterialInstanceConstant'/Game/Resource/Play/Effect/Q_Effect/Mat_Q_Effect_Inst.Mat_Q_Effect_Inst'"));
+
+		m_GlowWeightedBlend = FWeightedBlendable(1.f, GlowMatInst.Object);
+	}
 
 	// m_PostProcessComponent->Settings.WeightedBlendables.Array.Add(m_WeightedBlend);
 
@@ -135,6 +145,12 @@ AWarriorCharacter::AWarriorCharacter() :
 
 		if (UltimateDash.Succeeded())
 			m_Sound.UltimateDash = UltimateDash.Object;
+	}
+	{
+		/*static ConstructorHelpers::FObjectFinder<UUserWidget> QuestSideWidget(TEXT("WidgetBlueprint'/Game/BluePrint/Play/UI/BP_QuestSideUI.BP_QuestSideUI'"));
+
+		if (QuestSideWidget.Succeeded())
+			m_QuestSizeWidget = QuestSideWidget.Object;*/
 	}
 }
 
@@ -757,11 +773,11 @@ void AWarriorCharacter::SkillQ()
 	SetBerserkRateScale();
 
 	GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillQ);
+	AddPostProcessGlowMat();
 
-
-	m_GlowSphere = GetWorld()->SpawnActor<AUR_GlowEffectActor>(AUR_GlowEffectActor::StaticClass(), GetActorTransform());
-	m_GlowSphere->AttachToComponent(m_CameraComponent, FAttachmentTransformRules::KeepWorldTransform);
-	//m_GlowSphere->SetPivotOffset(FVector(-500.0, 0.0, 0.0));
+	//m_GlowSphere = GetWorld()->SpawnActor<AUR_GlowEffectActor>(AUR_GlowEffectActor::StaticClass(), GetActorTransform());
+	//m_GlowSphere->AttachToComponent(m_CameraComponent, FAttachmentTransformRules::KeepWorldTransform);
+	////m_GlowSphere->SetPivotOffset(FVector(-500.0, 0.0, 0.0));
 
 
 	m_MP -= m_SkillQConsumedMP;
@@ -1033,6 +1049,7 @@ void AWarriorCharacter::DamageOn(bool _IsKnockBack)
 			Character->CallDamage(3.0, this);
 			FActorSpawnParameters spawnParams;
 			CreateParticleObject<AUR_NormalAttackHit>(Character);
+			Character->CharacterSoundPlay(m_HitSound, Character->GetRootComponent(), FName(TEXT("root")), 0.3f, 1.f);
 		}
 	}
 
@@ -1160,7 +1177,7 @@ void AWarriorCharacter::BeginPlay()
 
 	m_ArrayNormalMat = GetMesh()->GetMaterials();
 
-	GetWorld();
+	GetWorld()->GetGameInstance<UURGameInstance>()->QuestSaveFull(this);
 }
 
 void AWarriorCharacter::Tick(float DeltaTime)
@@ -1582,11 +1599,7 @@ void AWarriorCharacter::CoolTimeTick(float DeltaTime)
 			m_IsQSkill = false;
 			m_AttackSpeed = 1.f;
 			SetBerserkRateScale();
-			if (m_GlowSphere)
-			{
-				m_GlowSphere->Destroy();
-				m_GlowSphere = nullptr;
-			}
+			DeletePostProcessGlowMat();
 
 			for (int32 i = 0; i < m_ArrayNormalMat.Num(); ++i)
 			{
@@ -2026,14 +2039,26 @@ void AWarriorCharacter::CameraShake(CameraShake_Type _Type)
 
 void AWarriorCharacter::AddPostProcessDrunkMat()
 {
-	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 0)
-	m_PostProcessComponent->Settings.WeightedBlendables.Array.Add(m_WeightedBlend);
+	if (m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.Num() == 0)
+		m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.Add(m_DrunkWeightedBlend);
 }
 
 void AWarriorCharacter::DeletePostProcessDrunkMat()
 {
-	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
-		m_PostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
+	if (m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
+		m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
+}
+
+void AWarriorCharacter::AddPostProcessGlowMat()
+{
+	if (m_GlowPostProcessComponent->Settings.WeightedBlendables.Array.Num() == 0)
+		m_GlowPostProcessComponent->Settings.WeightedBlendables.Array.Add(m_GlowWeightedBlend);
+}
+
+void AWarriorCharacter::DeletePostProcessGlowMat()
+{
+	if (m_GlowPostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
+		m_GlowPostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
 }
 
 TArray<AActor*> AWarriorCharacter::CheckAttackTarget(const TArray<FHitResult>& _HitResult)
@@ -2081,14 +2106,14 @@ void AWarriorCharacter::SetBerserkRateScale()
 
 void AWarriorCharacter::TickPostProcessDeleteFunc(float DeltaTime)
 {
-	if (m_PostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
+	if (m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.Num() == 1)
 	{
 		m_PostProcessDeleteTime -= DeltaTime;
 
 		if (m_PostProcessDeleteTime <= 0.f)
 		{
 			m_PostProcessDeleteTime = 5.f;
-			m_PostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
+			m_DrunkPostProcessComponent->Settings.WeightedBlendables.Array.RemoveAt(0);
 		}
 	}
 }
@@ -2291,6 +2316,7 @@ void AWarriorCharacter::AdvanceTimer()
 		bool ReTarget = false;
 
 		Target->CallDamage(m_PlayerInfo->MaxAttack, this, false);
+		Target->CharacterSoundPlay(m_HitSound, Target->GetRootComponent(), FName(TEXT("root")), 0.3f, 1.f);
 
 		GetAnimationInstance()->ChangeAnimMontage(WarriorAnimation::SkillRAttack);
 

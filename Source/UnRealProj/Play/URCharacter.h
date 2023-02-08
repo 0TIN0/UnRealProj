@@ -54,9 +54,10 @@ public:
 	}
 
 
+	UFUNCTION(BlueprintCallable, Category = UR)
 	FORCEINLINE bool IsDeath()
 	{
-		return m_HP <= 0;
+		return m_HP <= 0.0;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = UR)
@@ -392,9 +393,12 @@ protected:
 	// 퀘스트 몬스터 잡았을때 증가
 	int m_MonsterCount;
 
+	USoundBase* m_HitSound;
+
 protected:
 	void HitDirJudge(AActor* _Actor);
 
+public:
 	void CharacterSoundPlay(class USoundBase* _Sound, float VolumeMultiplier, float PitchMultiplier);
 
 	void CharacterSoundPlay(class USoundBase* _Sound, USceneComponent* _AttachComponent, FName _AttachPointName,

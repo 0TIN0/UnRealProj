@@ -29,6 +29,11 @@ EBTNodeResult::Type UUR_SparrowDeathTaskNode::ExecuteTask(UBehaviorTreeComponent
 		return EBTNodeResult::Failed;
 	}
 
+	if (m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::ExecutionTarget))
+	{
+		return EBTNodeResult::InProgress;
+		m_Boss->SetIsInvincibility(true);
+	}
 	// 여기에 왔다면 죽은것이기 떄문에 해당 동작을 실행해주고 InProgress로 유지시켜준다.
 	if (!m_Boss->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathStart))
 	{

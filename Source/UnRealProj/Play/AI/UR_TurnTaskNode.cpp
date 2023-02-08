@@ -21,6 +21,11 @@ EBTNodeResult::Type UUR_TurnTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	m_Monster = m_Controller->GetPawn<AURCharacter>();
 
+	if (m_Monster->IsDeath())
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 
 	if (!Target)

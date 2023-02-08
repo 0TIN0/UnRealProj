@@ -18,7 +18,6 @@ public:
 	UUR_PirateBackMove();
 
 private:
-	bool m_Enable;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

@@ -21,9 +21,20 @@ EBTNodeResult::Type UUR_DeathTaskNode::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 
-	if (Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathLoop) ||
-		Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathStart))
+	if (Monster->IsDeath())
 	{
+		if (!Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathStart) &&
+			!Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathLoop))
+		{
+			Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::DeathStart);
+		}
+		
+		if (Monster->GetAnimationInstance()->IsAnimMontage(DefaultAnimation::DeathLoop))
+		{
+			Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::DeathLoop);
+		}
+
+		Monster->SetIsInvincibility(true);
 		return EBTNodeResult::InProgress;
 	}
 

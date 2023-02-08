@@ -74,6 +74,7 @@ enum class DefaultAnimation : uint8
 	DeathStart UMETA(DisplayName = "사망 시작"),
 	DeathLoop UMETA(DisplayName = "사망 루프"),
 	GetUp UMETA(DisplayName = "일어나기"),
+	ExecutionTarget UMETA(DisplayName = "처형 타겟"),
 	Max UMETA(DisplayName = "최대치"),
 };
 
@@ -124,6 +125,8 @@ enum class WarriorAnimation : uint8
 	ComboC3 UMETA(DisplayName = "C콤보3"),
 	ComboC4 UMETA(DisplayName = "C콤보4"),
 	CommandDashAttack UMETA(DisplayName = "대쉬어택"),
+	Execution1 UMETA(DisplayName = "처형1"),
+	Execution2 UMETA(DisplayName = "처형2"),
 	Max UMETA(DisplayName = "최대치")
 };
 

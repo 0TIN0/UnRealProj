@@ -66,9 +66,14 @@ private:
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UPostProcessComponent* m_PostProcessComponent;
+		class UPostProcessComponent* m_DrunkPostProcessComponent;
 
-	FWeightedBlendable m_WeightedBlend;
+	FWeightedBlendable m_DrunkWeightedBlend;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UPostProcessComponent* m_GlowPostProcessComponent;
+
+	FWeightedBlendable m_GlowWeightedBlend;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		TMap<CameraShake_Type, TSubclassOf<class UMatineeCameraShake>> m_CameraShakeMap;
@@ -93,7 +98,7 @@ private:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		class UNiagaraComponent* m_BlackHoleNiagara;
 
-	class AUR_GlowEffectActor* m_GlowSphere;
+	class UUserWidget* m_QuestSizeWidget;
 
 	class UNiagaraSystem* m_BlackHoleFX;
 
@@ -179,6 +184,12 @@ public:
 	void ResetDash()
 	{
 		m_OnDash = false;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = RealUn)
+	class USpringArmComponent* GetCameraSpringArmComponent()	const
+	{
+		return m_CameraSpringArmComponent;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = RealUn)
@@ -373,10 +384,6 @@ public:
 		return m_BlackHoleNiagara;
 	}
 
-	class AUR_GlowEffectActor* GetGlowEffect()
-	{
-		return m_GlowSphere;
-	}
 
 protected:
 	void BeginPlay() override;
@@ -468,6 +475,8 @@ public:
 
 	void AddPostProcessDrunkMat();
 	void DeletePostProcessDrunkMat();
+	void AddPostProcessGlowMat();
+	void DeletePostProcessGlowMat();
 
 	template <typename T>
 	void CreateParticleObject(AActor* _Actor)

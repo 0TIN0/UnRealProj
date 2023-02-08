@@ -200,6 +200,7 @@ void AMonster::DamageOn(bool _IsKnockBack)
 			}
 			Check = true;
 			Character->CallDamage(3.0, this);
+			Character->CharacterSoundPlay(m_HitSound, Character->GetRootComponent(), FName(TEXT("root")), 0.3f, 1.f);
 			
 		}
 	}

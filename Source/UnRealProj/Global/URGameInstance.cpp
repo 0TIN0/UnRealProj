@@ -5,7 +5,11 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Global/URStructs.h"
 
-UURGameInstance::UURGameInstance()
+UURGameInstance::UURGameInstance()  :
+    m_SaveQuest(QuestProgress::Default),
+    m_IsSaveQuestCompletion(false),
+    m_IsSaveQuesting(false),
+    m_IsSaveEnable(false)
 {
     m_Stream = FRandomStream(FDateTime::Now().GetTicks());
     {
@@ -165,4 +169,30 @@ TArray<const FURItemData*> UURGameInstance::GetRandomDropData(int _Count)
 void UURGameInstance::DebugSwitch()
 {
     m_DebugCheck = !m_DebugCheck;
+}
+
+void UURGameInstance::QuestSavePush(QuestProgress _Quest, bool _IsSAveQuestCompletion, bool _IsSaveQuesting)
+{
+    if (!m_IsSaveEnable)
+    {
+        m_IsSaveEnable = true;
+        m_SaveQuest = _Quest;
+        m_IsSaveQuestCompletion = _IsSAveQuestCompletion;
+        m_IsSaveQuesting = _IsSaveQuesting;
+    }
+    else
+    {
+        return;
+    }
+}
+
+void UURGameInstance::QuestSaveFull(AURCharacter* _Character)
+{
+    if (m_IsSaveEnable)
+    {
+        _Character->SetQuestProgress(m_SaveQuest);
+        _Character->SetQuestCompletion(m_IsSaveQuestCompletion);
+        _Character->SetIsQuesting(m_IsSaveQuesting);
+        m_IsSaveEnable = false;
+    }
 }

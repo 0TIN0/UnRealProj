@@ -23,6 +23,10 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	const FURMonsterDataInfo* MonsterInfo = m_Monster->GetMonsterData();
 
+	if (m_Monster->IsDeath())
+	{
+		return EBTNodeResult::Failed;
+	}
 	if (!AnimMontageJudge(m_Monster))
 	{
 		return EBTNodeResult::Failed;
@@ -39,6 +43,10 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 	{
 		return EBTNodeResult::Failed;
 	}
+
+	// 몬스터가 블로킹중이라면 블로킹중을 false변경했다 알려주어야함.
+	if (m_Monster->GetIsBlocking())
+		m_Monster->SetIsBlocking(false);
 
 	AActor* TargetActor = Cast<AActor>(Target);
 
@@ -78,20 +86,20 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	m_WaitTime = Montage->GetPlayLength();
 
-	if (!m_Enable)
+	if (!m_Monster->GetAIStruct().IsAttack)
 	{
 		switch (m_AttackType)
 		{
 		case PirateAttack_Type::Attack:
-			m_Enable = true;
+			m_Monster->SetAIIsAttack(true);
 			m_Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Attack);
 			break;
 		case PirateAttack_Type::AttackCombo1:
-			m_Enable = true;
+			m_Monster->SetAIIsAttack(true);
 			m_Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::AttackCombo1);
 			break;
 		case PirateAttack_Type::AttackCombo2:
-			m_Enable = true;
+			m_Monster->SetAIIsAttack(true);
 			m_Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::AttackCombo2);
 			break;
 		}
@@ -105,7 +113,7 @@ EBTNodeResult::Type UUR_AttackTaskNode::ExecuteTask(UBehaviorTreeComponent& Owne
 	}
 
 
-	m_Enable = false;
+	m_Monster->SetAIIsAttack(false);
 
 	return EBTNodeResult::Failed;
 }

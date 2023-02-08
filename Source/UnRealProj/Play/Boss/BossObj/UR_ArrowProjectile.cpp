@@ -32,6 +32,13 @@ AUR_ArrowProjectile::AUR_ArrowProjectile()	:
 	m_ArrowTrail->SetAsset(m_NiagaraFX);
 	m_ArrowTrail->SetupAttachment(m_ArrowComponent);
 	//GetProjectileMovementComponent()->ProjectileGravityScale = 1.f;
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> HitSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Kwang/SP_BurstHit_Sound.SP_BurstHit_Sound'"));
+
+		if (HitSound.Succeeded())
+			m_HitSound = HitSound.Object;
+	}
 }
 
 void AUR_ArrowProjectile::BeginPlay()

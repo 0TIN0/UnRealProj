@@ -30,6 +30,11 @@ AURCharacter::AURCharacter()	:
 
 	GetMesh()->bHiddenInSceneCapture = true;
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> HitSound(TEXT("SoundCue'/Game/Resource/Play/Sound/SKill/Hit/NewSoundCue.NewSoundCue'"));
+
+	if (HitSound.Succeeded())
+		m_HitSound = HitSound.Object;
+
 }
 
 AActor* AURCharacter::TargetSearch(FName _Name, float _Range)

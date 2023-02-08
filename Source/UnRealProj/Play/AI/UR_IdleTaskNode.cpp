@@ -21,12 +21,20 @@ EBTNodeResult::Type UUR_IdleTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	AMonster* Monster = Controller->GetPawn<AMonster>();
 
+	if (Monster->IsDeath())
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor");
 
 	if (Target)
 	{
 		return EBTNodeResult::Failed;
 	}
+
+	if (Monster->GetIsBlocking())
+		Monster->SetIsBlocking(false);
 
 	Monster->GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "UREnum.h"
 #include "URGameInstance.generated.h"
 
 /**
@@ -65,4 +66,18 @@ private:
 	class UUR_InventoryUI* m_Inven;
 
 	bool m_DebugCheck;
+
+	// 플레이어 퀘스트 저장관련
+	QuestProgress m_SaveQuest;
+	bool m_IsSaveQuestCompletion;
+	bool m_IsSaveQuesting;
+
+	bool m_IsSaveEnable;
+
+
+public:
+	UFUNCTION(BlueprintCallable, Category = UR)
+	void QuestSavePush(QuestProgress _Quest, bool _IsSAveQuestCompletion, bool _IsSaveQuesting);
+
+	void QuestSaveFull(class AURCharacter* _Character);
 };

@@ -6,8 +6,21 @@
 #include "URAICharacter.h"
 #include "Monster.generated.h"
 
+USTRUCT()
+struct FURAI_STRUCT
+{
+	GENERATED_USTRUCT_BODY()
 
+		bool IsAttack;
+	bool IsBackMove;
 
+	FURAI_STRUCT()	:
+		IsAttack(false),
+		IsBackMove(false)
+	{
+
+	}
+};
 UCLASS()
 class UNREALPROJ_API AMonster : public AURAICharacter
 {
@@ -59,6 +72,8 @@ private:
 
 	int m_BlockCount;
 
+	FURAI_STRUCT m_AIStruct;
+
 public:
 	void SetUltimateHitDir(const FVector& Dir)
 	{
@@ -78,6 +93,21 @@ public:
 	int GetBlockCount()	const
 	{
 		return m_BlockCount;
+	}
+
+	FURAI_STRUCT GetAIStruct()	const
+	{
+		return m_AIStruct;
+	}
+
+	void SetAIIsAttack(bool _Enable)
+	{
+		m_AIStruct.IsAttack = _Enable;
+	}
+
+	void SetAIIsBackMove(bool _Enable)
+	{
+		m_AIStruct.IsBackMove = _Enable;
 	}
 
 

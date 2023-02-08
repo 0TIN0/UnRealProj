@@ -4,32 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "Global/UREnum.h"
-#include "UR_AttackTaskNode.generated.h"
+#include "UR_ExecutionTaskNode.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class UNREALPROJ_API UUR_AttackTaskNode : public UBTTaskNode
+class UNREALPROJ_API UUR_ExecutionTaskNode : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UUR_AttackTaskNode();
+	UUR_ExecutionTaskNode();
 
-private:
-	class AURAIController* m_Controller;
-
-	class AMonster* m_Monster;
-
-	float m_WaitTime;
-
-	PirateAttack_Type m_AttackType;
-
-	
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-private:
-	bool AnimMontageJudge(class AMonster* _Monster);
+	
 };

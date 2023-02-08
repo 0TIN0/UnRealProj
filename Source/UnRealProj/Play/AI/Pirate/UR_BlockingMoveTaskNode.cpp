@@ -24,13 +24,23 @@ EBTNodeResult::Type UUR_BlockingMoveTaskNode::ExecuteTask(UBehaviorTreeComponent
 	
 	AURCharacter* Player = Monster->GetWorld()->GetFirstPlayerController()->GetPawn<AURCharacter>();
 
-	// 스페로우의 HP가 0보다 크다면 패스한다.
-	if (Monster->GetHPPercent() > 0.2f || Monster->IsDeath())
+	if (Monster->IsDeath())
 	{
-		return EBTNodeResult::Succeeded;
+		return EBTNodeResult::Failed;
+	}
+
+	// 스페로우의 HP가 0보다 크다면 패스한다.
+	if (Monster->GetHPPercent() > 0.2f)
+	{
+		return EBTNodeResult::Failed;
 	}
 
 	Monster->SetIsBlocking(true);
+
+	if (Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::BlockHit))
+	{
+		return EBTNodeResult::Succeeded;
+	}
 
 	if (Monster->GetCharacterMovement()->MaxWalkSpeed != 300)
 	{
@@ -49,7 +59,7 @@ EBTNodeResult::Type UUR_BlockingMoveTaskNode::ExecuteTask(UBehaviorTreeComponent
 	double RValue = FVector::DotProduct(MonsterDir, Player->GetActorRightVector());
 
 	// 아크코사인과 라디안 투 디그리를 이용해서 디그리의 각도로 변환하여
-	// 어느위치에서 공격했는지를 판단한다.
+	// 어느위치에 
 	float FConvert = acosf(static_cast<float>(FValue));
 	FConvert = FMath::RadiansToDegrees(FConvert);
 	float BConvert = acosf(static_cast<float>(BValue));
@@ -59,14 +69,6 @@ EBTNodeResult::Type UUR_BlockingMoveTaskNode::ExecuteTask(UBehaviorTreeComponent
 	float RConvert = acosf(static_cast<float>(RValue));
 	RConvert = FMath::RadiansToDegrees(RConvert);
 
-	if (FConvert < 60.f)
-	{
-	}
-	else
-	{
-		return EBTNodeResult::Succeeded;
-	}
-	
 	FVector LeftPos = Player->GetActorLocation() - Player->GetActorRightVector() * 300.f;
 	FVector RightPos = Player->GetActorLocation() + Player->GetActorRightVector() * 300.f;
 	FVector BackwardPos = Player->GetActorLocation() - Player->GetActorForwardVector() * 300.f;
@@ -147,12 +149,52 @@ EBTNodeResult::Type UUR_BlockingMoveTaskNode::ExecuteTask(UBehaviorTreeComponent
 		break;
 	}
 
+	if (FConvert < 45.f)
+	{
+	}
+	else if (BConvert < 45.f)
+	{
+		if (Monster->GetTargetDir(BackwardPos).Size() <= 30.f)
+		{
+			Monster->ResetPath();
+			return EBTNodeResult::Failed;
+		}
+	}
+	else if (RConvert < 45.f)
+	{
+		if (Monster->GetTargetDir(RightPos).Size() <= 30.f)
+		{
+			Monster->ResetPath();
+
+			if (Monster->GetIsBlocking())
+				Monster->SetIsBlocking(false);
+
+			return EBTNodeResult::Failed;
+		}
+	}
+	else if (LConvert < 45.f)
+	{
+		if (Monster->GetTargetDir(LeftPos).Size() <= 30.f)
+		{
+			Monster->ResetPath();
+
+			if (Monster->GetIsBlocking())
+				Monster->SetIsBlocking(false);
+
+			return EBTNodeResult::Failed;
+		}
+	}
 
 	if (nullptr != FindPath && false == FindPath->PathPoints.IsEmpty())
 	{
 		Monster->SetPath(FindPath, false);
 		Monster->NoAnimPathMove();
 		Monster->SetTargetLook(Player);
+
+		// 몬스터가 블로킹중이 아니라면 블로킹중으로 변경했다 알려주어야함.
+		if (!Monster->GetIsBlocking())
+			Monster->SetIsBlocking(true);
+
 		if (Value > 0.0)
 		{
 			Monster->GetAnimationInstance()->ChangeAnimMontage(PirateAnimation::BlockWalkRight);
@@ -165,6 +207,7 @@ EBTNodeResult::Type UUR_BlockingMoveTaskNode::ExecuteTask(UBehaviorTreeComponent
 		return EBTNodeResult::InProgress;
 	}
 
+	
 
 	return EBTNodeResult::InProgress;
 }

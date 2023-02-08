@@ -26,6 +26,11 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
 	//Monster->GetCharacterMovement()->MaxWalkSpeed = 2000.f;
 
+	if (Monster->IsDeath())
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	if (!AnimMontageJudge(Monster))
 	{
 		return EBTNodeResult::Failed;
@@ -90,6 +95,8 @@ EBTNodeResult::Type UUR_MoveTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	UNavigationPath* FindPath = Monster->PathFind(TargetActor);
 
+	if (Monster->GetIsBlocking())
+		Monster->SetIsBlocking(false);
 
 	if (nullptr != FindPath && false == FindPath->PathPoints.IsEmpty())
 	{

@@ -59,9 +59,9 @@ void UUR_FootStepSoundNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 	double Length = Character->GetVelocity().Length();
 
 	// 달리기 or 걷기 속도에 따른 발소리 볼륨값 조절
-	double OutValue = UKismetMathLibrary::MapRangeClamped(Length, 0.0, 1000.0, 0.0, 0.2);
+	double OutValue = UKismetMathLibrary::MapRangeClamped(Length, 0.0, 1000.0, 0.0, 1.0);
 
-	double StepSoundM = 1.0;
+	double StepSoundM = 0.2;
 
 	OutValue *= StepSoundM;
 

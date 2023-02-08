@@ -39,6 +39,13 @@ AUR_SparrowEvadeProjectile::AUR_SparrowEvadeProjectile() :
 	//m_EvadeProjectileComponent->SetRelativeScale3D(FVector(1.0, 1.0, 1.0));
 
 	GetProjectileMovementComponent()->ProjectileGravityScale = 0.f;
+
+	{
+		static ConstructorHelpers::FObjectFinder<USoundBase> HitSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Kwang/SP_SniperHit_Sound.SP_SniperHit_Sound'"));
+
+		if (HitSound.Succeeded())
+			m_HitSound = HitSound.Object;
+	}
 }
 
 // Called when the game starts or when spawned

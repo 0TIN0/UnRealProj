@@ -10,8 +10,7 @@
 #include "Global/URBlueprintFunctionLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-UUR_PirateBackMove::UUR_PirateBackMove()	:
-	m_Enable(false)
+UUR_PirateBackMove::UUR_PirateBackMove()
 {
 	bNotifyTick = true;
 }
@@ -26,15 +25,18 @@ EBTNodeResult::Type UUR_PirateBackMove::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	const FURMonsterDataInfo* MonsterInfo = Monster->GetMonsterData();
 
+	if (Monster->IsDeath())
+	{
+		return EBTNodeResult::Failed;
+	}
+
 	if (!AnimMontageJudge(Monster))
 	{
-		m_Enable = false;
 		return EBTNodeResult::Failed;
 	}
 
 	if (Monster->GetUltimateHitEnable())
 	{
-		m_Enable = false;
 		return EBTNodeResult::Failed;
 	}
 
@@ -42,7 +44,6 @@ EBTNodeResult::Type UUR_PirateBackMove::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	if (!Target)
 	{
-		m_Enable = false;
 		return EBTNodeResult::Failed;
 	}
 
@@ -50,30 +51,36 @@ EBTNodeResult::Type UUR_PirateBackMove::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	FVector Dir = TargetActor->GetActorLocation() - Monster->GetActorLocation();
 
-	if (!m_Enable)
+	if (!Monster->GetAIStruct().IsBackMove)
 	{
 		if (Monster->GetTargetDir(TargetActor).Size() > 150.f)
 		{
 			Monster->ResetPath();
-			m_Enable = false;
+			Monster->SetAIIsAttack(false);
 			return EBTNodeResult::Failed;
 		}
 		else
 		{
-			m_Enable = true;
+			Monster->SetAIIsAttack(true);
 		}
 	}
 
-	if (m_Enable)
+	if (Monster->GetAIStruct().IsBackMove)
 	{
 		if (Monster->GetTargetDir(TargetActor).Size() > MonsterInfo->AttRange)
 		{
 			Monster->ResetPath();
-			m_Enable = false;
+			Monster->SetAIIsAttack(false);
+			if (Monster->GetIsBlocking())
+				Monster->SetIsBlocking(false);
 			return EBTNodeResult::Failed;
 		}
 
 		Monster->SetTargetLook(TargetActor);
+
+		// 몬스터가 블로킹중이 아니라면 블로킹중으로 변경했다 알려주어야함.
+		if (!Monster->GetIsBlocking())
+			Monster->SetIsBlocking(true);
 
 		if (!Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::BlockLoop) &&
 			!Monster->GetAnimationInstance()->IsAnimMontage(PirateAnimation::BlockWalkBackward) &&
