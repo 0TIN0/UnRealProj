@@ -18,7 +18,7 @@ AUR_UltimateDisCharge::AUR_UltimateDisCharge() :
 		m_ParticleComponent->SetTemplate(ParticleSystem.Object);
 	}
 
-
+	RootComponent = m_ParticleComponent;
 }
 
 // Called when the game starts or when spawned

@@ -15,7 +15,9 @@ AUR_NormalAttackHit::AUR_NormalAttackHit()
 		m_ParticleComponent->SetTemplate(ParticleSystem.Object);
 	}
 
+
 	m_ParticleComponent->SetWorldScale3D(FVector(3.0, 3.0, 3.0));
+	SetRootComponent(m_ParticleComponent);
 }
 
 void AUR_NormalAttackHit::BeginPlay()

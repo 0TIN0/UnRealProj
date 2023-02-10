@@ -13,6 +13,8 @@ AUR_ShieldActor::AUR_ShieldActor()
 
 	// Parameters can be set like this (see documentation for further info) - the names and type must match the user exposed parameter in the Niagara System
 	m_Shield = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), m_NiagaraFX, GetActorLocation());
+
+	RootComponent = m_Shield;
 }
 
 // Called when the game starts or when spawned

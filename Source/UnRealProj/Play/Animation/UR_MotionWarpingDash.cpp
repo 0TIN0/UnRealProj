@@ -32,9 +32,9 @@ void UUR_MotionWarpingDash::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimS
 
 	FLatentActionInfo LatentInfo;
 	LatentInfo.CallbackTarget = this;
-	LatentInfo.ExecutionFunction = FName("Finished");
-	LatentInfo.Linkage = 0;
-	LatentInfo.UUID = 0;
+	//LatentInfo.ExecutionFunction = FName("Finished");
+	//LatentInfo.Linkage = 0;
+	//LatentInfo.UUID = 0;
 
 	FVector Dir = m_TargetActor->GetActorLocation() - m_Player->GetActorLocation();
 	Dir = Dir.GetSafeNormal();

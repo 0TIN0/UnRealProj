@@ -21,7 +21,8 @@ private:
 protected:
 	void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 
-private:
+public:
+	UFUNCTION(BlueprintCallable)
 	void Finished();
 	
 };

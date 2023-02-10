@@ -87,6 +87,7 @@ void UURSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 			// 하지만 이런식으로 구성을 하면 사각형의 모양이 만들어지게 된다.
 			vecSpawnPos.X = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
 			vecSpawnPos.Y = m_Stream.FRandRange(-m_SpawnRange, m_SpawnRange);
+			vecSpawnPos.Z = 0.f;
 
 			vecSpawnPos.Normalize();
 

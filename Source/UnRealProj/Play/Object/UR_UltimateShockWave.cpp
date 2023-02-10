@@ -19,6 +19,8 @@ AUR_UltimateShockWave::AUR_UltimateShockWave() :
 	}
 
 	m_ParticleComponent->SetWorldScale3D(FVector(2.0, 2.0, 2.0));
+
+	RootComponent = m_ParticleComponent;
 }
 
 // Called when the game starts or when spawned

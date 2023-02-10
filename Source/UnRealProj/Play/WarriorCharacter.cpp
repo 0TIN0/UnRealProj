@@ -29,6 +29,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "MatineeCameraShake.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 
 AWarriorCharacter::AWarriorCharacter() :
 	m_Stream(FDateTime::Now().GetTicks()),
@@ -54,6 +55,7 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_JumpType(EWarriorJumpType::Default),
 	m_AttackSpeed(1.f),
 	m_UltimateAttackCount(8),
+	m_NextUUID(0),
 	m_PostProcessDeleteTime(4.f),
 	m_TestTime(0.f)
 {
@@ -1178,6 +1180,36 @@ void AWarriorCharacter::BeginPlay()
 	m_ArrayNormalMat = GetMesh()->GetMaterials();
 
 	GetWorld()->GetGameInstance<UURGameInstance>()->QuestSaveFull(this);
+
+	TArray<UUserWidget*> ArrayWidget;
+
+	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), ArrayWidget, UUserWidget::StaticClass());
+
+
+	for (int i = 0; i < ArrayWidget.Num(); ++i)
+	{
+		FString Name = ArrayWidget[i]->GetName();
+
+		int Length = ArrayWidget[i]->GetName().Len();
+
+		for (int j = Length - 1; j > 0; --j)
+		{
+			if (Name[j] == 'I')
+			{
+				// \ 다음부터(&Path[i + 1]) 0으로 만들것이다.
+				memset(&Name[j + 1], 0, sizeof(TCHAR) * (Length - j - 1));
+				break;
+			}
+		}
+
+		if ((Name == L"BP_QuestSideUI") &&
+			m_IsQuesting)
+		{
+			ArrayWidget[i]->SetVisibility(ESlateVisibility::Visible);
+			break;
+		}
+	}
+	GetWorld();
 }
 
 void AWarriorCharacter::Tick(float DeltaTime)
@@ -1200,7 +1232,7 @@ void AWarriorCharacter::Tick(float DeltaTime)
 		{
 			if (m_Stamina - DeltaTime * 15.f > 0.f)
 			{
-				m_Stamina -= DeltaTime * 15.f;
+				m_Stamina -= DeltaTime * 7.f;
 			}
 			if (m_Stamina <= 0.f)
 			{
@@ -1441,10 +1473,10 @@ void AWarriorCharacter::SetDefaultData()
 	// m_PlayerInfo는 언리얼 데이터 주소를 갖고있는것.
 	SetHP(m_PlayerInfo->HP);
 	m_MaxHP = m_PlayerInfo->MaxHP;
-	m_MaxHP = m_PlayerInfo->MaxMP;
+	m_MaxHP = 10000000.0;
 	m_MPPercent = 1.0;
 	m_HPPercent = 1.0;
-	m_MP = m_PlayerInfo->MP;
+	m_MP = 10000000.0;
 	m_Stamina = m_PlayerInfo->MaxStamina;
 	m_QSkillCurCoolTime = 0.f;
 	m_ESkillCurCoolTime = 0.f;
@@ -2251,9 +2283,9 @@ void AWarriorCharacter::AdvanceTimer()
 {
 	FLatentActionInfo LatentInfo;
 	LatentInfo.CallbackTarget = this;
-	LatentInfo.ExecutionFunction = FName("Finished");
-	LatentInfo.Linkage = 0;
-	LatentInfo.UUID = 0;
+	//LatentInfo.ExecutionFunction = FName("Finished");
+	//LatentInfo.Linkage = 0;
+	//LatentInfo.UUID = GetNextUUID();
 
 	// 새로 배열개수를 얻어왔는데 0이라면 타겟이 다 죽었다는 의미이므로 이대로 종료시켜야한다.
 	if (m_UltimateTargetMonster.IsEmpty())

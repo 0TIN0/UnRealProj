@@ -71,8 +71,8 @@ AUR_KhaimeraBoss::AUR_KhaimeraBoss()	:
 		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
 		m_PlaneComponent->SetupAttachment(m_IconArm);
 		m_PlaneComponent->SetHiddenInSceneCapture(true);
-		m_PlaneComponent->SetHiddenInGame(false);
-		m_PlaneComponent->SetCastHiddenShadow(true);
+		m_PlaneComponent->SetHiddenInGame(true);
+		m_PlaneComponent->SetCastHiddenShadow(false);
 
 		if (nullptr != MeshPath.Object
 			&& MeshPath.Object->IsValidLowLevel())

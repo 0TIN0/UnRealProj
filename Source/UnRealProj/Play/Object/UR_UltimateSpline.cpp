@@ -18,7 +18,7 @@ AUR_UltimateSpline::AUR_UltimateSpline() :
 		m_ParticleComponent->SetTemplate(ParticleSystem.Object);
 	}
 
-
+	RootComponent = m_ParticleComponent;
 	/*FRotator Rot = FVector(0.0, 0.0, 90.0).Rotation();
 
 	m_ParticleComponent->SetWorldRotation(Rot);*/

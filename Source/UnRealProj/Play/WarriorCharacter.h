@@ -169,6 +169,7 @@ private:
 	bool m_IsUltimateAttack;
 	FRotator m_CameraComponentDefaultRot;
 	AURCharacter* m_UltimateCameraTarget;
+	int32 m_NextUUID;
 
 
 	// 포스트프로세스 제거 관련
@@ -465,7 +466,14 @@ public:
 
 	void UltimateAttack();
 
+	UFUNCTION(BlueprintCallable)
 	void Finished();
+
+	int32 GetNextUUID()
+	{
+		return m_NextUUID++;
+	}
+
 	void AdvanceTimer();
 
 

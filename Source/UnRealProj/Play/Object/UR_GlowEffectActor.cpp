@@ -18,6 +18,7 @@ AUR_GlowEffectActor::AUR_GlowEffectActor()	:
 	m_MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("GlowSphereComponent")));
 	m_MeshComp->SetCastHiddenShadow(true);
 	m_MeshComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	RootComponent = m_MeshComp;
 	
 	//StaticMesh'/Engine/BasicShapes/Plane.Plane'
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/ControlRig/Controls/ControlRig_Circle_solid.ControlRig_Circle_solid'"));
