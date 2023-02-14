@@ -30,10 +30,6 @@ UUR_HitSoundNotify::UUR_HitSoundNotify()	:
 		UE_LOG(LogTemp, Error, TEXT("SparrowHit Sound Null!"));
 
 	// 모든 타입이 널이라면 선택을 안 해준것이기 때문에 Log띄워주어 예방
-	if ((m_PlayerType == UPLAYER_TYPE::Default) && (m_MonsterType == UMONSTER_TYPE::Default))
-	{
-		UE_LOG(LogTemp, Error, TEXT("HitSoundNotify All Type Default!"));
-	}
 
 	VolumeMultiplier = 0.2f;
 }
@@ -50,6 +46,11 @@ void UUR_HitSoundNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 	if (Character->IsDeath())
 	{
 		return;
+	}
+
+	if ((m_PlayerType == UPLAYER_TYPE::Default) && (m_MonsterType == UMONSTER_TYPE::Default))
+	{
+		UE_LOG(LogTemp, Error, TEXT("HitSoundNotify All Type Default!"));
 	}
 
 	//노티파이를 시작하기전에 노티파이에 실행할 사운드를 지정해준다.

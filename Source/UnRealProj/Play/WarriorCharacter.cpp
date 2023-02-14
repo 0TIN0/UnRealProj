@@ -96,6 +96,38 @@ AWarriorCharacter::AWarriorCharacter() :
 	m_CameraComponent->SetupAttachment(m_CameraSpringArmComponent);
 	//m_CameraComponent->bUsePawnControlRotation = false;
 
+	{
+		m_IconArm = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("IconArm")));
+		m_IconArm->SetRelativeRotation(FRotator(-90, 0, 0));
+		// 자식으로 달아준다.
+		m_IconArm->SetupAttachment(RootComponent);
+		m_IconArm->TargetArmLength = 300.f;
+
+		//Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'
+		ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
+		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/UI/Blue_Circle_full_Mat.Blue_Circle_full_Mat'"));
+
+		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("PlayerIconPlane"));
+		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
+		m_PlaneComponent->SetupAttachment(m_IconArm);
+		m_PlaneComponent->SetHiddenInSceneCapture(true);
+		m_PlaneComponent->SetHiddenInGame(false);
+		m_PlaneComponent->SetCastHiddenShadow(true);
+
+		if (nullptr != MeshPath.Object
+			&& MeshPath.Object->IsValidLowLevel())
+		{
+			m_PlaneComponent->SetStaticMesh(MeshPath.Object);
+		}
+
+		if (nullptr != MatPath.Object
+			&& MatPath.Object->IsValidLowLevel())
+		{
+			m_PlaneComponent->SetMaterial(0, MatPath.Object);
+		}
+
+	}
+
 	// 포스트 프로세스
 	{
 		m_DrunkPostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName(TEXT("DrunkPostProcessComponent")));
@@ -124,6 +156,7 @@ AWarriorCharacter::AWarriorCharacter() :
 		m_BlackHoleNiagara = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("BlackholeBodyParticles")));
 		m_BlackHoleNiagara->SetAsset(m_BlackHoleFX);
 		m_BlackHoleNiagara->SetupAttachment(GetMesh());
+		m_BlackHoleNiagara->bAutoActivate = false;
 		//Start Position_SpawnRate
 	}
 
@@ -203,9 +236,6 @@ void AWarriorCharacter::MouseMoveY(float Value)
 	AddControllerPitchInput(-Value * m_MouseYDPI);
 }
 
-void AWarriorCharacter::PlayerPickingMove()
-{
-}
 
 void AWarriorCharacter::PlayerLeftMove(float Value)
 {
@@ -1608,13 +1638,17 @@ void AWarriorCharacter::CombatTick(float DeltaTime)
 	{
 		m_CombatTime -= DeltaTime;
 
-		if ((m_CombatTime <= 0.f) && GetAnimationInstance()->Montage_IsPlaying(m_CombatIdleMontage))
+		if ((m_CombatTime <= 0.f) && GetAnimationInstance()->IsAnimMontage(WarriorCombatAnimation::CombatIdle))
 		{
-			m_CombatTime = 7.f;
+			if (!GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Execution1) &&
+				!GetAnimationInstance()->IsAnimMontage(WarriorAnimation::Execution2))
+			{
+				m_CombatTime = 7.f;
 
-			m_IsCombating = false;
+				m_IsCombating = false;
 
-			GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+				GetAnimationInstance()->ChangeAnimMontage(DefaultAnimation::Idle);
+			}
 		}
 	}
 }

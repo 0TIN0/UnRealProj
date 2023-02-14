@@ -13,11 +13,6 @@ AURItemActor::AURItemActor()
 
 void AURItemActor::SetItem(const FURItemData* _ItemData)
 {
-	if (!_ItemData)
-	{
-		return;
-	}
-
 	if (nullptr == _ItemData->DropMesh)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s Drop Item Mesh Is nullptr!"), *_ItemData->DisplayName.ToString());

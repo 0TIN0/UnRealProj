@@ -77,6 +77,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 		class USkeletalMesh* m_BerserkerMesh;
 
+
 	class AUR_BlackHole* m_BlackHole;
 
 	float m_SpawnRange;

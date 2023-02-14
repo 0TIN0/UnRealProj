@@ -249,8 +249,13 @@ void AURCharacter::ItemDrop(const TArray<const struct FURItemData*>& _Array)
 
 	for (size_t i = 0; i < _Array.Num(); ++i)
 	{
+		AActor* This = this;
+		FActorSpawnParameters SpawnParams;
+		// 생성된 객체를 부모의 충돌 공간 밖으로 밀어냅니다.
+		// 생성 직후에 바로 충돌이 되게되면 프레임이 밀려 제거된 다음 SetItem이 실행될 수도 있음.
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 		FTransform SpawnTransform(GetActorLocation());
-		AURItemActor* NewActor = GetWorld()->SpawnActor<AURItemActor>(Object, SpawnTransform);
+		AURItemActor* NewActor = GetWorld()->SpawnActor<AURItemActor>(Object, SpawnTransform, SpawnParams);
 		NewActor->SetItem(_Array[i]);
 	}
 }

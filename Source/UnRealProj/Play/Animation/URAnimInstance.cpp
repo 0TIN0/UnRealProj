@@ -6,6 +6,7 @@
 
 UURAnimInstance::UURAnimInstance()
 {
+	
 }
 
 void UURAnimInstance::AddAnimMontage(int Key, UAnimMontage* Montage)
@@ -46,6 +47,11 @@ bool UURAnimInstance::IsAnimMontage(int _Key) const
 
 UAnimMontage* UURAnimInstance::GetAnimation(int _Key)
 {
+	// 처음 업데이트가 엑터 비긴보다 먼저 돌아가서 비어있을경우 리턴 널 해준다.
+	if (m_Animations.IsEmpty())
+	{
+		return nullptr;
+	}
 
 	UAnimMontage** FindMontage = m_Animations.Find(_Key);
 
@@ -98,5 +104,4 @@ void UURAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		//m_CurrentAnimationKey = m_DefaultKey;
 		ChangeAnimMontage(m_CurrentAnimationKey, true);
 	}
-	
 }

@@ -27,10 +27,6 @@
 			]
 		},
 		{
-			"Name": "MotionWarping",
-			"Enabled": true
-		},
-		{
 			"Name": "ExampleCustomDataInterface",
 			"Enabled": true
 		},
@@ -38,5 +34,8 @@
 			"Name": "NiagaraFluids",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"Windows"
 	]
 }

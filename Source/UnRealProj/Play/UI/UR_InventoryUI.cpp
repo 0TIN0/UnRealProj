@@ -63,6 +63,11 @@ int UUR_InventoryUI::AddInvenItemEvent(UObject* _StartData, UUserWidget* _Slot)
 
 bool UUR_InventoryUI::IsFull(const FURItemData* _ItemData)
 {
+	if (!_ItemData)
+	{
+		return false;
+	}
+
 	// 장비랑 소비템이랑 처리방식이 다르다.
 	if (_ItemData->ItemType == ContentsItemType::Equip)
 	{
@@ -99,6 +104,11 @@ bool UUR_InventoryUI::IsFull(const FURItemData* _ItemData)
 
 void UUR_InventoryUI::AddItem(const FURItemData* _ItemData)
 {
+	if (!_ItemData)
+	{
+		return;
+	}
+
 	if (_ItemData->ItemType == ContentsItemType::Equip)
 	{
 		for (size_t i = 0; i < m_ItemSlot.Num(); ++i)

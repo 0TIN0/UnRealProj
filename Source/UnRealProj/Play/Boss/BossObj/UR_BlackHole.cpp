@@ -7,6 +7,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GamePlayStatics.h"
 
@@ -17,6 +18,13 @@ AUR_BlackHole::AUR_BlackHole()	:
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	m_DistCollision = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BlackHoleDistCollision")));
+	m_DistCollision->SetCollisionProfileName(FName(TEXT("MonsterAttack")));
+	m_DistCollision->OnComponentBeginOverlap.AddDynamic(this, &AUR_BlackHole::OnCollision);
+	m_DistCollision->OnComponentEndOverlap.AddDynamic(this, &AUR_BlackHole::OnCollisionEnd);
+
+	SetRootComponent(m_DistCollision);
+
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Trace(TEXT("NiagaraSystem'/Game/BluePrint/Play/Monster/BossSubObj/Khaimera/FX_BlackHole.FX_BlackHole'"));
 
 	m_NiagaraFX = Trace.Object;
@@ -25,10 +33,8 @@ AUR_BlackHole::AUR_BlackHole()	:
 	m_BlackHole = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NiagaraBlackhole")));
 	m_BlackHole->SetAsset(m_NiagaraFX);
 	//m_BlackHole = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), m_NiagaraFX, GetActorLocation());
+	m_BlackHole->SetupAttachment(m_DistCollision);
 
-	RootComponent = m_BlackHole;
-
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 
 	{
 		static ConstructorHelpers::FObjectFinder<USoundBase> SpawnSound(TEXT("SoundWave'/Game/Resource/Play/Sound/SKill/Khaimera/Khaimera_BlackHole_Sound.Khaimera_BlackHole_Sound'"));
@@ -61,25 +67,43 @@ void AUR_BlackHole::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_Player)
+	if (m_IsCollision)
 	{
-		SetTargetMovementInput(m_Player);
-
-		FVector Dir = GetActorLocation() - m_Player->GetActorLocation();
-
-		float Dist = Dir.Length();
-
-		Dir = Dir.GetSafeNormal();
-
-		float Value = Dist / m_PullDist;
-
-		Value = 1 - Value;
-
-		if (Dist < m_PullDist)
+		if (m_Player)
 		{
-			m_Player->AddMovementInput(Dir * 2.f, Value);
-			Cast<AURCharacter>(m_Player)->CallDamage(Value / 10.f, this, false, true);
+			FVector Dir = GetActorLocation() - m_Player->GetActorLocation();
+
+			float Dist = Dir.Length();
+
+			Dir = Dir.GetSafeNormal();
+
+			float Value = Dist / m_PullDist;
+
+			Value = 1 - Value;
+
+			if (Dist < m_PullDist)
+			{
+				m_Player->AddMovementInput(Dir * 2.f, Value);
+				Cast<AURCharacter>(m_Player)->CallDamage(Value / 10.f, this, false, true);
+			}
+			else
+			{
+
+			}
 		}
 	}
+}
+
+void AUR_BlackHole::OnCollision(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent, 
+	int32 _OtherBodyIndex, bool _FromSweep, const FHitResult& _Result)
+{
+	m_IsCollision = true;
+	Cast<AWarriorCharacter>(_DestActor)->GetBlackHoleBodyComponent()->SetActive(true);
+}
+
+void AUR_BlackHole::OnCollisionEnd(UPrimitiveComponent* _Component, AActor* _DestActor, UPrimitiveComponent* _DestComponent, int32 _OtherBodyIndex)
+{
+	m_IsCollision = false;
+	Cast<AWarriorCharacter>(_DestActor)->GetBlackHoleBodyComponent()->SetActive(false);
 }
 

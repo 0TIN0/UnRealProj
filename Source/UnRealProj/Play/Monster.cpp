@@ -56,7 +56,7 @@ AMonster::AMonster()	:
 
 		//Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'
 		ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
-		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'"));
+		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/UI/Red_Circle_full_Mat.Red_Circle_full_Mat'"));
 
 		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("IconPlane"));
 		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
@@ -125,7 +125,7 @@ void AMonster::BeginPlay()
 		return;
 	}
 
-	int32 Data = Instance->GetRandomStream().RandRange(1, 2);
+	int32 Data = Instance->GetRandomStream().RandRange(1, 1);
 
 	m_DropTable = Instance->GetRandomDropData(Data);
 
@@ -223,18 +223,6 @@ void AMonster::DamageOff()
 
 void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, bool _IsCameraShake)
 {
-	// 플레이어가 퀘스트 중일때이고
-	// HP가 0보다 큰 상태에서 데미지를 받았을때 0보다 작아진다면 죽는 시점이므로 이 때 플레이어의 Monster Count를 더해준다.
-	if (Cast<AURCharacter>(_Actor)->GetIsQuesting())
-	{
-		if (m_HP > 0.0 && m_HP - _Damage <= 0.0)
-		{
-			if (_Actor)
-				Cast<AURCharacter>(_Actor)->AddMonsterCount();
-		}
-	}
-	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
-
 	if (IsDeath())
 	{
 		if (!GetCharacterMovement()->IsFalling())
@@ -243,6 +231,25 @@ void AMonster::CallDamage(double _Damage, AActor* _Actor, bool _IsKnockBack, boo
 		}
 
 		return;
+	}
+
+	Super::CallDamage(_Damage, _Actor, _IsKnockBack, _IsCameraShake);
+
+	// 플레이어가 퀘스트 중일때이고
+	// HP가 0보다 큰 상태에서 데미지를 받았을때 0보다 작아진다면 죽는 시점이므로 이 때 플레이어의 Monster Count를 더해준다.
+	if (Cast<AURCharacter>(_Actor)->GetIsQuesting())
+	{
+		if (m_HP < 0.0 && m_HP + _Damage >= 0.0)
+		{
+			if (_Actor)
+			{
+				Cast<AURCharacter>(_Actor)->AddMonsterCount();
+			}
+		}
+	}
+	if (m_HP < 0.0 && m_HP + _Damage >= 0.0)
+	{
+		ItemDrop(m_DropTable);
 	}
 
 	// 죽지 않았을때만 동작되도록

@@ -65,7 +65,7 @@ AUR_KhaimeraBoss::AUR_KhaimeraBoss()	:
 
 		//Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'
 		ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPath(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
-		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/Sprite/UI/MonsterIcon_Mat.MonsterIcon_Mat'"));
+		ConstructorHelpers::FObjectFinder<UMaterialInterface> MatPath(TEXT("Material'/Game/Resource/Play/UI/Purple_Circle_Full_Mat.Purple_Circle_Full_Mat'"));
 
 		m_PlaneComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("KhaimeraBossIconPlane"));
 		m_PlaneComponent->SetRelativeRotation(FRotator(0, 90, 90));
@@ -308,9 +308,9 @@ void AUR_KhaimeraBoss::CreateBlackHole()
 
 	FRotator Rot = FRotator();
 
-	//FTransform SpawnTransform = FTransform(Rot, vecSpawnPos);
+	FTransform SpawnTransform = FTransform(Rot, vecSpawnPos);
 
-	m_BlackHole = GetWorld()->SpawnActor<AUR_BlackHole>(vecSpawnPos, Rot);
+	m_BlackHole = GetWorld()->SpawnActor<AUR_BlackHole>(m_SpawnActorClass, SpawnTransform);
 
 	if (m_BlackHole)
 	{

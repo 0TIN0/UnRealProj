@@ -66,6 +66,12 @@ private:
 		class USpringArmComponent* m_CameraSpringArmComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<class USpringArmComponent> m_IconArm;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<class UStaticMeshComponent> m_PlaneComponent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UPostProcessComponent* m_DrunkPostProcessComponent;
 
 	FWeightedBlendable m_DrunkWeightedBlend;
@@ -198,9 +204,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = RealUn)
 		void MouseMoveY(float Value);
-
-	UFUNCTION(BlueprintCallable, Category = UR)
-		void PlayerPickingMove();
 
 	UFUNCTION(BlueprintCallable, Category = UR)
 		void PlayerLeftMove(float Value);
